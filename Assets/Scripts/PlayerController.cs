@@ -32,10 +32,7 @@ public class PlayerController : MonoBehaviour {
 			if(hooked)
                 UnHook();
             else
-            {
                 PrepHook();
-                StartCoroutine("ShootHook");
-            }
 		}
 
         if (HookPlayerInput.JumpPressed())
@@ -54,10 +51,7 @@ public class PlayerController : MonoBehaviour {
         if(HookPlayerInput.RopeClimbPressed())
         {
             if (hooked)
-            {
                 PrepClimb();
-                StartCoroutine("ClimbRope");
-            }
         }
 	}
 	void FixedUpdate() 
@@ -83,34 +77,32 @@ public class PlayerController : MonoBehaviour {
     void PrepClimb()
     {
         ReleaseHook();
-        transform.GetComponent<Rigidbody>().useGravity = false;
-        transform.GetComponent<Rigidbody>().isKinematic = true;
+        StartCoroutine(ClimbRope(transform.position));
     }
-    IEnumerator ClimbRope()
-    {Debug.Log("Releasing");
+    IEnumerator ClimbRope(Vector3 startPosition)
+    {
         float elapsedTime = 0;
+        float scale = 0.1f;
+        Vector3 midBezierPoint = wallHook.transform.position - transform.position;
+        midBezierPoint.Normalize();
+        Debug.Log(transform.GetComponent<Rigidbody>().velocity);
+        Vector3 midPoint = (transform.position + (scale * midBezierPoint)) + transform.GetComponent<Rigidbody>().velocity * 0.4f;
+        transform.GetComponent<Rigidbody>().isKinematic = true;
         while (elapsedTime < climbDuration)
         {
+            Debug.DrawRay(transform.position, midPoint);
             float percentageComplete = elapsedTime / climbDuration;
-            Debug.Log(percentageComplete);
-            Vector3 newPlayerPosition = Vector3.Lerp(transform.localPosition, wallHook.transform.localPosition, percentageComplete);
-            Debug.DrawRay(wallHook.transform.position, newPlayerPosition);
+            Vector3 newPlayerPosition = Vector3.Lerp(Vector3.Lerp(startPosition, midPoint, percentageComplete), Vector3.Lerp(midPoint, wallHook.transform.localPosition, percentageComplete), percentageComplete);
             transform.position = newPlayerPosition;
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        Debug.Log("Exited loop");
-        StickPlayer();
-    }
-    void StickPlayer()
-    {
-        Debug.Log("Done");
         UnHook();
-        transform.GetComponent<Rigidbody>().isKinematic = true;
     }
 
 	void PrepHook()
 	{
+        transform.GetComponent<Rigidbody>().isKinematic = false;
         // Wall hitting code, just keepin ya around for a bit :)
 		//RaycastHit2D wallHit = new RaycastHit2D();
         //Vector3 hookDirection = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
@@ -180,8 +172,14 @@ public class PlayerController : MonoBehaviour {
     }
 	void OnCollisionEnter(Collision collision) 
     {
-		if(collision.gameObject.name == "MapGenerator")
-			grounded = true;
+        if (collision.gameObject.name == "MapGenerator")
+        {
+            grounded = true;
+            if(hooked)
+            { 
+                UnHook();
+            }
+        }
 	}
 	void OnCollisionExit(Collision collision) 
     {
