@@ -7,8 +7,9 @@ public class PlayerController : MonoBehaviour {
 	public float MaxSpeed = 10.0f;
 	public float JumpForce = 900.0f;
     public LayerMask Wall;
-    public float hookDuration = 0.1f;
-    public float climbDuration = 1.0f;
+    public float hookSpeed = 80.0f;
+    public float lineSpeed = 90.0f;
+    public float climbSpeed = 30.0f;
 
 	private Animator anim;
 	private GameObject playerBody;
@@ -16,7 +17,10 @@ public class PlayerController : MonoBehaviour {
 	private GameObject wallHook;
     private FixedJoint wallHookFixedJoint;
 	private LineRenderer ropeLineRenderer;
-	private bool hooked;
+    private bool hookActive = false;
+    private bool wallHookOut = false;
+	private bool hooked = false;
+    private bool playerLocked = false;
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
 	void Start() {
@@ -27,19 +31,19 @@ public class PlayerController : MonoBehaviour {
 	}
 	void Update()
 	{
-		if(HookPlayerInput.HookPressed())
+		if(HookPlayerInput.RopePressed())
 		{
-			if(hooked)
-                UnHook();
-            else
-                PrepHook();
+            //if(hooked)
+            //    UnHook();
 		}
 
         if (HookPlayerInput.JumpPressed())
         {
+            transform.GetComponent<Rigidbody>().isKinematic = false;
+            playerLocked = false;
             if (hooked)
             {
-                UnHook();
+                StartCoroutine(RetrieveHookRope());
                 GetComponent<Rigidbody>().AddForce(new Vector2(0, JumpForce));
                 return;
             }
@@ -51,7 +55,30 @@ public class PlayerController : MonoBehaviour {
         if(HookPlayerInput.RopeClimbPressed())
         {
             if (hooked)
-                PrepClimb();
+                StartCoroutine(ClimbRope(transform.position));
+        }
+
+        if (HookPlayerInput.HookPressed())
+        {
+            if (!hookActive)
+            {
+                if (!wallHookOut && !hooked)
+                {
+                    StartCoroutine(ShootHook());
+                }
+                else if (wallHookOut && !hooked)
+                {
+                    StartCoroutine(ShootRope());
+                }
+                else if (playerLocked)
+                {
+                    transform.GetComponent<Rigidbody>().isKinematic = false;
+                }
+                else
+                {
+                    StartCoroutine(RetrieveHookRope());
+                }
+            }
         }
 	}
 	void FixedUpdate() 
@@ -74,10 +101,88 @@ public class PlayerController : MonoBehaviour {
             ropeLineRenderer.SetPosition(1, transform.position);
 		}
     }
-    void PrepClimb()
+    IEnumerator ShootHook()
     {
-        ReleaseHook();
-        StartCoroutine(ClimbRope(transform.position));
+        hookActive = true;
+        float elapsedTime = 0;
+        Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                        -(Camera.main.transform.position.z + transform.position.z)));
+        wallHook.transform.parent = null;
+        var dist = Vector3.Distance(wallHook.transform.position, hookEndPoint);
+        float timeTakenDuringLerp = dist / hookSpeed;
+        while (elapsedTime < timeTakenDuringLerp)
+        {
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            wallHook.transform.position = Vector3.Lerp(wallHook.transform.position,
+                                                       hookEndPoint, 
+                                                       percentageComplete);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        wallHookOut = true;
+        hookActive = false;
+    }
+    IEnumerator ShootRope()
+    {
+        hookActive = true;
+        // Wall hitting code, just keepin ya around for a bit :)
+        //RaycastHit2D wallHit = new RaycastHit2D();
+        //Vector3 hookDirection = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+        //                                                                   HookPlayerInput.GetPlayerTouchPosition().y,
+        //                                                                   -(Camera.main.transform.position.z + transform.position.z)));
+        //wallHit = Physics2D.Raycast(transform.position, hookDirection, Mathf.Infinity, wall);
+        //wallhook.transform.position = new Vector3(wallHit.point.x, wallHit.point.y, transform.position.z);
+
+
+        //wallHook.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+        //                                                                            HookPlayerInput.GetPlayerTouchPosition().y,
+        //   
+        ropeLineRenderer.enabled = true;
+        float elapsedTime = 0;
+        var dist = Vector3.Distance(transform.position, wallHook.transform.position);
+        float timeTakenDuringLerp = dist / hookSpeed;
+        while (elapsedTime < timeTakenDuringLerp)
+        {
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            Vector3 ropeEndPoint = Vector3.Lerp(transform.position, wallHook.transform.position, percentageComplete);
+            ropeLineRenderer.SetPosition(0, transform.position);
+            ropeLineRenderer.SetPosition(1, ropeEndPoint);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        hooked = true;
+        wallHook.transform.parent = null;
+        wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+        hookActive = false;
+    }
+
+    IEnumerator RetrieveHookRope()
+    {
+        wallHookFixedJoint.connectedBody = null;
+        hooked = false;
+        wallHookOut = false;
+        float elapsedTime = 0;
+        var dist = Vector3.Distance(transform.position, wallHook.transform.position);
+        float timeTakenDuringLerp = dist / hookSpeed;
+        while (elapsedTime < timeTakenDuringLerp)
+        {
+            // retrieve rope
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            Vector3 ropeEndPoint = Vector3.Lerp(wallHook.transform.position , transform.position, percentageComplete);
+            ropeLineRenderer.SetPosition(1, transform.position);
+            ropeLineRenderer.SetPosition(0, ropeEndPoint);
+
+            // retrieve hook
+            wallHook.transform.position = Vector3.Lerp(wallHook.transform.position,
+                                                       transform.position,
+                                                       percentageComplete);
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        ropeLineRenderer.enabled = false;
+        wallHook.transform.parent = transform;
     }
     IEnumerator ClimbRope(Vector3 startPosition)
     {
@@ -85,67 +190,30 @@ public class PlayerController : MonoBehaviour {
         float scale = 0.1f;
         Vector3 midBezierPoint = wallHook.transform.position - transform.position;
         midBezierPoint.Normalize();
-        Debug.Log(transform.GetComponent<Rigidbody>().velocity);
-        Vector3 midPoint = (transform.position + (scale * midBezierPoint)) + transform.GetComponent<Rigidbody>().velocity * 0.4f;
+        Vector3 midPoint = (transform.position + (scale * midBezierPoint)) + transform.GetComponent<Rigidbody>().velocity * 0.2f;
+        wallHook.GetComponent<FixedJoint>().connectedBody = null;
         transform.GetComponent<Rigidbody>().isKinematic = true;
-        while (elapsedTime < climbDuration)
+        var dist = Vector3.Distance(transform.position, wallHook.transform.position);
+        float timeTakenDuringLerp = dist / climbSpeed;
+
+        while (elapsedTime < timeTakenDuringLerp)
         {
-            Debug.DrawRay(transform.position, midPoint);
-            float percentageComplete = elapsedTime / climbDuration;
-            Vector3 newPlayerPosition = Vector3.Lerp(Vector3.Lerp(startPosition, midPoint, percentageComplete), Vector3.Lerp(midPoint, wallHook.transform.localPosition, percentageComplete), percentageComplete);
-            transform.position = newPlayerPosition;
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            transform.position = Vector3.Lerp(Vector3.Lerp(startPosition, midPoint, percentageComplete), Vector3.Lerp(midPoint, wallHook.transform.localPosition, percentageComplete), percentageComplete);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        UnHook();
+        LockPlayerPosition();
     }
-
-	void PrepHook()
+	void LockPlayerPosition()
 	{
-        transform.GetComponent<Rigidbody>().isKinematic = false;
-        // Wall hitting code, just keepin ya around for a bit :)
-		//RaycastHit2D wallHit = new RaycastHit2D();
-        //Vector3 hookDirection = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-        //                                                                   HookPlayerInput.GetPlayerTouchPosition().y,
-        //                                                                   -(Camera.main.transform.position.z + transform.position.z)));
-		//wallHit = Physics2D.Raycast(transform.position, hookDirection, Mathf.Infinity, wall);
-		//wallhook.transform.position = new Vector3(wallHit.point.x, wallHit.point.y, transform.position.z);
-        wallHook.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                                    HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                                    -(Camera.main.transform.position.z + transform.position.z)));
-        wallHook.transform.parent = null;
-        StartCoroutine(ShootHook());
-	}
-	IEnumerator ShootHook()
-	{
-        ropeLineRenderer.enabled = true;
-		float elapsedTime = 0;
-		while (elapsedTime < hookDuration)
-		{
-			float percentageComplete = elapsedTime / hookDuration;
-            Vector3 ropeEndPoint = Vector3.Lerp(transform.position, wallHook.transform.position, percentageComplete);
-            ropeLineRenderer.SetPosition(0, transform.position);
-            ropeLineRenderer.SetPosition(1, ropeEndPoint);
-			elapsedTime += Time.deltaTime;
-			yield return null;
-		}
-        SetHook();
-	}
-	void SetHook()
-	{
-		wallHook.GetComponent<MeshRenderer>().enabled = true;
-        wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
-        hooked = true;
-	}
-	void UnHook()
-	{
-		hooked = false;
+        transform.GetComponent<Rigidbody>().isKinematic = true;
         ropeLineRenderer.enabled = false;
-        wallHook.GetComponent<MeshRenderer>().enabled = false;
         wallHookFixedJoint.connectedBody = null;
         wallHook.transform.parent = transform;
 		transform.rotation = Quaternion.identity;
 		playerBody.gameObject.transform.rotation = Quaternion.identity;
+        playerLocked = true;
 	}
     void CheckRopeSlack()
     {
@@ -153,17 +221,9 @@ public class PlayerController : MonoBehaviour {
                                                                              transform.position,
                                                                              transform.GetComponent<Rigidbody>().velocity);
         if (playerMovingTowardHook)
-            ReleaseHook();
+            wallHook.GetComponent<FixedJoint>().connectedBody = null;
         else
-            LockHook();
-    }
-    void ReleaseHook()
-    {
-        wallHook.GetComponent<FixedJoint>().connectedBody = null;
-    }
-    void LockHook()
-    {
-        wallHook.GetComponent<FixedJoint>().connectedBody = transform.GetComponent<Rigidbody>();
+            wallHook.GetComponent<FixedJoint>().connectedBody = transform.GetComponent<Rigidbody>();
     }
     void HandleMove()
     {
@@ -172,19 +232,24 @@ public class PlayerController : MonoBehaviour {
     }
 	void OnCollisionEnter(Collision collision) 
     {
-        if (collision.gameObject.name == "MapGenerator")
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             grounded = true;
-            if(hooked)
-            { 
-                UnHook();
-            }
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY |
+                                                              RigidbodyConstraints.FreezeRotationZ;
         }
 	}
 	void OnCollisionExit(Collision collision) 
     {
-		if(collision.gameObject.name == "MapGenerator")
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        { 
 			grounded = false;
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY;
+        }
 	}
     void DoDebugDrawing()
     {

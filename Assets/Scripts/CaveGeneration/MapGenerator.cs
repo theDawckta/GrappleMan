@@ -354,7 +354,7 @@ public class MapGenerator : MonoBehaviour {
 	{
 		if (useRandomSeed) 
 		{
-			seed = Time.time.ToString();
+            seed = System.DateTime.Now.ToString();
 		}
 		
 		System.Random pseudoRandom = new System.Random(seed.GetHashCode());

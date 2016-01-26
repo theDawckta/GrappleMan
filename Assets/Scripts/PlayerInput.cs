@@ -40,7 +40,7 @@ public class PlayerInput : MonoBehaviour {
 			return Input.GetButtonDown ("Jump") ? true:false;
 	}
 
-	public bool HookReleasePressed()
+	public bool RopeReleasePressed()
 	{
 		if (Mobile) 
 		{
@@ -51,13 +51,21 @@ public class PlayerInput : MonoBehaviour {
 			return Input.GetKeyDown ("e") ? true:false;
 	}
 
-	public bool HookPressed()
+	public bool RopePressed()
 	{
 		if (Mobile) 
 			return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		else 
 			return Input.GetButtonDown("Fire1");
 	}
+
+    public bool HookPressed()
+    {
+        if (Mobile)
+            return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+        else
+            return Input.GetButtonDown("Fire2");
+    }
 
 	public Vector3 GetPlayerTouchPosition()
 	{
