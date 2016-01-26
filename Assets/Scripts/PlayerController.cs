@@ -20,7 +20,6 @@ public class PlayerController : MonoBehaviour {
     private bool hookActive = false;
     private bool wallHookOut = false;
 	private bool hooked = false;
-    private bool playerLocked = false;
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
 	void Start() {
@@ -39,8 +38,6 @@ public class PlayerController : MonoBehaviour {
 
         if (HookPlayerInput.JumpPressed())
         {
-            transform.GetComponent<Rigidbody>().isKinematic = false;
-            playerLocked = false;
             if (hooked)
             {
                 StartCoroutine(RetrieveHookRope());
@@ -48,8 +45,11 @@ public class PlayerController : MonoBehaviour {
                 return;
             }
 
-            if (grounded)
+            if (grounded || transform.GetComponent<Rigidbody>().isKinematic)
+            {
+                transform.GetComponent<Rigidbody>().isKinematic = false;
                 GetComponent<Rigidbody>().AddForce(new Vector2(0, JumpForce));
+            }
         }
 
         if(HookPlayerInput.RopeClimbPressed())
@@ -62,6 +62,7 @@ public class PlayerController : MonoBehaviour {
         {
             if (!hookActive)
             {
+                transform.GetComponent<Rigidbody>().isKinematic = false;
                 if (!wallHookOut && !hooked)
                 {
                     StartCoroutine(ShootHook());
@@ -70,11 +71,7 @@ public class PlayerController : MonoBehaviour {
                 {
                     StartCoroutine(ShootRope());
                 }
-                else if (playerLocked)
-                {
-                    transform.GetComponent<Rigidbody>().isKinematic = false;
-                }
-                else
+                else if(wallHookOut && hooked)
                 {
                     StartCoroutine(RetrieveHookRope());
                 }
@@ -189,6 +186,9 @@ public class PlayerController : MonoBehaviour {
         float elapsedTime = 0;
         float scale = 0.1f;
         Vector3 midBezierPoint = wallHook.transform.position - transform.position;
+        transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                          RigidbodyConstraints.FreezeRotationX |
+                                                          RigidbodyConstraints.FreezeRotationY;
         midBezierPoint.Normalize();
         Vector3 midPoint = (transform.position + (scale * midBezierPoint)) + transform.GetComponent<Rigidbody>().velocity * 0.2f;
         wallHook.GetComponent<FixedJoint>().connectedBody = null;
@@ -207,13 +207,14 @@ public class PlayerController : MonoBehaviour {
     }
 	void LockPlayerPosition()
 	{
+        hooked = false;
+        wallHookOut = false;
         transform.GetComponent<Rigidbody>().isKinematic = true;
         ropeLineRenderer.enabled = false;
         wallHookFixedJoint.connectedBody = null;
         wallHook.transform.parent = transform;
 		transform.rotation = Quaternion.identity;
 		playerBody.gameObject.transform.rotation = Quaternion.identity;
-        playerLocked = true;
 	}
     void CheckRopeSlack()
     {
