@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour {
 	private bool hooked = false;
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
+    private Vector3 playerPreviousPosition;
 	void Start() {
         wallHook = transform.FindChild("WallHook").gameObject;
         ropeLineRenderer = wallHook.GetComponent<LineRenderer>();
@@ -40,7 +41,10 @@ public class PlayerController : MonoBehaviour {
         {
             if (hooked)
             {
-                StartCoroutine(RetrieveHookRope());
+                if(!grounded)
+                {   
+                    StartCoroutine(RetrieveHookRope());
+                }
                 GetComponent<Rigidbody>().AddForce(new Vector2(0, JumpForce));
                 return;
             }
@@ -52,17 +56,22 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
+        if(HookPlayerInput.RopeReleasePressed())
+        {
+            wallHookFixedJoint.connectedAnchor -= wallHookFixedJoint.connectedAnchor.normalized;
+        }
+
         if(HookPlayerInput.RopeClimbPressed())
         {
             if (hooked)
-                StartCoroutine(ClimbRope(transform.position));
+                StartCoroutine("ClimbRope");
         }
 
         if (HookPlayerInput.HookPressed())
         {
+            transform.GetComponent<Rigidbody>().isKinematic = false;
             if (!hookActive)
             {
-                transform.GetComponent<Rigidbody>().isKinematic = false;
                 if (!wallHookOut && !hooked)
                 {
                     StartCoroutine(ShootHook());
@@ -75,6 +84,15 @@ public class PlayerController : MonoBehaviour {
                 {
                     StartCoroutine(RetrieveHookRope());
                 }
+            } 
+            else if(wallHookOut && hooked && hookActive)
+            {
+                StopCoroutine("ClimbRope");
+                Debug.Log("stopping corroutine");
+               
+                StartCoroutine(RetrieveHookRope()); 
+                Vector3 playerVelocity = (transform.position - playerPreviousPosition) / Time.deltaTime;
+                transform.GetComponent<Rigidbody>().velocity = playerVelocity;
             }
         }
 	}
@@ -153,7 +171,6 @@ public class PlayerController : MonoBehaviour {
         wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
         hookActive = false;
     }
-
     IEnumerator RetrieveHookRope()
     {
         wallHookFixedJoint.connectedBody = null;
@@ -180,9 +197,13 @@ public class PlayerController : MonoBehaviour {
         }
         ropeLineRenderer.enabled = false;
         wallHook.transform.parent = transform;
+        hookActive = false;
     }
-    IEnumerator ClimbRope(Vector3 startPosition)
+    IEnumerator ClimbRope()
     {
+        grounded = false;
+        hookActive = true;
+        Vector3 startPosition = transform.position;
         float elapsedTime = 0;
         float scale = 0.1f;
         Vector3 midBezierPoint = wallHook.transform.position - transform.position;
@@ -198,12 +219,14 @@ public class PlayerController : MonoBehaviour {
 
         while (elapsedTime < timeTakenDuringLerp)
         {
+            playerPreviousPosition = transform.position;
             float percentageComplete = elapsedTime / timeTakenDuringLerp;
             transform.position = Vector3.Lerp(Vector3.Lerp(startPosition, midPoint, percentageComplete), Vector3.Lerp(midPoint, wallHook.transform.localPosition, percentageComplete), percentageComplete);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
         LockPlayerPosition();
+        hookActive = false;
     }
 	void LockPlayerPosition()
 	{
@@ -218,20 +241,23 @@ public class PlayerController : MonoBehaviour {
 	}
     void CheckRopeSlack()
     {
-        bool playerMovingTowardHook = PhysicsHelper.Instance.isMovingTowards(wallHook.transform.localPosition,
-                                                                             transform.position,
-                                                                             transform.GetComponent<Rigidbody>().velocity);
-        if (playerMovingTowardHook)
-            wallHook.GetComponent<FixedJoint>().connectedBody = null;
-        else
-            wallHook.GetComponent<FixedJoint>().connectedBody = transform.GetComponent<Rigidbody>();
+        if(!grounded)
+        {
+            bool playerMovingTowardHook = PhysicsHelper.Instance.isMovingTowards(wallHook.transform.localPosition,
+                                                                                 transform.position,
+                                                                                 transform.GetComponent<Rigidbody>().velocity);
+            if (playerMovingTowardHook)
+                wallHook.GetComponent<FixedJoint>().connectedBody = null;
+            else
+                wallHook.GetComponent<FixedJoint>().connectedBody = transform.GetComponent<Rigidbody>();
+        }
     }
     void HandleMove()
     {
-        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && !hooked)
+        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && grounded)
             GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
     }
-	void OnCollisionEnter(Collision collision) 
+	void OnCollisionStay(Collision collision) 
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
@@ -240,6 +266,10 @@ public class PlayerController : MonoBehaviour {
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY |
                                                               RigidbodyConstraints.FreezeRotationZ;
+            if(hooked)
+            {
+                wallHookFixedJoint.connectedBody = null;
+            }
         }
 	}
 	void OnCollisionExit(Collision collision) 
@@ -250,6 +280,10 @@ public class PlayerController : MonoBehaviour {
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY;
+            if (hooked)
+            {
+                wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+            }
         }
 	}
     void DoDebugDrawing()
