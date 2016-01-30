@@ -142,38 +142,41 @@ public class PlayerController : MonoBehaviour {
                 if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, 1 << LayerMask.NameToLayer("Ground")))
                 {
                     Debug.Log("hit 2");
-                    Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
-                    Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue);
-                    Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue);
-                    Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red);
-
-                    // Wish I knew a way to make these infinite
-                    Debug.Log(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
-                    float modifier = Mathf.Sign(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
-
-                    Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 1000.0f;
-                    Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection1, Color.green);
-
-                    Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 1000.0f;
-                    Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
-
-                    Vector3 intersection;
-                    bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
-                    if(intersecting)
+                    if(playerRaycastOut.transform.gameObject == nextPlayerRaycastOut.transform.gameObject)
                     {
-                        Debug.Log("intersecting");
-                        intersection = intersection + (cornerNormal.normalized * 0.3f);
-                        Debug.DrawRay(intersection, cornerNormal, Color.green);
-                        lineRenderPositions.Add(intersection);
-                        wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                        currentLineEndpoint = intersection;
-                        wallHook.transform.position = intersection;
-                        wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                        Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
+                        Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue);
+                        Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue);
+                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red);
 
-                        // store rope bend polarity to check when we swing back
-                        Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
-                        Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
-                        ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
+                        // Wish I knew a way to make these infinite
+                        Debug.Log(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
+                        float modifier = Mathf.Sign(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
+
+                        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 1000.0f;
+                        Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection1, Color.green);
+
+                        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 1000.0f;
+                        Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
+
+                        Vector3 intersection;
+                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
+                        if(intersecting)
+                        {
+                            Debug.Log("intersecting");
+                            intersection = intersection + (cornerNormal.normalized * 0.3f);
+                            Debug.DrawRay(intersection, cornerNormal, Color.green);
+                            lineRenderPositions.Add(intersection);
+                            wallHook.GetComponent<FixedJoint>().connectedBody = null;
+                            currentLineEndpoint = intersection;
+                            wallHook.transform.position = intersection;
+                            wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+
+                            // store rope bend polarity to check when we swing back
+                            Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
+                            Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
+                            ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
+                        }
                     }
                 }
             }
