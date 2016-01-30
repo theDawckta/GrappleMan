@@ -135,37 +135,36 @@ public class PlayerController : MonoBehaviour {
             // This is hitting everytime need to fix it up
             if(hit)
             {
-                Debug.Log("hit");
                 // figure where to add the wallHook
-                Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue);
+                Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
                 RaycastHit nextPlayerRaycastOut;
                 if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, 1 << LayerMask.NameToLayer("Ground")))
                 {
-                    Debug.Log("hit 2");
                     if(playerRaycastOut.transform.gameObject == nextPlayerRaycastOut.transform.gameObject)
                     {
                         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
-                        Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue);
-                        Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue);
-                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red);
+                        Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
+                        Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue, 10.0f);
+                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
+
+                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
+                        DebugText.text = AngleFromAToB(playerRaycastOut.normal, cornerNormal).ToString();
+                        //DebugText.text = AngleFromAToB(cornerNormal, new Vector3(0, 1, 0)).ToString();
+                        float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
                         // Wish I knew a way to make these infinite
-                        Debug.Log(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
-                        float modifier = Mathf.Sign(AngleFromAToB(lineRenderPositions[lineRenderPositions.Count - 1], nextPlayerRaycastOut.point));
-
-                        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 1000.0f;
+                        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 1000.0f;
                         Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection1, Color.green);
 
-                        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 1000.0f;
+                        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 1000.0f;
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
                         Vector3 intersection;
                         bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
                         if(intersecting)
                         {
-                            Debug.Log("intersecting");
                             intersection = intersection + (cornerNormal.normalized * 0.3f);
-                            Debug.DrawRay(intersection, cornerNormal, Color.green);
+                            Debug.DrawRay(intersection, cornerNormal, Color.green, 10.0f);
                             lineRenderPositions.Add(intersection);
                             wallHook.GetComponent<FixedJoint>().connectedBody = null;
                             currentLineEndpoint = intersection;
