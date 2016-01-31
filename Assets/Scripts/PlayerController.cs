@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
     private Vector3 playerPreviousPosition;
+
 	void Awake() 
     {
         wallHookGraphic = transform.FindChild("WallHook").gameObject;
@@ -46,6 +47,7 @@ public class PlayerController : MonoBehaviour {
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.FindChild("PlayerBody").gameObject;
 	}
+
 	void Update()
 	{
         if(Input.GetKeyDown("-"))
@@ -122,6 +124,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 	}
+
 	void FixedUpdate() 
 	{
         if(hooked)
@@ -148,7 +151,7 @@ public class PlayerController : MonoBehaviour {
                         Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
 
                         Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
-                        DebugText.text = AngleFromAToB(playerRaycastOut.normal, cornerNormal).ToString();
+                        //DebugText.text = AngleFromAToB(playerRaycastOut.normal, cornerNormal).ToString();
                         //DebugText.text = AngleFromAToB(cornerNormal, new Vector3(0, 1, 0)).ToString();
                         float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
@@ -163,7 +166,8 @@ public class PlayerController : MonoBehaviour {
                         bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
                         if(intersecting)
                         {
-                            intersection = intersection + (cornerNormal.normalized * 0.3f);
+                            Debug.Log("hit");
+                            intersection = intersection + (cornerNormal.normalized * 0.1f);
                             Debug.DrawRay(intersection, cornerNormal, Color.green, 10.0f);
                             lineRenderPositions.Add(intersection);
                             wallHook.GetComponent<FixedJoint>().connectedBody = null;
@@ -200,16 +204,6 @@ public class PlayerController : MonoBehaviour {
         DoDebugDrawing();
 	}
 
-    float AngleFromAToB(Vector3 angleA, Vector3 angleB)
-    {
-        Vector3 axis = new Vector3(0,0,1);
-        float angle = Vector3.Angle(angleA, angleB);
-        float sign = Mathf.Sign(Vector3.Dot(axis, Vector3.Cross(angleA, angleB)));
-
-        // angle in [-179,180]
-        float signed_angle = angle * sign;
-        return signed_angle;
-    }
     void LateUpdate()
     {
         // adjust playerBody for parents rotation
@@ -226,6 +220,7 @@ public class PlayerController : MonoBehaviour {
             ropeLineRenderer.SetPosition(lineRenderPositions.Count, transform.position);
 		}
     }
+
     IEnumerator ShootHook()
     {
         hookActive = true;
@@ -248,6 +243,7 @@ public class PlayerController : MonoBehaviour {
         wallHookOut = true;
         hookActive = false;
     }
+
     IEnumerator ShootRope()
     {
         hookActive = true;
@@ -284,6 +280,7 @@ public class PlayerController : MonoBehaviour {
         hooked = true;
         hookActive = false;
     }
+
     IEnumerator RetrieveHookRope()
     {
         // have to fix the line coming back
@@ -316,6 +313,7 @@ public class PlayerController : MonoBehaviour {
         wallHookGraphic.transform.parent = transform;
         hookActive = false;
     }
+
     IEnumerator ClimbRope()
     {
         grounded = false;
@@ -347,6 +345,7 @@ public class PlayerController : MonoBehaviour {
         ropeLineRenderer.SetVertexCount(0);
         hookActive = false;
     }
+
 	void LockPlayerPosition()
 	{
         hooked = false;
@@ -358,24 +357,29 @@ public class PlayerController : MonoBehaviour {
 		transform.rotation = Quaternion.identity;
 		playerBody.gameObject.transform.rotation = Quaternion.identity;
 	}
+
     void CheckRopeSlack()
     {
         if(!grounded)
         {
-            bool playerMovingTowardHook = Math3d.ObjectMovingTowards(wallHookGraphic.transform.localPosition,
+            bool playerMovingTowardHook = Math3d.ObjectMovingTowards(lineRenderPositions[lineRenderPositions.Count - 1],
                                                                                  transform.position,
                                                                                  transform.GetComponent<Rigidbody>().velocity);
             if (playerMovingTowardHook)
+            {
                 wallHookFixedJoint.connectedBody = null;
+            }
             else
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
         }
     }
+
     void HandleMove()
     {
         if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && grounded)
             GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
     }
+
 	void OnCollisionStay(Collision collision) 
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
@@ -391,6 +395,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 	}
+
 	void OnCollisionExit(Collision collision) 
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
@@ -405,6 +410,18 @@ public class PlayerController : MonoBehaviour {
             }
         }
 	}
+
+    float AngleFromAToB(Vector3 angleA, Vector3 angleB)
+    {
+        Vector3 axis = new Vector3(0, 0, 1);
+        float angle = Vector3.Angle(angleA, angleB);
+        float sign = Mathf.Sign(Vector3.Dot(axis, Vector3.Cross(angleA, angleB)));
+
+        // angle in [-179,180]
+        float signed_angle = angle * sign;
+        return signed_angle;
+    }
+
     void DoDebugDrawing()
     {
         if(hooked)
