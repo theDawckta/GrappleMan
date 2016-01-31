@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour {
     public float HookSpeed = 80.0f;
     public float LineSpeed = 90.0f;
     public float ClimbSpeed = 30.0f;
+    public float ClimbSlowDownForce = 20.0f;
     public LayerMask RopeLayerMask;
     public Text DebugText;
     public SmoothFollow CameraSmoothFollow;
@@ -86,16 +87,25 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        if(HookPlayerInput.RopeReleasePressed())
+        if (hooked)
         {
-            wallHookFixedJoint.connectedAnchor -= wallHookFixedJoint.connectedAnchor.normalized;
+            if (HookPlayerInput.RopeReleasePressed())
+            {
+                wallHookFixedJoint.connectedBody = null;
+            Debug.Log("released");
+        }
+            if (HookPlayerInput.RopeReleaseReleased())
+            {
+                wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                Debug.Log("hooked");
+            }
         }
 
-        if(HookPlayerInput.RopeClimbPressed())
-        {
-            if (hooked)
-                StartCoroutine("ClimbRope");
-        }
+        //if (HookPlayerInput.RopeClimbPressed())
+        //{
+        //    if (hooked)
+        //        StartCoroutine("ClimbRope");
+        //}
 
         if (HookPlayerInput.HookPressed())
         {
@@ -201,6 +211,21 @@ public class PlayerController : MonoBehaviour {
             }
         }
         HandleMove();
+        if (HookPlayerInput.RopeClimbPressed())
+        {
+            wallHookFixedJoint.connectedBody = null;
+            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
+            climbForce = climbForce * ClimbSpeed / Time.deltaTime;
+            Debug.Log(climbForce);
+            transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
+        }
+        else if(HookPlayerInput.RopeClimbReleased())
+        {
+            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
+            climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
+            transform.GetComponent<Rigidbody>().AddForce(-climbForce, ForceMode.Acceleration);
+            Debug.Log("released");
+        }
         DoDebugDrawing();
 	}
 
@@ -366,10 +391,8 @@ public class PlayerController : MonoBehaviour {
                                                                                  transform.position,
                                                                                  transform.GetComponent<Rigidbody>().velocity);
             if (playerMovingTowardHook)
-            {
                 wallHookFixedJoint.connectedBody = null;
-            }
-            else
+            else if(!HookPlayerInput.RopeReleasePressed())
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
         }
     }

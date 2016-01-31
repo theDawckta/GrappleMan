@@ -23,11 +23,23 @@ public class PlayerInput : MonoBehaviour {
 			Debug.Log("implement RopeMove in PlayerInput for mobile");
 			return false;
 		} 
-		else if (Input.GetKeyDown("w"))
+		else if (Input.GetKey("w"))
                 return true;
         else
             return false;
 	}
+    public bool RopeClimbReleased()
+    {
+        if (Mobile)
+        {
+            Debug.Log("implement RopeMove in PlayerInput for mobile");
+            return false;
+        }
+        else if (Input.GetKeyUp("w"))
+            return true;
+        else
+            return false;
+    }
 	
 	public bool JumpPressed()
 	{
@@ -48,8 +60,19 @@ public class PlayerInput : MonoBehaviour {
 			return false;
 		} 
 		else
-			return Input.GetKeyDown ("e") ? true:false;
+			return Input.GetKey ("s") ? true:false;
 	}
+    public bool RopeReleaseReleased()
+    {
+        if (Mobile)
+        {
+            Debug.Log("implement HookReleaseReleased in PlayerInput for mobile");
+            return false;
+        }
+        else
+            return Input.GetKeyUp("e") ? true : false;
+    }
+
 
 	public bool RopePressed()
 	{
