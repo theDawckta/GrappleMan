@@ -124,7 +124,7 @@ public class MeshGenerator : MonoBehaviour {
 	}
 	
 	void TriangulateSquare(Square square) {
-		switch (square.configuration) 
+        switch (square.configuration) 
 		{
 		case 0:
 			break;

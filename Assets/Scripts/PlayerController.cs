@@ -211,7 +211,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
         HandleMove();
-        if (HookPlayerInput.RopeClimbPressed())
+        if (HookPlayerInput.RopeClimbPressed() && hooked)
         {
             wallHookFixedJoint.connectedBody = null;
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
@@ -219,7 +219,7 @@ public class PlayerController : MonoBehaviour {
             Debug.Log(climbForce);
             transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
         }
-        else if(HookPlayerInput.RopeClimbReleased())
+        else if(HookPlayerInput.RopeClimbReleased() && hooked)
         {
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
@@ -299,7 +299,7 @@ public class PlayerController : MonoBehaviour {
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        lineRenderPositions.Add(ropeEndPoint);
+        lineRenderPositions.Add(wallHookGraphic.transform.position);
         wallHook.transform.position = ropeEndPoint;
         wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
         hooked = true;
@@ -309,7 +309,6 @@ public class PlayerController : MonoBehaviour {
     IEnumerator RetrieveHookRope()
     {
         // have to fix the line coming back
-        //lineRenderPositions.Clear();
         wallHookFixedJoint.connectedBody = null;
         hooked = false;
         wallHookOut = false;
@@ -399,7 +398,7 @@ public class PlayerController : MonoBehaviour {
 
     void HandleMove()
     {
-        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && grounded)
+        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && !hooked)
             GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
     }
 
