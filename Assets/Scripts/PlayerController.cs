@@ -92,12 +92,10 @@ public class PlayerController : MonoBehaviour {
             if (HookPlayerInput.RopeReleasePressed())
             {
                 wallHookFixedJoint.connectedBody = null;
-            Debug.Log("released");
         }
             if (HookPlayerInput.RopeReleaseReleased())
             {
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
-                Debug.Log("hooked");
             }
         }
 
@@ -176,7 +174,6 @@ public class PlayerController : MonoBehaviour {
                         bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
                         if(intersecting)
                         {
-                            Debug.Log("hit");
                             intersection = intersection + (cornerNormal.normalized * 0.1f);
                             Debug.DrawRay(intersection, cornerNormal, Color.green, 10.0f);
                             lineRenderPositions.Add(intersection);
@@ -204,7 +201,7 @@ public class PlayerController : MonoBehaviour {
                 {
                     wallHook.GetComponent<FixedJoint>().connectedBody = null;
                     wallHook.transform.position = lineRenderPositions[lineRenderPositions.Count - 2];
-                    lineRenderPositions.RemoveAt(lineRenderPositions.Count - 1); 
+                    lineRenderPositions.RemoveAt(lineRenderPositions.Count - 1);
                     wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
                     ropeBendAngles.RemoveAt(ropeBendAngles.Count - 1);
                 }
@@ -216,7 +213,6 @@ public class PlayerController : MonoBehaviour {
             wallHookFixedJoint.connectedBody = null;
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed / Time.deltaTime;
-            Debug.Log(climbForce);
             transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
         }
         else if(HookPlayerInput.RopeClimbReleased() && hooked)
@@ -224,7 +220,6 @@ public class PlayerController : MonoBehaviour {
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
             transform.GetComponent<Rigidbody>().AddForce(-climbForce, ForceMode.Acceleration);
-            Debug.Log("released");
         }
         DoDebugDrawing();
 	}
@@ -234,7 +229,7 @@ public class PlayerController : MonoBehaviour {
         // adjust playerBody for parents rotation
         playerBody.transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -transform.rotation.z);
 
-        if(hooked)
+        if (lineRenderPositions.Count > 0)
 		{
 			// draw rope if hooked
             ropeLineRenderer.SetVertexCount(lineRenderPositions.Count + 1);
@@ -312,29 +307,46 @@ public class PlayerController : MonoBehaviour {
         hooked = false;
         wallHookOut = false;
         float elapsedTime = 0;
-        var dist = Vector3.Distance(transform.position, wallHookGraphic.transform.position);
+        float dist;
+        Vector3 startPosition = new Vector3();
+        Vector3 endPosition = new Vector3();
+        if (lineRenderPositions.Count > 1)
+        {
+            dist = Vector3.Distance(lineRenderPositions[0], lineRenderPositions[1]);
+            startPosition = lineRenderPositions[0];
+            endPosition = lineRenderPositions[1];
+        }
+        else
+        {
+            dist = Vector3.Distance(lineRenderPositions[0], transform.position);
+            startPosition = lineRenderPositions[0];
+            endPosition = transform.position;
+        }
         float timeTakenDuringLerp = dist / HookSpeed;
         while (elapsedTime < timeTakenDuringLerp)
         {
             // retrieve rope
             float percentageComplete = elapsedTime / timeTakenDuringLerp;
-            Vector3 ropeEndPoint = Vector3.Lerp(wallHookGraphic.transform.position , transform.position, percentageComplete);
-            ropeLineRenderer.SetPosition(1, transform.position);
-            ropeLineRenderer.SetPosition(0, ropeEndPoint);
+            //Debug.Log("percentage complete: " + percentageComplete + "   elapsed time: " + elapsedTime + "   line render position: " + lineRenderPositions[0] + "time taken: " + timeTakenDuringLerp);
+            lineRenderPositions[0] = Vector3.Lerp(startPosition, endPosition, percentageComplete);
 
             // retrieve hook
-            wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
-                                                       transform.position,
-                                                       percentageComplete);
+            wallHookGraphic.transform.position = lineRenderPositions[0];
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        lineRenderPositions.Clear();
-        ropeLineRenderer.SetVertexCount(0);
-        ropeLineRenderer.enabled = false;
-        wallHookGraphic.transform.parent = transform;
-        hookActive = false;
+        lineRenderPositions.RemoveAt(0);
+        Debug.Log("removed");
+        if (lineRenderPositions.Count > 0)
+            StartCoroutine(RetrieveHookRope());
+        else
+        {
+            ropeLineRenderer.enabled = false;
+            wallHookGraphic.transform.position = transform.position;
+            wallHookGraphic.transform.parent = transform;
+            hookActive = false;
+        }
     }
 
     IEnumerator ClimbRope()
@@ -454,7 +466,6 @@ public class PlayerController : MonoBehaviour {
                 distance += Vector3.Distance(lineRenderPositions[i], transform.position);
 
         }
-        Debug.Log(distance);
         return distance;
     }
 
