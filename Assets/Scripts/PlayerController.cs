@@ -250,39 +250,40 @@ public class PlayerController : MonoBehaviour {
     {
         hookActive = true;
         float elapsedTime = 0;
-        // This is code for sending hook out in mid air, just keeping it around
-        //Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-        //                                                                  HookPlayerInput.GetPlayerTouchPosition().y,
-        //                                                                -(Camera.main.transform.position.z + transform.position.z)));
-        
-        RaycastHit wallHit = new RaycastHit();
-        Vector3 pointClicked = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-        Vector3 direction = pointClicked - transform.position;
-        Debug.DrawRay(transform.position, direction, Color.yellow, 3.0f);
-        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
+        Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                        -(Camera.main.transform.position.z + transform.position.z)));
+        wallHookGraphic.transform.parent = null;
+        var dist = Vector3.Distance(wallHookGraphic.transform.position, hookEndPoint);
+        float timeTakenDuringLerp = dist / HookSpeed;
+        while (elapsedTime < timeTakenDuringLerp)
         {
-            wallHookGraphic.transform.parent = null;
-            var dist = Vector3.Distance(wallHookGraphic.transform.position, wallHit.point);
-            float timeTakenDuringLerp = dist / HookSpeed;
-            while (elapsedTime < timeTakenDuringLerp)
-            {
-                float percentageComplete = elapsedTime / timeTakenDuringLerp;
-                wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
-                                                           wallHit.point, 
-                                                           percentageComplete);
-                elapsedTime += Time.deltaTime;
-                yield return null;
-            }
-            wallHookOut = true;
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
+                                                       hookEndPoint, 
+                                                       percentageComplete);
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
+        wallHookOut = true;
         hookActive = false;
     }
 
     IEnumerator ShootRope()
     {
         hookActive = true;
+        // Wall hitting code, just keepin ya around for a bit :)
+        //RaycastHit2D wallHit = new RaycastHit2D();
+        //Vector3 hookDirection = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+        //                                                                   HookPlayerInput.GetPlayerTouchPosition().y,
+        //                                                                   -(Camera.main.transform.position.z + transform.position.z)));
+        //wallHit = Physics2D.Raycast(transform.position, hookDirection, Mathf.Infinity, wall);
+        //wallhook.transform.position = new Vector3(wallHit.point.x, wallHit.point.y, transform.position.z);
+
+
+        //wallHook.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+        //                                                                            HookPlayerInput.GetPlayerTouchPosition().y,
+        //   
         ropeLineRenderer.enabled = true;
         float elapsedTime = 0;
         Vector3 ropeEndPoint = new Vector3();
