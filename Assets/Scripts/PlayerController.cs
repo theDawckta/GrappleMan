@@ -444,6 +444,21 @@ public class PlayerController : MonoBehaviour {
         return signed_angle;
     }
 
+    float GetRopeDistance()
+    {
+        float distance = 0.0f;
+        for (int i = 0; i <= lineRenderPositions.Count - 1; i++)
+        {
+            if (i < lineRenderPositions.Count - 1)
+                distance += Vector3.Distance(lineRenderPositions[i], lineRenderPositions[i + 1]);
+            else
+                distance += Vector3.Distance(lineRenderPositions[i], transform.position);
+
+        }
+        Debug.Log(distance);
+        return distance;
+    }
+
     void DoDebugDrawing()
     {
         if(hooked)
