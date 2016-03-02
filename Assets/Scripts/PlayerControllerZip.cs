@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerControllerZip : MonoBehaviour {
 	
 	public PlayerInput HookPlayerInput;
 	public float MaxSpeed = 10.0f;
@@ -99,11 +99,11 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        //if (HookPlayerInput.RopeClimbPressed())
-        //{
-        //    if (hooked)
-        //        StartCoroutine("ClimbRope");
-        //}
+        if (HookPlayerInput.RopeClimbPressed())
+        {
+            if (hooked)
+                StartCoroutine("ClimbRope");
+        }
 
         if (HookPlayerInput.HookPressed())
         {
@@ -208,14 +208,14 @@ public class PlayerController : MonoBehaviour {
             }
         }
         HandleMove();
-        if (HookPlayerInput.RopeClimbPressed() && hooked)
-        {
-            wallHookFixedJoint.connectedBody = null;
-            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
-            climbForce = climbForce * ClimbSpeed / Time.deltaTime;
-            transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
-        }
-        else if(HookPlayerInput.RopeClimbReleased() && hooked)
+//        if (HookPlayerInput.RopeClimbPressed() && hooked)
+//        {
+//            wallHookFixedJoint.connectedBody = null;
+//            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
+//            climbForce = climbForce * ClimbSpeed / Time.deltaTime;
+//            transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
+//        }
+        if(HookPlayerInput.RopeClimbReleased() && hooked)
         {
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
@@ -241,37 +241,37 @@ public class PlayerController : MonoBehaviour {
 		}
     }
 
-    IEnumerator ShootHook()
+	IEnumerator ShootHook()
     {
         hookActive = true;
         float elapsedTime = 0;
         // This is code for sending hook out in mid air, just keeping it around
-        //Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-        //                                                                  HookPlayerInput.GetPlayerTouchPosition().y,
-        //                                                                -(Camera.main.transform.position.z + transform.position.z)));
+        Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                        -(Camera.main.transform.position.z + transform.position.z)));
 
-        RaycastHit wallHit = new RaycastHit();
-        Vector3 pointClicked = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-        Vector3 direction = pointClicked - transform.position;
+//        RaycastHit wallHit = new RaycastHit();
+//        Vector3 pointClicked = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+//                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
+//                                                                           -(Camera.main.transform.position.z + transform.position.z)));
+		Vector3 direction = hookEndPoint - transform.position;
         Debug.DrawRay(transform.position, direction, Color.yellow, 3.0f);
-        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
-        {
+//        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
+//        {
             wallHookGraphic.transform.parent = null;
-            var dist = Vector3.Distance(wallHookGraphic.transform.position, wallHit.point);
+		var dist = Vector3.Distance(wallHookGraphic.transform.position, hookEndPoint);
             float timeTakenDuringLerp = dist / HookSpeed;
             while (elapsedTime < timeTakenDuringLerp)
             {
                 float percentageComplete = elapsedTime / timeTakenDuringLerp;
                 wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
-                                                           wallHit.point,
-                                                           percentageComplete);
+																  hookEndPoint,
+                                                           		  percentageComplete);
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
             wallHookOut = true;
-        }
+//        }
         hookActive = false;
     }
 
@@ -375,10 +375,11 @@ public class PlayerController : MonoBehaviour {
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-//        LockPlayerPosition();
+
         lineRenderPositions.Clear();
         ropeLineRenderer.SetVertexCount(0);
-        hookActive = false;
+		LockPlayerPosition(); 
+		hookActive = false;
     }
 
 	void LockPlayerPosition()
@@ -386,11 +387,11 @@ public class PlayerController : MonoBehaviour {
         hooked = false;
         wallHookOut = false;
         transform.GetComponent<Rigidbody>().isKinematic = true;
-        ropeLineRenderer.enabled = false;
+//        ropeLineRenderer.enabled = false;
         wallHookFixedJoint.connectedBody = null;
-        wallHookGraphic.transform.parent = transform;
-		transform.rotation = Quaternion.identity;
-		playerBody.gameObject.transform.rotation = Quaternion.identity;
+//        wallHookGraphic.transform.parent = transform;
+//		transform.rotation = Quaternion.identity;
+//		playerBody.gameObject.transform.rotation = Quaternion.identity;
 	}
 
     void CheckRopeSlack()
