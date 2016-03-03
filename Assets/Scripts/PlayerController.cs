@@ -15,6 +15,10 @@ public class PlayerController : MonoBehaviour {
     public float ClimbSlowDownForce = 20.0f;
     public LayerMask RopeLayerMask;
     public Text DebugText;
+    public delegate void OnPlayerDiedEvent();
+    public event OnPlayerDiedEvent OnPlayerDied;
+    public delegate void OnPlayerStartedEvent();
+    public event OnPlayerStartedEvent OnPlayerStarted;
 
 	private Animator anim;
 	private GameObject playerBody;
@@ -413,6 +417,20 @@ public class PlayerController : MonoBehaviour {
             GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
     }
 
+    IEnumerator PlayerDied()
+    {
+        yield return new WaitForSeconds(1.0f);
+        OnPlayerDied();
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+        {
+            StartCoroutine("PlayerDied");
+        }
+    }
+
 	void OnCollisionStay(Collision collision) 
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
@@ -441,6 +459,11 @@ public class PlayerController : MonoBehaviour {
             {
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
             }
+        }
+
+        if (collision.gameObject.name == "StartPlatform")
+        {
+            OnPlayerStarted();
         }
 	}
 

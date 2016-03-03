@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -414,7 +415,21 @@ public class PlayerControllerZip : MonoBehaviour {
             GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
     }
 
-	void OnCollisionStay(Collision collision) 
+    IEnumerator PlayerDied()
+    {
+        yield return new WaitForSeconds(2.0f);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+        {
+            StartCoroutine("PlayerDied");
+        }
+    }
+
+    void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
@@ -423,18 +438,18 @@ public class PlayerControllerZip : MonoBehaviour {
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY |
                                                               RigidbodyConstraints.FreezeRotationZ;
-            if(hooked)
+            if (hooked)
             {
                 wallHookFixedJoint.connectedBody = null;
             }
         }
-	}
+    }
 
-	void OnCollisionExit(Collision collision) 
+    void OnCollisionExit(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
-        { 
-			grounded = false;
+        {
+            grounded = false;
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY;
@@ -443,7 +458,12 @@ public class PlayerControllerZip : MonoBehaviour {
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
             }
         }
-	}
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Start"))
+        {
+            collision.gameObject.SetActive(false);
+        }
+    }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
     {
