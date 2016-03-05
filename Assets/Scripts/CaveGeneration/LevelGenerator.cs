@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class LevelGenerator : MonoBehaviour {
 
     public Material MeshMaterial;
     public string Seed;
-    public bool UseRandomSeed;
+    public int SeedLength = 8;
     public int LengthMin = 1;
     public int LengthMax = 20;
     public int WidthMin = 1;
@@ -16,6 +18,7 @@ public class LevelGenerator : MonoBehaviour {
     public float TotalLength = 280;
     public float AvailableHeight;
 
+    private string seed;
     private MeshFilter filter;
     private MeshRenderer renderer;
     private Mesh mesh;
@@ -35,10 +38,13 @@ public class LevelGenerator : MonoBehaviour {
         int meshCount = 0;
         Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
 
-        if (UseRandomSeed)
+        if (String.IsNullOrEmpty(Seed))
         {
-            Seed = System.DateTime.Now.ToString();
+            seed = RandomString(SeedLength);
+            Seed = seed;
         }
+        else
+            seed = Seed;
 
         System.Random pseudoRandom = new System.Random(Seed.GetHashCode());
 
@@ -275,5 +281,13 @@ public class LevelGenerator : MonoBehaviour {
         }
 
         return uvsCollection;
+    }
+
+    public static string RandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var random = new System.Random();
+        return new string(Enumerable.Repeat(chars, length)
+          .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }
