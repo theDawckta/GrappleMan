@@ -7,7 +7,6 @@ using System.Linq;
 public class LevelGenerator : MonoBehaviour {
 
     public Material MeshMaterial;
-    public string Seed;
     public int SeedLength = 8;
     public int LengthMin = 1;
     public int LengthMax = 20;
@@ -18,39 +17,37 @@ public class LevelGenerator : MonoBehaviour {
     public float TotalLength = 280;
     public float AvailableHeight;
 
-    private string seed;
     private MeshFilter filter;
     private MeshRenderer renderer;
     private Mesh mesh;
+    private MeshCollider collider;
     private int VertexCountIndex = 24;
     private List<Vector3> vertices = new List<Vector3>();
+    private List<int> triangles = new List<int>();
     private List<Vector3> normals = new List<Vector3>();
     private List<Vector2> uvs = new List<Vector2>();
-    private List<int> triangles = new List<int>();
 
-	void Start () {
+    void Start()
+    {
+        filter = gameObject.AddComponent<MeshFilter>();
+        renderer = gameObject.AddComponent<MeshRenderer>();
+        collider = gameObject.AddComponent<MeshCollider>();
+        renderer.material = MeshMaterial;
+    }
 
+	public void MakeLevel (string seed) 
+    {
         float length = 0;
         float width = 0;
         float height = 0;
         float totalLength = 0;
         float previousLength = 0;
         int meshCount = 0;
+
         Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
 
-        if (String.IsNullOrEmpty(Seed))
-        {
-            seed = RandomString(SeedLength);
-            Seed = seed;
-        }
-        else
-            seed = Seed;
+        System.Random pseudoRandom = new System.Random(seed.GetHashCode());
 
-        System.Random pseudoRandom = new System.Random(Seed.GetHashCode());
-
-        filter = gameObject.AddComponent<MeshFilter>();
-        renderer = gameObject.AddComponent<MeshRenderer>();
-        renderer.material = MeshMaterial;
         mesh = filter.mesh;
         mesh.Clear();
 
@@ -80,10 +77,16 @@ public class LevelGenerator : MonoBehaviour {
         mesh.uv = uvs.ToArray();
         mesh.triangles = triangles.ToArray();
 
-        //mesh.RecalculateBounds();
-        //mesh.Optimize();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+        collider.sharedMesh = mesh;
 
         transform.position = new Vector3(0.0f, 0.0f , 0.0f);
+
+        vertices.Clear();
+        triangles.Clear();
+        normals.Clear();
+        uvs.Clear();
 	}
 	
 	// This is for runtime generation excitement, HOLLAH!
@@ -281,13 +284,5 @@ public class LevelGenerator : MonoBehaviour {
         }
 
         return uvsCollection;
-    }
-
-    public static string RandomString(int length)
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var random = new System.Random();
-        return new string(Enumerable.Repeat(chars, length)
-          .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }

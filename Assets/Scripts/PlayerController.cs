@@ -15,11 +15,14 @@ public class PlayerController : MonoBehaviour {
     public float ClimbSlowDownForce = 20.0f;
     public LayerMask RopeLayerMask;
     public Text DebugText;
-    public delegate void OnPlayerDiedEvent();
-    public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerStartedEvent();
     public event OnPlayerStartedEvent OnPlayerStarted;
+    public delegate void OnPlayerDiedEvent();
+    public event OnPlayerDiedEvent OnPlayerDied;
+    public delegate void OnPlayerWonEvent();
+    public event OnPlayerDiedEvent OnPlayerWon;
 
+    private bool playerStarted;
 	private Animator anim;
 	private GameObject playerBody;
 	private bool grounded = false;
@@ -52,6 +55,16 @@ public class PlayerController : MonoBehaviour {
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.FindChild("PlayerBody").gameObject;
 	}
+
+    public void Init()
+    {
+        ropeLineRenderer.enabled = false;
+        wallHookGraphic.transform.position = transform.position;
+        wallHookGraphic.transform.parent = transform;
+        hookActive = false;
+        wallHookOut = false;
+	    hooked = false;
+    }
 
 	void Update()
 	{
@@ -247,6 +260,15 @@ public class PlayerController : MonoBehaviour {
 
     IEnumerator ShootHook()
     {
+        if (playerStarted == false)
+        {
+            playerStarted = true;
+            grounded = false;
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY;
+            OnPlayerStarted();
+        }
         hookActive = true;
         float elapsedTime = 0;
         // This is code for sending hook out in mid air, just keeping it around
@@ -419,14 +441,27 @@ public class PlayerController : MonoBehaviour {
 
     IEnumerator PlayerDied()
     {
-        yield return new WaitForSeconds(1.0f);
         OnPlayerDied();
+        yield return null;
+    }
+
+    IEnumerator PlayerWon()
+    {
+        OnPlayerWon();
+        yield return null;
     }
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
         {
+            playerStarted = false;
+            StartCoroutine("PlayerDied");
+        }
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("End"))
+        {
+            playerStarted = false;
             StartCoroutine("PlayerDied");
         }
     }
@@ -459,11 +494,6 @@ public class PlayerController : MonoBehaviour {
             {
                 wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
             }
-        }
-
-        if (collision.gameObject.name == "StartPlatform")
-        {
-            OnPlayerStarted();
         }
 	}
 

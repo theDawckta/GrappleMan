@@ -4,97 +4,144 @@ using System.Collections;
 public class PlayerInput : MonoBehaviour {
 
 	public bool Mobile;
+    [HideInInspector]
+    public bool InputActive = false;
 
 	public float Move()
 	{
-		if (Mobile) 
-		{
-			Debug.Log("implement Move in PlayerInput for mobile");
-			return 0;
-		} 
-		else 
-			return Input.GetAxis ("Horizontal");
+        if (InputActive)
+        {
+            if (Mobile)
+            {
+                Debug.Log("implement Move in PlayerInput for mobile");
+                return 0;
+            }
+            else
+                return Input.GetAxis("Horizontal");
+        }
+        else
+            return 0;
 	}
 
     public bool RopeClimbPressed()
 	{
-		if (Mobile) 
-		{
-			Debug.Log("implement RopeMove in PlayerInput for mobile");
-			return false;
-		} 
-		else if (Input.GetKey("w"))
+        if (InputActive)
+        {
+            if (Mobile)
+            {
+                Debug.Log("implement RopeMove in PlayerInput for mobile");
+                return false;
+            }
+            else if (Input.GetKey("w"))
                 return true;
+            else
+                return false;
+        }
         else
             return false;
 	}
     public bool RopeClimbReleased()
     {
-        if (Mobile)
+        if (InputActive)
         {
-            Debug.Log("implement RopeMove in PlayerInput for mobile");
-            return false;
+            if (Mobile)
+            {
+                Debug.Log("implement RopeMove in PlayerInput for mobile");
+                return false;
+            }
+            else if (Input.GetKeyUp("w"))
+                return true;
+            else
+                return false;
         }
-        else if (Input.GetKeyUp("w"))
-            return true;
         else
             return false;
     }
 	
 	public bool JumpPressed()
 	{
-		if (Mobile) 
-		{
-			Debug.Log("implement JumpPressed in PlayerInput for mobile");
-			return false;
-		} 
-		else
-			return Input.GetButtonDown ("Jump") ? true:false;
+        if (InputActive)
+        {
+		    if (Mobile) 
+		    {
+			    Debug.Log("implement JumpPressed in PlayerInput for mobile");
+			    return false;
+		    } 
+		    else
+			    return Input.GetButtonDown ("Jump") ? true:false;
+        }
+        else
+            return false;
 	}
 
 	public bool RopeReleasePressed()
 	{
-		if (Mobile) 
-		{
-			Debug.Log("implement HookReleasePressed in PlayerInput for mobile");
-			return false;
-		} 
-		else
-			return Input.GetKey ("s") ? true:false;
+        if (InputActive)
+        {
+		    if (Mobile) 
+		    {
+			    Debug.Log("implement HookReleasePressed in PlayerInput for mobile");
+			    return false;
+		    } 
+		    else
+			    return Input.GetKey ("s") ? true:false;
+        }
+        else
+            return false;
 	}
     public bool RopeReleaseReleased()
     {
-        if (Mobile)
+        if (InputActive)
         {
-            Debug.Log("implement HookReleaseReleased in PlayerInput for mobile");
-            return false;
+            if (Mobile)
+            {
+                Debug.Log("implement HookReleaseReleased in PlayerInput for mobile");
+                return false;
+            }
+            else
+                return Input.GetKeyUp("e") ? true : false;
         }
         else
-            return Input.GetKeyUp("e") ? true : false;
+            return false;
     }
 
 
 	public bool RopePressed()
 	{
-		if (Mobile) 
-			return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-		else 
-			return Input.GetButtonDown("Fire1");
+        if (InputActive)
+        {
+		    if (Mobile) 
+			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+		    else 
+			    return Input.GetButtonDown("Fire1");
+        }
+        else
+            return false;
 	}
 
     public bool HookPressed()
     {
-        if (Mobile)
-            return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-        else
-            return Input.GetButtonDown("Fire2");
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else
+                return Input.GetButtonDown("Fire2");
+        }
+        else 
+            return false;
     }
 
 	public Vector3 GetPlayerTouchPosition()
 	{
-		if (Mobile) 
-			return Input.GetTouch(0).position;
-		else 
-			return Input.mousePosition;
+        if (InputActive)
+        {
+		    if (Mobile) 
+			    return Input.GetTouch(0).position;
+		    else 
+			    return Input.mousePosition;
+        }
+        else
+            return new Vector3();
 	}
 }

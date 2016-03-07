@@ -18,4 +18,8 @@ public class PressureController : MonoBehaviour {
     {
         active = true;
     }
+    public void LavaFlowStop()
+    {
+        active = false;
+    }
 }
