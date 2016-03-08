@@ -5,8 +5,18 @@ public class PressureController : MonoBehaviour {
 
 	public float PressureSpeed = 10.0f;
     private bool active = false;
+    private Vector3 startingPosition;
 	
-	// Update is called once per frame
+    void Start()
+    {
+        startingPosition = transform.position;
+    }
+
+    public void Init()
+    {
+        transform.position = startingPosition;
+    }
+
 	void Update () {
         if (active)
         {

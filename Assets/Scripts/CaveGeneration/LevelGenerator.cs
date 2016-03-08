@@ -8,12 +8,6 @@ public class LevelGenerator : MonoBehaviour {
 
     public Material MeshMaterial;
     public int SeedLength = 8;
-    public int LengthMin = 1;
-    public int LengthMax = 20;
-    public int WidthMin = 1;
-    public int WidthMax = 20;
-    public int HeightMin = 1;
-    public int HeightMax = 5;
     public float TotalLength = 280;
     public float AvailableHeight;
 
@@ -21,6 +15,7 @@ public class LevelGenerator : MonoBehaviour {
     private MeshRenderer renderer;
     private Mesh mesh;
     private MeshCollider collider;
+    private Rigidbody meshRigidbody;
     private int VertexCountIndex = 24;
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -32,10 +27,12 @@ public class LevelGenerator : MonoBehaviour {
         filter = gameObject.AddComponent<MeshFilter>();
         renderer = gameObject.AddComponent<MeshRenderer>();
         collider = gameObject.AddComponent<MeshCollider>();
+        meshRigidbody = gameObject.AddComponent<Rigidbody>();
+        meshRigidbody.isKinematic = true;
         renderer.material = MeshMaterial;
     }
 
-	public void MakeLevel (string seed) 
+	public void MakeLevel (string seed, int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax) 
     {
         float length = 0;
         float width = 0;
@@ -54,9 +51,9 @@ public class LevelGenerator : MonoBehaviour {
         while(totalLength < TotalLength)
         {
             
-            length = pseudoRandom.Next(LengthMin, LengthMax);
-            width = pseudoRandom.Next(WidthMin, WidthMax);
-            height = pseudoRandom.Next(HeightMin, HeightMax);
+            length = pseudoRandom.Next(lengthMin, lengthMax);
+            width = pseudoRandom.Next(widthMin, widthMax);
+            height = pseudoRandom.Next(heightMin, heightMax);
             if (TotalLength < totalLength + length)
             {
                 length = TotalLength - totalLength;

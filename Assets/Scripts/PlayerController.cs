@@ -61,6 +61,10 @@ public class PlayerController : MonoBehaviour {
         ropeLineRenderer.enabled = false;
         wallHookGraphic.transform.position = transform.position;
         wallHookGraphic.transform.parent = transform;
+        wallHookFixedJoint.connectedBody = null;
+        transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        ropeBendAngles.Clear();
+        lineRenderPositions.Clear();
         hookActive = false;
         wallHookOut = false;
 	    hooked = false;
@@ -188,7 +192,7 @@ public class PlayerController : MonoBehaviour {
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
                         Vector3 intersection;
-                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
+                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1.normalized, playerRaycastOut.point, pointDirection2.normalized);
                         if(intersecting)
                         {
                             intersection = intersection + (cornerNormal.normalized * 0.1f);

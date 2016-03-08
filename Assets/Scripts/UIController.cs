@@ -9,6 +9,12 @@ public class UIController : MonoBehaviour {
     public Text EndText;
     public Text DistanceTraveled;
     public InputField SeedInputField;
+    public InputField WidthMin;
+    public InputField WidthMax;
+    public InputField HeightMin;
+    public InputField HeightMax;
+    public InputField DepthMin;
+    public InputField DepthMax;
     public GameObject ParentCanvas;
     public LevelGenerator _LevelGenerator;
     public LevelController _LevelController;
@@ -46,7 +52,7 @@ public class UIController : MonoBehaviour {
 
     public void EndGame()
     {
-        EndText.text = "You traveled " + DistanceTraveled.text;
+        EndText.text = "You traveled " + DistanceTraveled.text + " m";
         ToggleUIController();
         ShowPanel("EndPanel");
     }
@@ -56,7 +62,12 @@ public class UIController : MonoBehaviour {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
 
-        _LevelGenerator.MakeLevel(seed);
+        _LevelGenerator.MakeLevel(seed, Int32.Parse(WidthMin.text),
+                                                   Int32.Parse(WidthMax.text),
+                                                   Int32.Parse(HeightMin.text),
+                                                   Int32.Parse(HeightMax.text),
+                                                   Int32.Parse(DepthMin.text),
+                                                   Int32.Parse(DepthMax.text));
     }
 
     public static string RandomString(int length)
@@ -80,5 +91,38 @@ public class UIController : MonoBehaviour {
 
         ParentCanvas.SetActive(true);
         ParentCanvas.transform.Find(panelName).gameObject.SetActive(true);
+    }
+
+    public void CheckInputs()
+    {
+        if(WidthMin.text == "0")
+        {
+            WidthMin.text = "1";
+        }
+
+        if (WidthMax.text == "0")
+        {
+            WidthMax.text = "1";
+        }
+
+        if (HeightMin.text == "0")
+        {
+            HeightMin.text = "1";
+        }
+
+        if (HeightMax.text == "0")
+        {
+            HeightMax.text = "1";
+        }
+
+        if (DepthMin.text == "0")
+        {
+            DepthMin.text = "1";
+        }
+
+        if (DepthMax.text == "0")
+        {
+            DepthMax.text = "1";
+        }
     }
 }

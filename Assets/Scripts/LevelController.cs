@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 using System.Collections;
 
 public class LevelController : MonoBehaviour {
@@ -21,7 +22,12 @@ public class LevelController : MonoBehaviour {
     {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
-        _LevelGenerator.MakeLevel(GameStartString);
+        _LevelGenerator.MakeLevel(GameStartString, Int32.Parse(_UIController.WidthMin.text), 
+                                                   Int32.Parse(_UIController.WidthMax.text), 
+                                                   Int32.Parse(_UIController.HeightMin.text), 
+                                                   Int32.Parse(_UIController.HeightMax.text), 
+                                                   Int32.Parse(_UIController.DepthMin.text), 
+                                                   Int32.Parse(_UIController.DepthMax.text));
         _UIController.SeedInputField.text = GameStartString;
         playerStartPosition = _PlayerController.transform.position;
 	}
@@ -37,6 +43,7 @@ public class LevelController : MonoBehaviour {
         StartPlatform.SetActive(true);
         _PlayerController.transform.position = playerStartPosition;
         _PlayerController.Init();
+        _PressureController.Init();
         if(_UIController.ParentCanvas.gameObject.activeSelf == false)
             _PlayerController.HookPlayerInput.InputActive = true;
         Time.timeScale = 1.0f;
@@ -61,7 +68,7 @@ public class LevelController : MonoBehaviour {
     {
         GameOn = true;
         StartPlatform.SetActive(false);
-        //_PressureController.LavaFlow();
+        _PressureController.LavaFlow();
     }
 
     void _PlayerController_OnPlayerWon()
