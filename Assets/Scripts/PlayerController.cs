@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour {
     private Vector3 currentLineEndpoint;
     private GameObject wallHook;
     private FixedJoint wallHookFixedJoint;
+    private Vector3 wallHookHitPosition = new Vector3();
     private bool hookActive = false;
     private bool wallHookOut = false;
 	private bool hooked = false;
@@ -58,6 +59,7 @@ public class PlayerController : MonoBehaviour {
 
     public void Init()
     {
+        StopAllCoroutines();
         ropeLineRenderer.enabled = false;
         wallHookGraphic.transform.position = transform.position;
         wallHookGraphic.transform.parent = transform;
@@ -133,11 +135,27 @@ public class PlayerController : MonoBehaviour {
             {
                 if (!wallHookOut && !hooked)
                 {
-                    StartCoroutine(ShootHook());
+                    if (playerStarted == false)
+                    {
+                        playerStarted = true;
+                        grounded = false;
+                        transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                                          RigidbodyConstraints.FreezeRotationX |
+                                                                          RigidbodyConstraints.FreezeRotationY;
+                        OnPlayerStarted();
+                    }
+
+                    if (CheckHookHit())
+                    {
+                        StartCoroutine(ShootHook(wallHookHitPosition));
+                        // comment out if you want to wait to shoot the rope
+                        StartCoroutine(ShootRope(wallHookHitPosition));
+                    }
                 }
                 else if (wallHookOut && !hooked)
                 {
-                    StartCoroutine(ShootRope());
+                    // uncomment to wait to shoot rope
+                    //StartCoroutine(ShootRope(wallHookPosition));
                 }
                 else if(wallHookOut && hooked)
                 {
@@ -164,7 +182,7 @@ public class PlayerController : MonoBehaviour {
             Vector3 direction = lineRenderPositions[lineRenderPositions.Count - 1] - transform.position;
             bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, 1 << LayerMask.NameToLayer("Ground"));
             Debug.DrawRay(transform.position, direction, Color.black);
-            // This is hitting everytime need to fix it up
+
             if(hit)
             {
                 // figure where to add the wallHook
@@ -185,14 +203,14 @@ public class PlayerController : MonoBehaviour {
                         float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
                         // Wish I knew a way to make these infinite
-                        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 1000.0f;
+                        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 100.0f;
                         Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection1, Color.green);
 
-                        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 1000.0f;
+                        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
                         Vector3 intersection;
-                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1.normalized, playerRaycastOut.point, pointDirection2.normalized);
+                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
                         if(intersecting)
                         {
                             intersection = intersection + (cornerNormal.normalized * 0.1f);
@@ -262,17 +280,25 @@ public class PlayerController : MonoBehaviour {
 		}
     }
 
-    IEnumerator ShootHook()
+    bool CheckHookHit()
     {
-        if (playerStarted == false)
+        RaycastHit wallHit = new RaycastHit();
+        Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                           -(Camera.main.transform.position.z + transform.position.z)));
+        Vector3 direction = wallHookPosition - transform.position;
+        Debug.DrawRay(transform.position, direction, Color.yellow, 3.0f);
+        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
         {
-            playerStarted = true;
-            grounded = false;
-            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                              RigidbodyConstraints.FreezeRotationX |
-                                                              RigidbodyConstraints.FreezeRotationY;
-            OnPlayerStarted();
+            wallHookHitPosition = wallHit.point;
+            return true;
         }
+        else
+            return false;
+    }
+
+    IEnumerator ShootHook(Vector3 location)
+    {
         hookActive = true;
         float elapsedTime = 0;
         // This is code for sending hook out in mid air, just keeping it around
@@ -280,44 +306,35 @@ public class PlayerController : MonoBehaviour {
         //                                                                  HookPlayerInput.GetPlayerTouchPosition().y,
         //                                                                -(Camera.main.transform.position.z + transform.position.z)));
 
-        RaycastHit wallHit = new RaycastHit();
-        Vector3 pointClicked = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-        Vector3 direction = pointClicked - transform.position;
-        Debug.DrawRay(transform.position, direction, Color.yellow, 3.0f);
-        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
+        wallHookGraphic.transform.parent = null;
+        var dist = Vector3.Distance(wallHookGraphic.transform.position, location);
+        float timeTakenDuringLerp = dist / HookSpeed;
+        while (elapsedTime < timeTakenDuringLerp)
         {
-            wallHookGraphic.transform.parent = null;
-            var dist = Vector3.Distance(wallHookGraphic.transform.position, wallHit.point);
-            float timeTakenDuringLerp = dist / HookSpeed;
-            while (elapsedTime < timeTakenDuringLerp)
-            {
-                float percentageComplete = elapsedTime / timeTakenDuringLerp;
-                wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
-                                                           wallHit.point,
-                                                           percentageComplete);
-                elapsedTime += Time.deltaTime;
-                yield return null;
-            }
-            wallHookOut = true;
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            wallHookGraphic.transform.position = Vector3.Lerp(wallHookGraphic.transform.position,
+                                                        location,
+                                                        percentageComplete);
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
+        wallHookOut = true;
         hookActive = false;
     }
 
-    IEnumerator ShootRope()
+    IEnumerator ShootRope(Vector3 location)
     {
         hookActive = true;
         ropeLineRenderer.enabled = true;
         float elapsedTime = 0;
         Vector3 ropeEndPoint = new Vector3();
-        var dist = Vector3.Distance(transform.position, wallHookGraphic.transform.position);
+        var dist = Vector3.Distance(transform.position, wallHookHitPosition);
         float timeTakenDuringLerp = dist / HookSpeed;
         ropeLineRenderer.SetVertexCount(2);
         while (elapsedTime < timeTakenDuringLerp)
         {
             float percentageComplete = elapsedTime / timeTakenDuringLerp;
-            ropeEndPoint = Vector3.Lerp(transform.position, wallHookGraphic.transform.position, percentageComplete);
+            ropeEndPoint = Vector3.Lerp(transform.position, location, percentageComplete);
             ropeLineRenderer.SetPosition(0, transform.position);
             ropeLineRenderer.SetPosition(1, ropeEndPoint);
             elapsedTime += Time.deltaTime;
