@@ -68,7 +68,7 @@ public class LevelController : MonoBehaviour {
     {
         GameOn = true;
         StartPlatform.SetActive(false);
-        _PressureController.LavaFlow();
+        //_PressureController.LavaFlow();
     }
 
     void _PlayerController_OnPlayerWon()

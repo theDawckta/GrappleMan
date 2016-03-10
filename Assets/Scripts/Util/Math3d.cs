@@ -205,10 +205,8 @@ public class Math3d
 
         //Note: sqrMagnitude does x*x+y*y+z*z on the input vector.
         float s = Vector3.Dot(crossVec3and2, crossVec1and2) / crossVec1and2.sqrMagnitude;
-
         if ((s >= 0.0f) && (s <= 1.0f))
         {
-
             intersection = linePoint1 + (lineVec1 * s);
             return true;
         }

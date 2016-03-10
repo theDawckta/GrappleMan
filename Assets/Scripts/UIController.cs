@@ -57,6 +57,21 @@ public class UIController : MonoBehaviour {
         ShowPanel("EndPanel");
     }
 
+    public void SetSeed()
+    {
+        if(SeedInputField.text != "")
+        {
+            seed = SeedInputField.text;
+
+            _LevelGenerator.MakeLevel(seed, Int32.Parse(WidthMin.text),
+                                                       Int32.Parse(WidthMax.text),
+                                                       Int32.Parse(HeightMin.text),
+                                                       Int32.Parse(HeightMax.text),
+                                                       Int32.Parse(DepthMin.text),
+                                                       Int32.Parse(DepthMax.text));
+        }
+    }
+
     public void RandomSeed()
     {
         seed = RandomString(SeedLength);

@@ -186,20 +186,19 @@ public class PlayerController : MonoBehaviour {
             if(hit)
             {
                 // figure where to add the wallHook
-                Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
+                //Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
                 RaycastHit nextPlayerRaycastOut;
                 if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, 1 << LayerMask.NameToLayer("Ground")))
                 {
                     if(playerRaycastOut.transform.gameObject == nextPlayerRaycastOut.transform.gameObject)
                     {
                         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
-                        Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
-                        Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue, 10.0f);
-                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
 
-                        Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
-                        //DebugText.text = AngleFromAToB(playerRaycastOut.normal, cornerNormal).ToString();
-                        //DebugText.text = AngleFromAToB(cornerNormal, new Vector3(0, 1, 0)).ToString();
+                        //Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
+                        //Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal, Color.blue, 10.0f);
+                        //Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
+                        //Debug.DrawRay(nextPlayerRaycastOut.point, cornerNormal, Color.red, 10.0f);
+
                         float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
                         // Wish I knew a way to make these infinite
@@ -287,9 +286,9 @@ public class PlayerController : MonoBehaviour {
                                                                            HookPlayerInput.GetPlayerTouchPosition().y,
                                                                            -(Camera.main.transform.position.z + transform.position.z)));
         Vector3 direction = wallHookPosition - transform.position;
-        Debug.DrawRay(transform.position, direction, Color.yellow, 3.0f);
         if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
         {
+            Debug.DrawLine(wallHit.point, wallHit.point + wallHit.normal.normalized * 0.1f, Color.yellow, 10.0f);
             wallHookHitPosition = wallHit.point;
             return true;
         }
