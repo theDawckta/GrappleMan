@@ -26,6 +26,9 @@ public class UIController : MonoBehaviour {
 
 	void Start () 
     {
+        seed = RandomString(SeedLength);
+        SeedInputField.text = seed;
+        _LevelGenerator.Init(seed);
         DistanceTraveled.text = "0 m";
         ShowPanel("StartPanel");
 	}
@@ -63,13 +66,15 @@ public class UIController : MonoBehaviour {
         {
             seed = SeedInputField.text;
 
-            _LevelGenerator.MakeLevel(seed, Int32.Parse(WidthMin.text),
-                                                       Int32.Parse(WidthMax.text),
-                                                       Int32.Parse(HeightMin.text),
-                                                       Int32.Parse(HeightMax.text),
-                                                       Int32.Parse(DepthMin.text),
-                                                       Int32.Parse(DepthMax.text),
-                                                       new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
+            _LevelGenerator.Init(seed);
+
+            _LevelGenerator.MakeLevel(Int32.Parse(WidthMin.text),
+                                      Int32.Parse(WidthMax.text),
+                                      Int32.Parse(HeightMin.text),
+                                      Int32.Parse(HeightMax.text),
+                                      Int32.Parse(DepthMin.text),
+                                      Int32.Parse(DepthMax.text),
+                                      new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
         }
     }
 
@@ -78,13 +83,15 @@ public class UIController : MonoBehaviour {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
 
-        _LevelGenerator.MakeLevel(seed, Int32.Parse(WidthMin.text),
-                                                   Int32.Parse(WidthMax.text),
-                                                   Int32.Parse(HeightMin.text),
-                                                   Int32.Parse(HeightMax.text),
-                                                   Int32.Parse(DepthMin.text),
-                                                   Int32.Parse(DepthMax.text),
-                                                   new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
+        _LevelGenerator.Init(seed);
+
+        _LevelGenerator.MakeLevel(Int32.Parse(WidthMin.text),
+                                  Int32.Parse(WidthMax.text),
+                                  Int32.Parse(HeightMin.text),
+                                  Int32.Parse(HeightMax.text),
+                                  Int32.Parse(DepthMin.text),
+                                  Int32.Parse(DepthMax.text),
+                                  new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
     }
 
     public static string RandomString(int length)

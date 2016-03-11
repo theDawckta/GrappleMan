@@ -8,6 +8,7 @@ public class LevelGenerator : MonoBehaviour {
 
     public Material MeshMaterial;
     public int SeedLength = 8;
+    public string seed;
     public float TotalLength = 280;
     public float AvailableHeight;
 	public int levelSectionsCount {get{return levelSections.Count;}}
@@ -18,12 +19,22 @@ public class LevelGenerator : MonoBehaviour {
     private List<int> triangles = new List<int>();
     private List<Vector3> normals = new List<Vector3>();
     private List<Vector2> uvs = new List<Vector2>();
+    private System.Random pseudoRandom;
 
     void Start()
     {
     }
 
-	public void MakeLevel (string seed, int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
+    public void Init(string seed)
+    {
+        pseudoRandom = new System.Random(seed.GetHashCode());
+        for(int i = 0; i < levelSections.Count; i++)
+		{
+			Destroy(levelSections[i]);
+		}
+    }
+
+	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
 		MeshFilter filter = levelSection.AddComponent<MeshFilter>();;
@@ -42,8 +53,6 @@ public class LevelGenerator : MonoBehaviour {
         renderer.material = MeshMaterial;
 
         Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
-
-        System.Random pseudoRandom = new System.Random(seed.GetHashCode());
 
         mesh = filter.mesh;
         mesh.Clear();
@@ -91,14 +100,6 @@ public class LevelGenerator : MonoBehaviour {
 	// This is for runtime generation excitement, HOLLAH!
 	void Update () {
 	
-	}
-
-	public void Init()
-	{
-		for(int i = 0; i < levelSections.Count; i++)
-		{
-			Destroy(levelSections[i]);
-		}
 	}
 
     void GenerateMesh(float length, float width, float height, int meshCount, Vector3 location)

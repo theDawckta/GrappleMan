@@ -9,7 +9,6 @@ public class LevelController : MonoBehaviour {
     public PlayerController _PlayerController;
     public UIController _UIController;
     public LevelGenerator _LevelGenerator;
-    public string GameStartString;
     public GameObject StartPlatform;
     public GameObject LevelBounds;
     [HideInInspector]
@@ -24,8 +23,9 @@ public class LevelController : MonoBehaviour {
     {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
-		AddLevelSection(GameStartString);
-        _UIController.SeedInputField.text = GameStartString;
+        _LevelGenerator.Init(_UIController.SeedInputField.text);
+		AddLevelSection();
+       
         playerStartPosition = _PlayerController.transform.position;
 	}
 	
@@ -36,7 +36,7 @@ public class LevelController : MonoBehaviour {
 		if(_PlayerController.transform.position.x > (levelSections * _LevelGenerator.TotalLength) - _LevelGenerator.TotalLength / 2)
 		{
 			Debug.Log("halfway done");
- 			AddLevelSection(GameStartString);
+ 			AddLevelSection();
 		}
 	}
 
@@ -46,23 +46,23 @@ public class LevelController : MonoBehaviour {
         _PlayerController.transform.position = playerStartPosition;
         _PlayerController.Init();
         _PressureController.Init();
-        _LevelGenerator.Init();
+        _LevelGenerator.Init(_LevelGenerator.seed);
         if(_UIController.ParentCanvas.gameObject.activeSelf == false)
             _PlayerController.HookPlayerInput.InputActive = true;
 		Time.timeScale = 1.0f;
         levelSections = 0;
-		AddLevelSection(GameStartString);
+		AddLevelSection();
     }
 
-    public void AddLevelSection(string seed)
+    public void AddLevelSection()
     {
-		_LevelGenerator.MakeLevel(seed, Int32.Parse(_UIController.WidthMin.text), 
-                                                   Int32.Parse(_UIController.WidthMax.text), 
-                                                   Int32.Parse(_UIController.HeightMin.text), 
-                                                   Int32.Parse(_UIController.HeightMax.text), 
-                                                   Int32.Parse(_UIController.DepthMin.text), 
-                                                   Int32.Parse(_UIController.DepthMax.text),
-                                                   new Vector3((levelSections * _LevelGenerator.TotalLength) + (_LevelGenerator.TotalLength / 2), 0.0f, 0.0f));
+		_LevelGenerator.MakeLevel(Int32.Parse(_UIController.WidthMin.text), 
+                                  Int32.Parse(_UIController.WidthMax.text), 
+                                  Int32.Parse(_UIController.HeightMin.text), 
+                                  Int32.Parse(_UIController.HeightMax.text), 
+                                  Int32.Parse(_UIController.DepthMin.text), 
+                                  Int32.Parse(_UIController.DepthMax.text),
+                                  new Vector3((levelSections * _LevelGenerator.TotalLength) + (_LevelGenerator.TotalLength / 2), 0.0f, 0.0f));
 
 		LevelBounds.transform.position = new Vector3(((levelSections + 1)  * _LevelGenerator.TotalLength) / 2, 0.0f, 0.0f);
 		LevelBounds.transform.localScale = new Vector3(levelSections + 1, 1.0f, 1.0f);
