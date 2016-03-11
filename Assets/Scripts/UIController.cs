@@ -68,7 +68,8 @@ public class UIController : MonoBehaviour {
                                                        Int32.Parse(HeightMin.text),
                                                        Int32.Parse(HeightMax.text),
                                                        Int32.Parse(DepthMin.text),
-                                                       Int32.Parse(DepthMax.text));
+                                                       Int32.Parse(DepthMax.text),
+                                                       new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
         }
     }
 
@@ -82,7 +83,8 @@ public class UIController : MonoBehaviour {
                                                    Int32.Parse(HeightMin.text),
                                                    Int32.Parse(HeightMax.text),
                                                    Int32.Parse(DepthMin.text),
-                                                   Int32.Parse(DepthMax.text));
+                                                   Int32.Parse(DepthMax.text),
+                                                   new Vector3(_LevelGenerator.TotalLength / 2, 0.0f, 0.0f));
     }
 
     public static string RandomString(int length)

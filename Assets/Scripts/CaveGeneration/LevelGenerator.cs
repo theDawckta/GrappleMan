@@ -10,12 +10,9 @@ public class LevelGenerator : MonoBehaviour {
     public int SeedLength = 8;
     public float TotalLength = 280;
     public float AvailableHeight;
+	public int levelSectionsCount {get{return levelSections.Count;}}
 
-    private MeshFilter filter;
-    private MeshRenderer renderer;
-    private Mesh mesh;
-    private MeshCollider collider;
-    private Rigidbody meshRigidbody;
+    private List<GameObject> levelSections = new List<GameObject>();
     private int VertexCountIndex = 24;
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -24,22 +21,25 @@ public class LevelGenerator : MonoBehaviour {
 
     void Start()
     {
-        filter = gameObject.AddComponent<MeshFilter>();
-        renderer = gameObject.AddComponent<MeshRenderer>();
-        collider = gameObject.AddComponent<MeshCollider>();
-        meshRigidbody = gameObject.AddComponent<Rigidbody>();
-        meshRigidbody.isKinematic = true;
-        renderer.material = MeshMaterial;
     }
 
-	public void MakeLevel (string seed, int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax) 
+	public void MakeLevel (string seed, int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
     {
+    	GameObject levelSection = new GameObject();
+		MeshFilter filter = levelSection.AddComponent<MeshFilter>();;
+		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();;
+	    Mesh mesh;
+		MeshCollider collider = levelSection.AddComponent<MeshCollider>();;
+		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();;
         float length = 0;
         float width = 0;
         float height = 0;
         float totalLength = 0;
         float previousLength = 0;
         int meshCount = 0;
+
+		meshRigidbody.isKinematic = true;
+        renderer.material = MeshMaterial;
 
         Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
 
@@ -78,7 +78,9 @@ public class LevelGenerator : MonoBehaviour {
         mesh.Optimize();
         collider.sharedMesh = mesh;
 
-        transform.position = new Vector3(0.0f, 0.0f , 0.0f);
+		levelSections.Add(levelSection);
+        levelSection.transform.position = geoLocation;
+        levelSection.transform.parent = transform;
 
         vertices.Clear();
         triangles.Clear();
@@ -89,6 +91,14 @@ public class LevelGenerator : MonoBehaviour {
 	// This is for runtime generation excitement, HOLLAH!
 	void Update () {
 	
+	}
+
+	public void Init()
+	{
+		for(int i = 0; i < levelSections.Count; i++)
+		{
+			Destroy(levelSections[i]);
+		}
 	}
 
     void GenerateMesh(float length, float width, float height, int meshCount, Vector3 location)

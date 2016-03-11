@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PressureController : MonoBehaviour {
 
-	public float PressureSpeed = 10.0f;
+	public float PressureSpeed = 15.0f;
     private bool active = false;
     private Vector3 startingPosition;
 	
