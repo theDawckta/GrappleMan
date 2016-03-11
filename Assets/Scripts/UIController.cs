@@ -55,7 +55,7 @@ public class UIController : MonoBehaviour {
 
     public void EndGame()
     {
-        EndText.text = "You traveled " + DistanceTraveled.text + " m";
+        EndText.text = "You traveled " + DistanceTraveled.text;
         ToggleUIController();
         ShowPanel("EndPanel");
     }
