@@ -18,14 +18,13 @@ public class LevelController : MonoBehaviour {
     public bool GameOn = false;
 
     private Vector3 playerStartPosition;
-    private int levelSections;
+    private int levelSections = 0;
 
 	void Start () 
     {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
 		AddLevelSection(GameStartString);
-		levelSections = 1;
         _UIController.SeedInputField.text = GameStartString;
         playerStartPosition = _PlayerController.transform.position;
 	}
@@ -34,10 +33,9 @@ public class LevelController : MonoBehaviour {
     {
         if (_PlayerController.transform.position.x - playerStartPosition.x > DistanceTraveled)
             DistanceTraveled = (int)(_PlayerController.transform.position.x - playerStartPosition.x);
-		if(_PlayerController.transform.position.x > (levelSections * _LevelGenerator.TotalLength) + _LevelGenerator.TotalLength / 2)
+		if(_PlayerController.transform.position.x > (levelSections * _LevelGenerator.TotalLength) - _LevelGenerator.TotalLength / 2)
 		{
 			Debug.Log("halfway done");
-			levelSections = levelSections + 1;
  			AddLevelSection(GameStartString);
 		}
 	}
@@ -52,8 +50,8 @@ public class LevelController : MonoBehaviour {
         if(_UIController.ParentCanvas.gameObject.activeSelf == false)
             _PlayerController.HookPlayerInput.InputActive = true;
 		Time.timeScale = 1.0f;
+        levelSections = 0;
 		AddLevelSection(GameStartString);
-		levelSections = 1;
     }
 
     public void AddLevelSection(string seed)
@@ -66,8 +64,10 @@ public class LevelController : MonoBehaviour {
                                                    Int32.Parse(_UIController.DepthMax.text),
                                                    new Vector3((levelSections * _LevelGenerator.TotalLength) + (_LevelGenerator.TotalLength / 2), 0.0f, 0.0f));
 
-		LevelBounds.transform.position = new Vector3((levelSections + 1  * _LevelGenerator.TotalLength) / 2, 0.0f, 0.0f);
+		LevelBounds.transform.position = new Vector3(((levelSections + 1)  * _LevelGenerator.TotalLength) / 2, 0.0f, 0.0f);
 		LevelBounds.transform.localScale = new Vector3(levelSections + 1, 1.0f, 1.0f);
+
+        levelSections = levelSections + 1;
     }
 
     public void PlayerReady()
