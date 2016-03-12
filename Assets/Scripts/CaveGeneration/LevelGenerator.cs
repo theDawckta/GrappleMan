@@ -87,6 +87,7 @@ public class LevelGenerator : MonoBehaviour {
         mesh.Optimize();
         collider.sharedMesh = mesh;
 
+        levelSection.layer = LayerMask.NameToLayer("Ground");
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;

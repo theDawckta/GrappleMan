@@ -180,18 +180,19 @@ public class PlayerController : MonoBehaviour {
         {
             RaycastHit playerRaycastOut;
             Vector3 direction = lineRenderPositions[lineRenderPositions.Count - 1] - transform.position;
-            bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, 1 << LayerMask.NameToLayer("Ground"));
-            Debug.DrawRay(transform.position, direction, Color.black);
+            bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground"));
 
             if(hit)
             {
                 // figure where to add the wallHook
-                //Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
+                
                 RaycastHit nextPlayerRaycastOut;
-                if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, 1 << LayerMask.NameToLayer("Ground")))
+                if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
                 {
+                    Debug.DrawRay(lineRenderPositions[lineRenderPositions.Count - 1], -direction, Color.yellow);
                     if(playerRaycastOut.transform.gameObject == nextPlayerRaycastOut.transform.gameObject)
                     {
+                        Debug.Log(playerRaycastOut.transform.gameObject.name + "      " + nextPlayerRaycastOut.transform.gameObject.name);
                         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
 
                         //Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
@@ -208,23 +209,20 @@ public class PlayerController : MonoBehaviour {
                         Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
-                        Vector3 intersection;
-                        bool intersecting = Math3d.LineLineIntersection(out intersection, nextPlayerRaycastOut.point, pointDirection1, playerRaycastOut.point, pointDirection2);
-                        if(intersecting)
-                        {
-                            intersection = intersection + (cornerNormal.normalized * 0.1f);
-                            Debug.DrawRay(intersection, cornerNormal, Color.green, 10.0f);
-                            lineRenderPositions.Add(intersection);
-                            wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                            currentLineEndpoint = intersection;
-                            wallHook.transform.position = intersection;
-                            wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                        Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
+                        Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
+                        intersection = intersection + (cornerNormal.normalized * 0.1f);
+                        Debug.DrawRay(intersection, cornerNormal, Color.green);
+                        lineRenderPositions.Add(intersection);
+                        wallHook.GetComponent<FixedJoint>().connectedBody = null;
+                        currentLineEndpoint = intersection;
+                        wallHook.transform.position = intersection;
+                        wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
 
-                            // store rope bend polarity to check when we swing back
-                            Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
-                            Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
-                            ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
-                        }
+                        // store rope bend polarity to check when we swing back
+                        Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
+                        Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
+                        ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
                     }
                 }
             }
@@ -289,7 +287,7 @@ public class PlayerController : MonoBehaviour {
         if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
         {
             Debug.DrawLine(wallHit.point, wallHit.point + wallHit.normal.normalized * 0.1f, Color.yellow, 10.0f);
-            wallHookHitPosition = wallHit.point;
+            wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
             return true;
         }
         else
