@@ -81,7 +81,6 @@ public class PlayerController : MonoBehaviour {
 		{
             if(hooked)
             {
-                Debug.Log("Boosting");
                 StartCoroutine(RetrieveHookRope());
                 BoostPlayer();
             } 
@@ -176,7 +175,7 @@ public class PlayerController : MonoBehaviour {
         {
             RaycastHit playerRaycastOut;
             Vector3 direction = lineRenderPositions[lineRenderPositions.Count - 1] - transform.position;
-            bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground"));
+            bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Ground"));
 
             if(hit)
             {
@@ -188,7 +187,6 @@ public class PlayerController : MonoBehaviour {
                     Debug.DrawRay(lineRenderPositions[lineRenderPositions.Count - 1], -direction, Color.yellow);
                     if(playerRaycastOut.transform.gameObject == nextPlayerRaycastOut.transform.gameObject)
                     {
-                        Debug.Log(playerRaycastOut.transform.gameObject.name + "      " + nextPlayerRaycastOut.transform.gameObject.name);
                         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
 
                         //Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal, Color.blue, 10.0f);
@@ -205,12 +203,11 @@ public class PlayerController : MonoBehaviour {
                         Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
-                        try
+                        try 
                         {
                             Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
                             Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
                             intersection = intersection + (cornerNormal.normalized * 0.1f);
-                            Debug.DrawRay(intersection, cornerNormal, Color.green);
                             lineRenderPositions.Add(intersection);
                             wallHook.GetComponent<FixedJoint>().connectedBody = null;
                             currentLineEndpoint = intersection;
@@ -222,10 +219,11 @@ public class PlayerController : MonoBehaviour {
                             Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
                             ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
                         }
-                        catch(Exception e)
-                        {
+                        catch
+                        { 
+                            // Lines were parallel need to implement logic
+                            Debug.Log("Lines were parallel doing nothing");
                         }
-                        
                     }
                 }
             }

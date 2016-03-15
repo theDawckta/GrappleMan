@@ -338,7 +338,6 @@ public class PlayerControllerZip : MonoBehaviour {
             yield return null;
         }
         lineRenderPositions.RemoveAt(0);
-        Debug.Log("removed");
         if (lineRenderPositions.Count > 0)
             StartCoroutine(RetrieveHookRope());
         else

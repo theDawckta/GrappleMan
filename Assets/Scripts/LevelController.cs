@@ -36,7 +36,6 @@ public class LevelController : MonoBehaviour {
             DistanceTraveled = (int)(_PlayerController.transform.position.x - playerStartPosition.x);
 		if(_PlayerController.transform.position.x > (levelSections * _SideScrollerGenerator.TotalLength) - _SideScrollerGenerator.TotalLength / 2)
 		{
-			Debug.Log("halfway done");
  			AddLevelSection();
 		}
 
