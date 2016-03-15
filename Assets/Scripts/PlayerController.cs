@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour {
 	public PlayerInput HookPlayerInput;
 	public float MaxSpeed = 10.0f;
 	public float JumpForce = 900.0f;
+    public float BoostForce = 5.0f;
     public LayerMask Wall;
     public float HookSpeed = 80.0f;
     public float LineSpeed = 90.0f;
@@ -25,6 +26,7 @@ public class PlayerController : MonoBehaviour {
     private bool playerStarted;
 	private Animator anim;
 	private GameObject playerBody;
+    private Rigidbody playerRigidbody;
 	private bool grounded = false;
 	private GameObject wallHookGraphic;
 	private LineRenderer ropeLineRenderer;
@@ -40,7 +42,6 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
     private Vector3 playerPreviousPosition;
-	private SmoothFollow CameraSmoothFollow;
 
 	void Awake() 
     {
@@ -55,6 +56,7 @@ public class PlayerController : MonoBehaviour {
                                                          RigidbodyConstraints.FreezeRotationY;
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.FindChild("PlayerBody").gameObject;
+        playerRigidbody = gameObject.GetComponent<Rigidbody>();
 	}
 
     public void Init()
@@ -74,41 +76,34 @@ public class PlayerController : MonoBehaviour {
 
 	void Update()
 	{
-        if(Input.GetKeyDown("-"))
-        {
-            if (CameraSmoothFollow.distance > 10)
-                CameraSmoothFollow.distance = CameraSmoothFollow.distance - 10;
-        }
-
-        if (Input.GetKeyDown("="))
-        {
-            CameraSmoothFollow.distance = CameraSmoothFollow.distance + 10;
-        }
-
 		if(HookPlayerInput.RopePressed())
 		{
-            //if(hooked)
-            //    UnHook();
+            if(hooked)
+            {
+                Debug.Log("Boosting");
+                StartCoroutine(RetrieveHookRope());
+                BoostPlayer();
+            } 
 		}
 
-        if (HookPlayerInput.JumpPressed())
-        {
-            if (hooked)
-            {
-                if(!grounded)
-                {   
-                    StartCoroutine(RetrieveHookRope());
-                }
-                GetComponent<Rigidbody>().AddForce(new Vector2(0, JumpForce));
-                return;
-            }
+        //if (HookPlayerInput.JumpPressed())
+        //{
+        //    if (hooked)
+        //    {
+        //        if(!grounded)
+        //        {   
+        //            StartCoroutine(RetrieveHookRope());
+        //        }
+        //        GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, JumpForce, 0.0f));
+        //        return;
+        //    }
 
-            if (grounded || transform.GetComponent<Rigidbody>().isKinematic)
-            {
-                transform.GetComponent<Rigidbody>().isKinematic = false;
-                GetComponent<Rigidbody>().AddForce(new Vector2(0, JumpForce));
-            }
-        }
+        //    if (grounded || playerRigidbody.isKinematic)
+        //    {
+        //        playerRigidbody.isKinematic = false;
+        //        playerRigidbody.AddForce(new Vector2(0, JumpForce));
+        //    }
+        //}
 
         if (hooked)
         {
@@ -243,7 +238,7 @@ public class PlayerController : MonoBehaviour {
                 }
             }
         }
-        HandleMove();
+        //HandleMove();
         if (HookPlayerInput.RopeClimbPressed() && hooked)
         {
             wallHookFixedJoint.connectedBody = null;
@@ -350,6 +345,7 @@ public class PlayerController : MonoBehaviour {
         wallHookFixedJoint.connectedBody = null;
         hooked = false;
         wallHookOut = false;
+        grounded = true;
         float elapsedTime = 0;
         float dist;
         Vector3 startPosition = new Vector3();
@@ -422,6 +418,20 @@ public class PlayerController : MonoBehaviour {
         lineRenderPositions.Clear();
         ropeLineRenderer.SetVertexCount(0);
         hookActive = false;
+    }
+
+    void BoostPlayer()
+    {
+        Vector3 direction = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                        -(Camera.main.transform.position.z + transform.position.z)));
+        direction = direction - transform.position;
+
+        Debug.DrawRay(transform.position, direction.normalized * BoostForce, Color.red, 10.0f);
+
+        playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
+
+
     }
 
 	void LockPlayerPosition()

@@ -8,7 +8,8 @@ public class LevelController : MonoBehaviour {
     public PressureController _PressureController;
     public PlayerController _PlayerController;
     public UIController _UIController;
-    public LevelGenerator _LevelGenerator;
+    public SideScrollerGenerator _SideScrollerGenerator;
+    public SmoothFollow _SmoothFollow;
     public GameObject StartPlatform;
     public GameObject LevelBounds;
     [HideInInspector]
@@ -23,7 +24,7 @@ public class LevelController : MonoBehaviour {
     {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
-        _LevelGenerator.Init(_UIController.SeedInputField.text);
+        _SideScrollerGenerator.Init(_UIController.SeedInputField.text);
 		AddLevelSection();
        
         playerStartPosition = _PlayerController.transform.position;
@@ -33,11 +34,22 @@ public class LevelController : MonoBehaviour {
     {
         if (_PlayerController.transform.position.x - playerStartPosition.x > DistanceTraveled)
             DistanceTraveled = (int)(_PlayerController.transform.position.x - playerStartPosition.x);
-		if(_PlayerController.transform.position.x > (levelSections * _LevelGenerator.TotalLength) - _LevelGenerator.TotalLength / 2)
+		if(_PlayerController.transform.position.x > (levelSections * _SideScrollerGenerator.TotalLength) - _SideScrollerGenerator.TotalLength / 2)
 		{
 			Debug.Log("halfway done");
  			AddLevelSection();
 		}
+
+        if (Input.GetKeyDown("-"))
+        {
+            if (_SmoothFollow.distance > 10)
+                _SmoothFollow.distance = _SmoothFollow.distance - 10;
+        }
+
+        if (Input.GetKeyDown("="))
+        {
+            _SmoothFollow.distance = _SmoothFollow.distance + 10;
+        }
 	}
 
     public void Init()
@@ -46,7 +58,7 @@ public class LevelController : MonoBehaviour {
         _PlayerController.transform.position = playerStartPosition;
         _PlayerController.Init();
         _PressureController.Init();
-        _LevelGenerator.Init(_LevelGenerator.seed);
+        _SideScrollerGenerator.Init(_SideScrollerGenerator.seed);
         if(_UIController.ParentCanvas.gameObject.activeSelf == false)
             _PlayerController.HookPlayerInput.InputActive = true;
 		Time.timeScale = 1.0f;
@@ -56,15 +68,15 @@ public class LevelController : MonoBehaviour {
 
     public void AddLevelSection()
     {
-		_LevelGenerator.MakeLevel(Int32.Parse(_UIController.WidthMin.text), 
+		_SideScrollerGenerator.MakeLevel(Int32.Parse(_UIController.WidthMin.text), 
                                   Int32.Parse(_UIController.WidthMax.text), 
                                   Int32.Parse(_UIController.HeightMin.text), 
                                   Int32.Parse(_UIController.HeightMax.text), 
                                   Int32.Parse(_UIController.DepthMin.text), 
                                   Int32.Parse(_UIController.DepthMax.text),
-                                  new Vector3((levelSections * _LevelGenerator.TotalLength) + (_LevelGenerator.TotalLength / 2), 0.0f, 0.0f));
+                                  new Vector3((levelSections * _SideScrollerGenerator.TotalLength) + (_SideScrollerGenerator.TotalLength / 2), 0.0f, 0.0f));
 
-		LevelBounds.transform.position = new Vector3(((levelSections + 1)  * _LevelGenerator.TotalLength) / 2, 0.0f, 0.0f);
+		LevelBounds.transform.position = new Vector3(((levelSections + 1)  * _SideScrollerGenerator.TotalLength) / 2, 0.0f, 0.0f);
 		LevelBounds.transform.localScale = new Vector3(levelSections + 1, 1.0f, 1.0f);
 
         levelSections = levelSections + 1;

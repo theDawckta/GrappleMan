@@ -4,7 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class LevelGenerator : MonoBehaviour {
+public class SideScrollerGenerator : MonoBehaviour 
+{
 
     public Material MeshMaterial;
     public int SeedLength = 8;
@@ -12,8 +13,10 @@ public class LevelGenerator : MonoBehaviour {
     public float TotalLength = 280;
     public float AvailableHeight;
 	public int levelSectionsCount {get{return levelSections.Count;}}
-
+    
+    private EnemyGenerator _EnemyGenerator;
     private List<GameObject> levelSections = new List<GameObject>();
+    private List<GameObject> enemySections = new List<GameObject>();
     private int VertexCountIndex = 24;
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -32,11 +35,17 @@ public class LevelGenerator : MonoBehaviour {
 		{
 			Destroy(levelSections[i]);
 		}
+
+        for (int i = 0; i < enemySections.Count; i++)
+        {
+            Destroy(enemySections[i]);
+        }
     }
 
 	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
+        GameObject enemySection = new GameObject();
 		MeshFilter filter = levelSection.AddComponent<MeshFilter>();;
 		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();;
 	    Mesh mesh;
@@ -91,6 +100,11 @@ public class LevelGenerator : MonoBehaviour {
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
+
+        //enemySection = _EnemyGenerator.MakeEnemies(vertices, pseudoRandom);
+        //enemySections.Add(enemySection);
+        //enemySection.transform.position = geoLocation;
+        //enemySection.transform.parent = transform;
 
         vertices.Clear();
         triangles.Clear();
@@ -151,6 +165,7 @@ public class LevelGenerator : MonoBehaviour {
         // Front
         verticeCollection.Add(p4);
         verticeCollection.Add(p5);
+        Debug.DrawLine(p4, p5, Color.yellow, 20.0f);
         verticeCollection.Add(p1);
         verticeCollection.Add(p0);
  
@@ -293,5 +308,18 @@ public class LevelGenerator : MonoBehaviour {
         }
 
         return uvsCollection;
+    }
+
+    class LevelSquare
+    {
+        Vector3 upperLeft;
+        Vector3 upperRight;
+        Vector3 lowerRight;
+        Vector3 lowerLeft;
+
+        LevelSquare(Mesh levelVertices)
+        {
+
+        }
     }
 }
