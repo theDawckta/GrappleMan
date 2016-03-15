@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -204,20 +205,27 @@ public class PlayerController : MonoBehaviour {
                         Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
                         Debug.DrawRay(playerRaycastOut.point, pointDirection2, Color.green);
 
-                        Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
-                        Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
-                        intersection = intersection + (cornerNormal.normalized * 0.1f);
-                        Debug.DrawRay(intersection, cornerNormal, Color.green);
-                        lineRenderPositions.Add(intersection);
-                        wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                        currentLineEndpoint = intersection;
-                        wallHook.transform.position = intersection;
-                        wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                        try
+                        {
+                            Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
+                            Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
+                            intersection = intersection + (cornerNormal.normalized * 0.1f);
+                            Debug.DrawRay(intersection, cornerNormal, Color.green);
+                            lineRenderPositions.Add(intersection);
+                            wallHook.GetComponent<FixedJoint>().connectedBody = null;
+                            currentLineEndpoint = intersection;
+                            wallHook.transform.position = intersection;
+                            wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
 
-                        // store rope bend polarity to check when we swing back
-                        Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
-                        Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
-                        ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
+                            // store rope bend polarity to check when we swing back
+                            Vector3 playersAngle = transform.position - lineRenderPositions[lineRenderPositions.Count - 1];
+                            Vector3 previousAngle = lineRenderPositions[lineRenderPositions.Count - 1] - lineRenderPositions[lineRenderPositions.Count - 2];
+                            ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
+                        }
+                        catch(Exception e)
+                        {
+                        }
+                        
                     }
                 }
             }
