@@ -13,8 +13,8 @@ public class SideScrollerGenerator : MonoBehaviour
     public float TotalLength = 280;
     public float AvailableHeight;
 	public int levelSectionsCount {get{return levelSections.Count;}}
+    public EnemyGenerator _EnemyGenerator;
     
-    private EnemyGenerator _EnemyGenerator;
     private List<GameObject> levelSections = new List<GameObject>();
     private List<GameObject> enemySections = new List<GameObject>();
     private int VertexCountIndex = 24;
@@ -42,7 +42,7 @@ public class SideScrollerGenerator : MonoBehaviour
         }
     }
 
-	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
+	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, int minEnemyCount, int maxEnemyCount, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
         GameObject enemySection = new GameObject();
@@ -101,7 +101,7 @@ public class SideScrollerGenerator : MonoBehaviour
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
 
-        //enemySection = _EnemyGenerator.MakeEnemies(vertices, pseudoRandom);
+        enemySection = _EnemyGenerator.MakeEnemies(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
         //enemySections.Add(enemySection);
         //enemySection.transform.position = geoLocation;
         //enemySection.transform.parent = transform;
@@ -165,7 +165,6 @@ public class SideScrollerGenerator : MonoBehaviour
         // Front
         verticeCollection.Add(p4);
         verticeCollection.Add(p5);
-        Debug.DrawLine(p4, p5, Color.yellow, 20.0f);
         verticeCollection.Add(p1);
         verticeCollection.Add(p0);
  

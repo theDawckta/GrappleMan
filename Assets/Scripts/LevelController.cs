@@ -73,6 +73,8 @@ public class LevelController : MonoBehaviour {
                                   Int32.Parse(_UIController.HeightMax.text), 
                                   Int32.Parse(_UIController.DepthMin.text), 
                                   Int32.Parse(_UIController.DepthMax.text),
+                                  Int32.Parse(_UIController.EnemyMin.text),
+                                  Int32.Parse(_UIController.EnemyMax.text),
                                   new Vector3((levelSections * _SideScrollerGenerator.TotalLength) + (_SideScrollerGenerator.TotalLength / 2), 0.0f, 0.0f));
 
 		LevelBounds.transform.position = new Vector3(((levelSections + 1)  * _SideScrollerGenerator.TotalLength) / 2, 0.0f, 0.0f);
