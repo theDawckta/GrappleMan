@@ -4,8 +4,9 @@ using System.Collections.Generic;
 
 public class EnemyGenerator : MonoBehaviour {
 
-    public GameObject Turret;
-    private List<Vector3> squareCorners = new List<Vector3>();
+    public EnemyTurret _EnemyTurret;
+	private List<EnemyTurret> EnemyTurrets = new List<EnemyTurret>();
+    private List<Vector3> bottomCorners = new List<Vector3>();
     private GameObject enemySection;
 
 	// Use this for initialization
@@ -20,7 +21,7 @@ public class EnemyGenerator : MonoBehaviour {
         int numOfEnemies = pseudoRandom.Next(minEnemyCount, maxEnemyCount);
         for (int i = 0; i < numOfEnemies; i++)
         {
-            int xLocation = pseudoRandom.Next(0, (int)totalLevelLength);
+            int xLocation = pseudoRandom.Next(20, (int)totalLevelLength);
 
             if (!possibleXLocations.Contains(xLocation))
                 possibleXLocations.Add(xLocation);
@@ -34,20 +35,32 @@ public class EnemyGenerator : MonoBehaviour {
 
     private void GenerateEnemies(List<int> possibleXLocations)
     {
-        Debug.Log("Made it to GenerateEnemies");
+		possibleXLocations.Sort((a, b) => a.CompareTo(b));
+
+		// could be optimized
+		for (int i = 0; i < possibleXLocations.Count; i++)
+		{
+			for (int j = 0; j < bottomCorners.Count; j++)
+			{
+				if(possibleXLocations[i] < bottomCorners[j].x)
+				{
+					Debug.Log("We got one");
+					EnemyTurret tempEnemyTurret = (EnemyTurret)Instantiate(_EnemyTurret, new Vector3(possibleXLocations[i], bottomCorners[j].y, _EnemyTurret.transform.position.z), Quaternion.identity);
+					tempEnemyTurret.transform.parent = transform;
+					EnemyTurrets.Add(tempEnemyTurret);
+					break;
+				}
+			}
+		}
     }
 
     private void ProcessLevelVertices(List<Vector3> levelVertices)
     {
-        for (int i = 8; i < levelVertices.Count; i = i + 24)
+        for (int i = 10; i < levelVertices.Count; i = i + 24)
         {
-            squareCorners.Add(levelVertices[i]);
-            squareCorners.Add(levelVertices[i + 1]);
-            Debug.DrawLine(levelVertices[i], levelVertices[i + 1], Color.yellow, 20.0f);
-            squareCorners.Add(levelVertices[i + 2]);
-            Debug.DrawLine(levelVertices[i + 1], levelVertices[i + 2], Color.red, 20.0f);
-            squareCorners.Add(levelVertices[i + 3]);
-            Debug.DrawLine(levelVertices[i + 2], levelVertices[i + 3], Color.blue, 20.0f);
+            bottomCorners.Add(levelVertices[i + 1]);
+            bottomCorners.Add(levelVertices[i]);
+			Debug.DrawLine(levelVertices[i], levelVertices[i + 1], Color.yellow, 20.0f);
         }
     }
 }

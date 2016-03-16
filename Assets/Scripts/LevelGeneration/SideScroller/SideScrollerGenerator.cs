@@ -61,7 +61,7 @@ public class SideScrollerGenerator : MonoBehaviour
 		meshRigidbody.isKinematic = true;
         renderer.material = MeshMaterial;
 
-        Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
+        Vector3 location = new Vector3(0.0f, 0.0f, 0.0f);
 
         mesh = filter.mesh;
         mesh.Clear();
