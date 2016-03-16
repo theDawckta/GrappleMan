@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class EnemyGenerator : MonoBehaviour {
 
     public EnemyTurret _EnemyTurret;
-	private List<EnemyTurret> EnemyTurrets = new List<EnemyTurret>();
     private List<Vector3> bottomCorners = new List<Vector3>();
     private GameObject enemySection;
 
@@ -14,10 +13,11 @@ public class EnemyGenerator : MonoBehaviour {
 	    
 	}
 
-    public GameObject MakeEnemies(List<Vector3> levelVertices, System.Random pseudoRandom, int minEnemyCount, int maxEnemyCount, float totalLevelLength) 
+    public GameObject MakeEnemySection(List<Vector3> levelVertices, System.Random pseudoRandom, int minEnemyCount, int maxEnemyCount, float totalLevelLength) 
     {
         List<int> possibleXLocations = new List<int>();
-        ProcessLevelVertices(levelVertices);
+
+        bottomCorners = ProcessLevelVertices(levelVertices);
         int numOfEnemies = pseudoRandom.Next(minEnemyCount, maxEnemyCount);
         for (int i = 0; i < numOfEnemies; i++)
         {
@@ -28,13 +28,12 @@ public class EnemyGenerator : MonoBehaviour {
             else
                 i--;
         }
-        GenerateEnemies(possibleXLocations);
-            enemySection = new GameObject();
-        return enemySection;
+        return GenerateEnemies(possibleXLocations);
     }
 
-    private void GenerateEnemies(List<int> possibleXLocations)
+    private GameObject GenerateEnemies(List<int> possibleXLocations)
     {
+        GameObject turretSection = new GameObject();
 		possibleXLocations.Sort((a, b) => a.CompareTo(b));
 
 		// could be optimized
@@ -44,23 +43,27 @@ public class EnemyGenerator : MonoBehaviour {
 			{
 				if(possibleXLocations[i] < bottomCorners[j].x)
 				{
-					Debug.Log("We got one");
 					EnemyTurret tempEnemyTurret = (EnemyTurret)Instantiate(_EnemyTurret, new Vector3(possibleXLocations[i], bottomCorners[j].y, _EnemyTurret.transform.position.z), Quaternion.identity);
-					tempEnemyTurret.transform.parent = transform;
-					EnemyTurrets.Add(tempEnemyTurret);
+					tempEnemyTurret.transform.parent = turretSection.transform;
 					break;
 				}
 			}
 		}
+
+        return turretSection;
     }
 
-    private void ProcessLevelVertices(List<Vector3> levelVertices)
+    private List<Vector3> ProcessLevelVertices(List<Vector3> levelVertices)
     {
+        List<Vector3> tempBottomCorners = new List<Vector3>();
+
         for (int i = 10; i < levelVertices.Count; i = i + 24)
         {
-            bottomCorners.Add(levelVertices[i + 1]);
-            bottomCorners.Add(levelVertices[i]);
+            tempBottomCorners.Add(levelVertices[i + 1]);
+            tempBottomCorners.Add(levelVertices[i]);
 			Debug.DrawLine(levelVertices[i], levelVertices[i + 1], Color.yellow, 20.0f);
         }
+
+        return tempBottomCorners;
     }
 }

@@ -45,12 +45,13 @@ public class SideScrollerGenerator : MonoBehaviour
 	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, int minEnemyCount, int maxEnemyCount, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
-        GameObject enemySection = new GameObject();
-		MeshFilter filter = levelSection.AddComponent<MeshFilter>();;
-		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();;
+        
+		MeshFilter filter = levelSection.AddComponent<MeshFilter>();
+		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();
 	    Mesh mesh;
-		MeshCollider collider = levelSection.AddComponent<MeshCollider>();;
-		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();;
+		MeshCollider collider = levelSection.AddComponent<MeshCollider>();
+		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();
+        GameObject enemySection = new GameObject();
         float length = 0;
         float width = 0;
         float height = 0;
@@ -101,10 +102,10 @@ public class SideScrollerGenerator : MonoBehaviour
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
 
-        enemySection = _EnemyGenerator.MakeEnemies(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
-        //enemySections.Add(enemySection);
-        //enemySection.transform.position = geoLocation;
-        //enemySection.transform.parent = transform;
+        GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
+        tempEnemySection.transform.position = geoLocation;
+        tempEnemySection.transform.parent = transform;
+        enemySections.Add(tempEnemySection);
 
         vertices.Clear();
         triangles.Clear();
