@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class EnemyGenerator : MonoBehaviour {
 
-    public EnemyTurret _EnemyTurret;
+    public GameObject _EnemyAI;
     private List<Vector3> bottomCorners = new List<Vector3>();
     private GameObject enemySection;
 
@@ -43,13 +43,13 @@ public class EnemyGenerator : MonoBehaviour {
 			{
 				if(possibleXLocations[i] < bottomCorners[j].x)
 				{
-					EnemyTurret tempEnemyTurret = (EnemyTurret)Instantiate(_EnemyTurret, new Vector3(possibleXLocations[i], bottomCorners[j].y, _EnemyTurret.transform.position.z), Quaternion.identity);
-					tempEnemyTurret.transform.parent = turretSection.transform;
+					GameObject tempEnemyAI = (GameObject)Instantiate(_EnemyAI, new Vector3(possibleXLocations[i], bottomCorners[j].y, _EnemyAI.transform.position.z), Quaternion.identity);
+					tempEnemyAI.transform.parent = turretSection.transform;
 					break;
 				}
 			}
 		}
-
+        turretSection.name = "TurretSection";
         return turretSection;
     }
 
