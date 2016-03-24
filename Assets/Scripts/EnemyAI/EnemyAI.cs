@@ -6,9 +6,11 @@ public class EnemyAI : MonoBehaviour
     public ENEMY_STATE states;
     public GameObject TurretBarrelBody;
     public GameObject TurretBarrel;
-    public GameObject player;
+    public GameObject TurretBullet;
+    public float BulletSpeed = 10.0f;
 
-    private RaycastHit TurretHitInfo;
+    private RaycastHit turretHitInfo;
+    private Transform player;
 
     void Awake()
     {
@@ -23,14 +25,15 @@ public class EnemyAI : MonoBehaviour
     void Update()
     {
         // Handle logic for state changes
-        Vector3 direction = TurretBarrel.transform.position - TurretBarrelBody.transform.position;
-        Debug.DrawRay(TurretBarrelBody.transform.position, direction * 10.0f, Color.yellow);
-        if (states == ENEMY_STATE.IDLE)
+        if (CheckForPlayer() && states == ENEMY_STATE.IDLE)
         {
-            if (Physics.Raycast(TurretBarrelBody.transform.position, direction, out TurretHitInfo, Mathf.Infinity, 1 << LayerMask.NameToLayer("Player")))
-            {
-                states = ENEMY_STATE.ATTACK;
-            }
+            player = turretHitInfo.transform;
+            states = ENEMY_STATE.ATTACK;
+            //Debug.Log("ATTACKING...");
+        }
+        else
+        {
+            //Debug.Log("IDLING...");
         }
     }
 
@@ -42,20 +45,28 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    IEnumerator INACTIVE()
+    {
+        while (states == ENEMY_STATE.INACTIVE)
+        {
+            yield return null;
+        }
+    }
     IEnumerator IDLE()
     {
         // Enter state code
-        
+        player = null;
+
         while (states == ENEMY_STATE.IDLE)
-        { 
+        {
+            //Debug.Log("starting idle");
             // During state code
             int randomRotation = Random.Range(1, 360);
-            float movementTime = Random.Range(1.0f, 2.0f);
+            float movementTime = Random.Range(2.0f, 3.0f);
             float nextMovementTime = Random.Range(1.0f, 5.0f);
-            float rate = Random.Range(1.0f, 2.0f);
             float timePassed = 0.0f;
-            Vector3 direction = TurretBarrel.transform.position - TurretBarrelBody.transform.position;
-           
+            Quaternion originalRotation = TurretBarrelBody.transform.rotation;
+
             while (timePassed < nextMovementTime && states == ENEMY_STATE.IDLE)
             {
                 timePassed = timePassed + Time.deltaTime;
@@ -64,29 +75,100 @@ public class EnemyAI : MonoBehaviour
             timePassed = 0.0f;
             while (timePassed < movementTime && states == ENEMY_STATE.IDLE)
             {
-                TurretBarrelBody.transform.rotation = Quaternion.Lerp(TurretBarrelBody.transform.rotation, Quaternion.Euler(0.0f, 0.0f, randomRotation), Time.deltaTime * rate);
+                TurretBarrelBody.transform.rotation = Quaternion.Lerp(originalRotation, Quaternion.Euler(0.0f, 0.0f, randomRotation), timePassed / movementTime);
                 timePassed = timePassed + Time.deltaTime;
                 yield return null;
             }
+            timePassed = 0.0f;
+            //Debug.Log("ending idle");
+            yield return null;
         }
         // Exit state code
-        Debug.Log("State Changed");
+        //Debug.Log("State Changed");
     }
 
     IEnumerator ATTACK()
     {
+        float nextShotTime = Random.Range(1.0f, 2.0f);
+        float shotInterval = Random.Range(0.1f, 0.5f);
+        float findSpeed = Random.Range(1.0f, 2.0f);
+        int numberOfShots = Random.Range(3, 5);
+        Quaternion newRotation;
+        Vector3 direction;
+
+        player = turretHitInfo.transform;
+
         while (states == ENEMY_STATE.ATTACK)
         {
-            //Debug.Log("SHOOT HIM");
+
+            float timePassed = 0.0f;
+            while (timePassed < nextShotTime)
+            {
+                newRotation = Quaternion.LookRotation(player.position - TurretBarrelBody.transform.position, Vector3.forward);
+                newRotation.x = 0.0f;
+                newRotation.y = 0.0f;
+                TurretBarrelBody.transform.rotation = newRotation;
+                timePassed = timePassed + Time.deltaTime;
+                yield return null;
+            }
+            timePassed = 0.0f;
+            for (int i = 0; i < numberOfShots; i++)
+            {
+                while (timePassed < shotInterval)
+                {
+                    timePassed = timePassed + Time.deltaTime;
+                    yield return null;
+                }
+                direction = TurretBarrel.transform.position - TurretBarrelBody.transform.position;
+                GameObject bullet = (GameObject)Instantiate(TurretBullet, TurretBarrel.transform.position, TurretBarrel.transform.rotation);
+                Physics.IgnoreCollision(TurretBarrelBody.GetComponent<Collider>(), bullet.GetComponent<Collider>());
+                Physics.IgnoreCollision(TurretBarrel.GetComponent<Collider>(), bullet.GetComponent<Collider>());
+                bullet.GetComponent<Rigidbody>().AddForce(direction * BulletSpeed, ForceMode.VelocityChange);
+                timePassed = 0.0f;
+            }
+            while (timePassed < findSpeed)
+            {
+                //find the vector pointing from our position to the target
+                Vector3 _direction = (player.transform.position - TurretBarrelBody.transform.position).normalized;
+
+                //create the rotation we need to be in to look at the target
+                Quaternion _lookRotation = Quaternion.LookRotation(_direction, Vector3.forward);
+                _lookRotation.x = 0.0f;
+                _lookRotation.y = 0.0f;
+                //rotate us over time according to speed until we are in the required rotation
+                TurretBarrelBody.transform.rotation = Quaternion.Slerp(TurretBarrelBody.transform.rotation, _lookRotation, timePassed / findSpeed);
+                timePassed = timePassed + Time.deltaTime;
+                yield return null;
+            }
+            if (!CheckForPlayer())
+                states = ENEMY_STATE.IDLE;
+
             yield return null;
         }
     }
+
+    private bool CheckForPlayer()
+    {
+        Vector3 direction = TurretBarrel.transform.position - TurretBarrelBody.transform.position;
+        Debug.DrawRay(TurretBarrelBody.transform.position, direction * 10.0f, Color.yellow);
+        if (Physics.Raycast(TurretBarrelBody.transform.position, direction, out turretHitInfo, Mathf.Infinity))
+        {
+            if (turretHitInfo.collider.tag == "Player")
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+    }
 }
 
+[HideInInspector]
 public enum ENEMY_STATE
 {
-    IDLE = 0,
-    ATTACK = 1
+    INACTIVE = 0,
+    IDLE = 1,
+    ATTACK = 2
 }
 
 

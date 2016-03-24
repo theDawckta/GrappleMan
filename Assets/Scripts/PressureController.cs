@@ -7,7 +7,7 @@ public class PressureController : MonoBehaviour {
     private bool active = false;
     private Vector3 startingPosition;
 	
-    void Start()
+    void Awake()
     {
         startingPosition = transform.position;
     }

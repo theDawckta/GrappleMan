@@ -24,10 +24,6 @@ public class SideScrollerGenerator : MonoBehaviour
     private List<Vector2> uvs = new List<Vector2>();
     private System.Random pseudoRandom;
 
-    void Start()
-    {
-    }
-
     public void Init(string seed)
     {
         pseudoRandom = new System.Random(seed.GetHashCode());
@@ -51,7 +47,6 @@ public class SideScrollerGenerator : MonoBehaviour
 	    Mesh mesh;
 		MeshCollider collider = levelSection.AddComponent<MeshCollider>();
 		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();
-        GameObject enemySection = new GameObject();
         float length = 0;
         float width = 0;
         float height = 0;
@@ -98,14 +93,16 @@ public class SideScrollerGenerator : MonoBehaviour
         collider.sharedMesh = mesh;
 
         levelSection.layer = LayerMask.NameToLayer("Ground");
+        levelSection.tag = "Ground";
+        levelSection.name = "LevelSection";
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
 
-        GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
-        tempEnemySection.transform.position = geoLocation;
-        tempEnemySection.transform.parent = transform;
-        enemySections.Add(tempEnemySection);
+        //GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
+        //tempEnemySection.transform.position = geoLocation;
+        //tempEnemySection.transform.parent = transform;
+        //enemySections.Add(tempEnemySection);
 
         vertices.Clear();
         triangles.Clear();

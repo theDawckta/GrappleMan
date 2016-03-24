@@ -6,6 +6,8 @@ public class PlayerInput : MonoBehaviour {
 	public bool Mobile;
     [HideInInspector]
     public bool InputActive = false;
+    public float gunButtonDownTime = 0.3f;
+    private bool firing = false;
 
 	public float Move()
 	{
@@ -105,6 +107,36 @@ public class PlayerInput : MonoBehaviour {
             return false;
     }
 
+    public bool GunPressed()
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else if (Input.GetButtonDown("Fire1"))
+            {
+                Debug.Log("StartCoroutine");
+                StartCoroutine("ActivateGunTimer");
+                return false;
+            }
+            else if (firing && Input.GetButton("Fire1"))
+            {
+                Debug.Log("firing");
+                return true;
+            }
+            else if (Input.GetButtonUp("Fire1"))
+            {
+                StopCoroutine("ActivateGunTimer");
+                firing = false;
+                return false;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
 
 	public bool RopePressed()
 	{
@@ -113,7 +145,7 @@ public class PlayerInput : MonoBehaviour {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return Input.GetButtonDown("Fire1");
+			    return (!firing && Input.GetButtonUp("Fire1"));
         }
         else
             return false;
@@ -144,4 +176,16 @@ public class PlayerInput : MonoBehaviour {
         else
             return new Vector3();
 	}
+
+    IEnumerator ActivateGunTimer()
+    {
+        float timePassed = 0.0f;
+        while(timePassed < gunButtonDownTime)
+        {
+            timePassed = timePassed + Time.deltaTime;
+            yield return null;
+        }
+        Debug.Log("start firing");
+        firing = true;
+    }
 }

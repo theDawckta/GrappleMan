@@ -20,14 +20,17 @@ public class LevelController : MonoBehaviour {
     private Vector3 playerStartPosition;
     private int levelSections = 0;
 
+    void Awake()
+    {
+        playerStartPosition = _PlayerController.transform.position;
+    }
 	void Start () 
     {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
         _SideScrollerGenerator.Init(_UIController.SeedInputField.text);
-		AddLevelSection();
-       
-        playerStartPosition = _PlayerController.transform.position;
+        _PressureController.Init();
+        Init();
 	}
 	
 	void Update () 

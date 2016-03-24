@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour {
 	public float MaxSpeed = 10.0f;
 	public float JumpForce = 900.0f;
     public float BoostForce = 5.0f;
-    public LayerMask Wall;
+    public float GunCoolDown = 0.5f;
     public float HookSpeed = 80.0f;
     public float LineSpeed = 90.0f;
     public float ClimbSpeed = 30.0f;
@@ -22,7 +22,7 @@ public class PlayerController : MonoBehaviour {
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
-    public event OnPlayerDiedEvent OnPlayerWon;
+    public event OnPlayerWonEvent OnPlayerWon;
 
     private bool playerStarted;
 	private Animator anim;
@@ -33,7 +33,6 @@ public class PlayerController : MonoBehaviour {
 	private LineRenderer ropeLineRenderer;
     private List<float> ropeBendAngles = new List<float>();
     private List<Vector3> lineRenderPositions =  new List<Vector3>();
-    private Vector3 currentLineEndpoint;
     private GameObject wallHook;
     private FixedJoint wallHookFixedJoint;
     private Vector3 wallHookHitPosition = new Vector3();
@@ -43,6 +42,10 @@ public class PlayerController : MonoBehaviour {
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
     private Vector3 playerPreviousPosition;
+    private AudioSource playerAudio;
+    private AudioClip GunHitSoundEffect;
+    private AudioClip GunFireSoundEffect;
+    private bool firing = false;
 
 	void Awake() 
     {
@@ -57,7 +60,10 @@ public class PlayerController : MonoBehaviour {
                                                          RigidbodyConstraints.FreezeRotationY;
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.FindChild("PlayerBody").gameObject;
-        playerRigidbody = gameObject.GetComponent<Rigidbody>();
+        playerRigidbody = GetComponent<Rigidbody>();
+        playerAudio = GetComponent<AudioSource>();
+        GunFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
+        GunHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
 	}
 
     public void Init()
@@ -85,6 +91,14 @@ public class PlayerController : MonoBehaviour {
                 BoostPlayer();
             } 
 		}
+        
+        if (HookPlayerInput.GunPressed())
+        {
+            if (!firing)
+            {
+                StartCoroutine(FireGun());
+            }
+        }
 
         //if (HookPlayerInput.JumpPressed())
         //{
@@ -210,7 +224,6 @@ public class PlayerController : MonoBehaviour {
                             intersection = intersection + (cornerNormal.normalized * 0.1f);
                             lineRenderPositions.Add(intersection);
                             wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                            currentLineEndpoint = intersection;
                             wallHook.transform.position = intersection;
                             wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
 
@@ -278,21 +291,29 @@ public class PlayerController : MonoBehaviour {
 		}
     }
 
-    bool CheckHookHit()
+    IEnumerator FireGun()
     {
-        RaycastHit wallHit = new RaycastHit();
-        Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-        Vector3 direction = wallHookPosition - transform.position;
-        if (Physics.Raycast(transform.position, direction, out wallHit, 1 << LayerMask.NameToLayer("Ground")))
+        firing = true;
+        float timePassed = 0.0f;
+        while(timePassed < GunCoolDown)
         {
-            Debug.DrawLine(wallHit.point, wallHit.point + wallHit.normal.normalized * 0.1f, Color.yellow, 10.0f);
-            wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
-            return true;
+            timePassed = timePassed + Time.deltaTime;
+            yield return null;
         }
-        else
-            return false;
+        RaycastHit GunHit = new RaycastHit();
+        Vector3 clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                           -(Camera.main.transform.position.z + transform.position.z) + 1));
+        Vector3 direction = clickPosition - (transform.position + new Vector3(0.0f, 0.0f, 1.0f));
+        playerAudio.PlayOneShot(GunFireSoundEffect);
+        if (Physics.Raycast(transform.position + new Vector3(0.0f, 0.0f, 1.0f), direction.normalized, out GunHit, Mathf.Infinity))
+        {
+            if (GunHit.collider.tag == "EnemyTurret")
+                playerAudio.PlayOneShot(GunHitSoundEffect);
+                Debug.DrawLine(transform.position + new Vector3(0.0f, 0.0f, 1.0f), GunHit.point, Color.yellow);
+        }
+        firing = false;
+        yield return null;
     }
 
     IEnumerator ShootHook(Vector3 location)
@@ -452,6 +473,23 @@ public class PlayerController : MonoBehaviour {
 		playerBody.gameObject.transform.rotation = Quaternion.identity;
 	}
 
+    bool CheckHookHit()
+    {
+        RaycastHit wallHit = new RaycastHit();
+        Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                           -(Camera.main.transform.position.z + transform.position.z)));
+        Vector3 direction = wallHookPosition - transform.position;
+        if (Physics.Raycast(transform.position, direction, out wallHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
+        {
+            Debug.DrawLine(wallHit.point, wallHit.point + wallHit.normal.normalized * 0.1f, Color.yellow, 10.0f);
+            wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
+            return true;
+        }
+        else
+            return false;
+    }
+
     void CheckRopeSlack()
     {
         if(!grounded)
@@ -486,7 +524,7 @@ public class PlayerController : MonoBehaviour {
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") || collision.gameObject.layer == LayerMask.NameToLayer("Ground") || collision.gameObject.layer == LayerMask.NameToLayer("Bullet"))
         {
             playerStarted = false;
             StartCoroutine("PlayerDied");
