@@ -6,7 +6,6 @@ public class PlayerInput : MonoBehaviour {
 	public bool Mobile;
     [HideInInspector]
     public bool InputActive = false;
-    public float gunButtonDownTime = 0.3f;
     private bool firing = false;
 
 	public float Move()
@@ -107,7 +106,7 @@ public class PlayerInput : MonoBehaviour {
             return false;
     }
 
-    public bool GunPressed()
+    public bool GunPressed(float gunFireDelay)
     {
         if (InputActive)
         {
@@ -115,13 +114,11 @@ public class PlayerInput : MonoBehaviour {
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
             else if (Input.GetButtonDown("Fire1"))
             {
-                Debug.Log("StartCoroutine");
-                StartCoroutine("ActivateGunTimer");
+                StartCoroutine("ActivateGunTimer", gunFireDelay);
                 return false;
             }
             else if (firing && Input.GetButton("Fire1"))
             {
-                Debug.Log("firing");
                 return true;
             }
             else if (Input.GetButtonUp("Fire1"))
@@ -130,6 +127,21 @@ public class PlayerInput : MonoBehaviour {
                 firing = false;
                 return false;
             }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
+    public bool GunButtonDown()
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else if (Input.GetButtonDown("Fire1"))
+                return true;
             else
                 return false;
         }
@@ -177,10 +189,10 @@ public class PlayerInput : MonoBehaviour {
             return new Vector3();
 	}
 
-    IEnumerator ActivateGunTimer()
+    IEnumerator ActivateGunTimer(float gunFireDelay)
     {
         float timePassed = 0.0f;
-        while(timePassed < gunButtonDownTime)
+        while (timePassed < gunFireDelay)
         {
             timePassed = timePassed + Time.deltaTime;
             yield return null;
