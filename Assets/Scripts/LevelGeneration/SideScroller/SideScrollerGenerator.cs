@@ -24,10 +24,6 @@ public class SideScrollerGenerator : MonoBehaviour
     private List<Vector2> uvs = new List<Vector2>();
     private System.Random pseudoRandom;
 
-    void Start()
-    {
-    }
-
     public void Init(string seed)
     {
         pseudoRandom = new System.Random(seed.GetHashCode());
@@ -45,12 +41,12 @@ public class SideScrollerGenerator : MonoBehaviour
 	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, int minEnemyCount, int maxEnemyCount, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
-        GameObject enemySection = new GameObject();
-		MeshFilter filter = levelSection.AddComponent<MeshFilter>();;
-		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();;
+        
+		MeshFilter filter = levelSection.AddComponent<MeshFilter>();
+		MeshRenderer renderer = levelSection.AddComponent<MeshRenderer>();
 	    Mesh mesh;
-		MeshCollider collider = levelSection.AddComponent<MeshCollider>();;
-		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();;
+		MeshCollider collider = levelSection.AddComponent<MeshCollider>();
+		Rigidbody meshRigidbody = levelSection.AddComponent<Rigidbody>();
         float length = 0;
         float width = 0;
         float height = 0;
@@ -61,7 +57,7 @@ public class SideScrollerGenerator : MonoBehaviour
 		meshRigidbody.isKinematic = true;
         renderer.material = MeshMaterial;
 
-        Vector3 location = new Vector3(-TotalLength / 2, 0.0f, 0.0f);
+        Vector3 location = new Vector3(0.0f, 0.0f, 0.0f);
 
         mesh = filter.mesh;
         mesh.Clear();
@@ -97,14 +93,16 @@ public class SideScrollerGenerator : MonoBehaviour
         collider.sharedMesh = mesh;
 
         levelSection.layer = LayerMask.NameToLayer("Ground");
+        levelSection.tag = "Ground";
+        levelSection.name = "LevelSection";
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
 
-        enemySection = _EnemyGenerator.MakeEnemies(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
-        //enemySections.Add(enemySection);
-        //enemySection.transform.position = geoLocation;
-        //enemySection.transform.parent = transform;
+        //GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
+        //tempEnemySection.transform.position = geoLocation;
+        //tempEnemySection.transform.parent = transform;
+        //enemySections.Add(tempEnemySection);
 
         vertices.Clear();
         triangles.Clear();

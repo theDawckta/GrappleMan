@@ -24,7 +24,6 @@ public class PlayerControllerZip : MonoBehaviour {
 	private LineRenderer ropeLineRenderer;
     private List<float> ropeBendAngles = new List<float>();
     private List<Vector3> lineRenderPositions =  new List<Vector3>();
-    private Vector3 currentLineEndpoint;
     private GameObject wallHook;
     private FixedJoint wallHookFixedJoint;
     private bool hookActive = false;
@@ -33,7 +32,6 @@ public class PlayerControllerZip : MonoBehaviour {
 	private Vector3 hookPrepStartPosition;
 	private Vector3 hookPrepEndPosition;
     private Vector3 playerPreviousPosition;
-	private SmoothFollow CameraSmoothFollow;
 
 	void Awake() 
     {
@@ -52,16 +50,6 @@ public class PlayerControllerZip : MonoBehaviour {
 
 	void Update()
 	{
-        if(Input.GetKeyDown("-"))
-        {
-            if (CameraSmoothFollow.distance > 10)
-                CameraSmoothFollow.distance = CameraSmoothFollow.distance - 10;
-        }
-
-        if (Input.GetKeyDown("="))
-        {
-            CameraSmoothFollow.distance = CameraSmoothFollow.distance + 10;
-        }
 
 		if(HookPlayerInput.RopePressed())
 		{
@@ -179,7 +167,6 @@ public class PlayerControllerZip : MonoBehaviour {
                             Debug.DrawRay(intersection, cornerNormal, Color.green, 10.0f);
                             lineRenderPositions.Add(intersection);
                             wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                            currentLineEndpoint = intersection;
                             wallHook.transform.position = intersection;
                             wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
 

@@ -22,14 +22,13 @@ public class UIController : MonoBehaviour {
     public LevelController _LevelController;
     public int SeedLength;
 
-    private bool GameOn = false;
-
     private String seed;
 
 	void Start () 
     {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
+        _LevelController.Init();
         _SideScrollerGenerator.Init(seed);
         DistanceTraveled.text = "0 m";
         ShowPanel("StartPanel");
@@ -78,7 +77,7 @@ public class UIController : MonoBehaviour {
                                             Int32.Parse(DepthMax.text),
                                             Int32.Parse(EnemyMin.text),
                                             Int32.Parse(EnemyMax.text),
-                                            new Vector3(_SideScrollerGenerator.TotalLength / 2, 0.0f, 0.0f));
+                                            new Vector3(0.0f, 0.0f, 0.0f));
         }
     }
 
@@ -97,7 +96,7 @@ public class UIController : MonoBehaviour {
                                         Int32.Parse(DepthMax.text),
                                         Int32.Parse(EnemyMin.text),
                                         Int32.Parse(EnemyMax.text),
-                                        new Vector3(_SideScrollerGenerator.TotalLength / 2, 0.0f, 0.0f));
+                                        new Vector3(0.0f, 0.0f, 0.0f));
     }
 
     public static string RandomString(int length)

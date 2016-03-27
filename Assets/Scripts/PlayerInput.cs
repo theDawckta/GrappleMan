@@ -6,6 +6,7 @@ public class PlayerInput : MonoBehaviour {
 	public bool Mobile;
     [HideInInspector]
     public bool InputActive = false;
+    private bool firing = false;
 
 	public float Move()
 	{
@@ -105,6 +106,49 @@ public class PlayerInput : MonoBehaviour {
             return false;
     }
 
+    public bool GunPressed(float gunFireDelay)
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else if (Input.GetButtonDown("Fire1"))
+            {
+                StartCoroutine("ActivateGunTimer", gunFireDelay);
+                return false;
+            }
+            else if (firing && Input.GetButton("Fire1"))
+            {
+                return true;
+            }
+            else if (Input.GetButtonUp("Fire1"))
+            {
+                StopCoroutine("ActivateGunTimer");
+                firing = false;
+                return false;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
+    public bool GunButtonDown()
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else if (Input.GetButtonDown("Fire1"))
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
 
 	public bool RopePressed()
 	{
@@ -113,7 +157,7 @@ public class PlayerInput : MonoBehaviour {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return Input.GetButtonDown("Fire1");
+			    return (!firing && Input.GetButtonUp("Fire1"));
         }
         else
             return false;
@@ -144,4 +188,16 @@ public class PlayerInput : MonoBehaviour {
         else
             return new Vector3();
 	}
+
+    IEnumerator ActivateGunTimer(float gunFireDelay)
+    {
+        float timePassed = 0.0f;
+        while (timePassed < gunFireDelay)
+        {
+            timePassed = timePassed + Time.deltaTime;
+            yield return null;
+        }
+        Debug.Log("start firing");
+        firing = true;
+    }
 }

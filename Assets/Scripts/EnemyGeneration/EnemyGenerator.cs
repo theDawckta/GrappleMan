@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class EnemyGenerator : MonoBehaviour {
 
-    public GameObject Turret;
-    private List<Vector3> squareCorners = new List<Vector3>();
+    public GameObject _EnemyAI;
+    private List<Vector3> bottomCorners = new List<Vector3>();
     private GameObject enemySection;
 
 	// Use this for initialization
@@ -13,41 +13,57 @@ public class EnemyGenerator : MonoBehaviour {
 	    
 	}
 
-    public GameObject MakeEnemies(List<Vector3> levelVertices, System.Random pseudoRandom, int minEnemyCount, int maxEnemyCount, float totalLevelLength) 
+    public GameObject MakeEnemySection(List<Vector3> levelVertices, System.Random pseudoRandom, int minEnemyCount, int maxEnemyCount, float totalLevelLength) 
     {
         List<int> possibleXLocations = new List<int>();
-        ProcessLevelVertices(levelVertices);
+
+        bottomCorners = ProcessLevelVertices(levelVertices);
         int numOfEnemies = pseudoRandom.Next(minEnemyCount, maxEnemyCount);
         for (int i = 0; i < numOfEnemies; i++)
         {
-            int xLocation = pseudoRandom.Next(0, (int)totalLevelLength);
+            int xLocation = pseudoRandom.Next(20, (int)totalLevelLength);
 
             if (!possibleXLocations.Contains(xLocation))
                 possibleXLocations.Add(xLocation);
             else
                 i--;
         }
-        GenerateEnemies(possibleXLocations);
-            enemySection = new GameObject();
-        return enemySection;
+        return GenerateEnemies(possibleXLocations);
     }
 
-    private void GenerateEnemies(List<int> possibleXLocations)
+    private GameObject GenerateEnemies(List<int> possibleXLocations)
     {
-        Debug.Log("Made it to GenerateEnemies");
+        GameObject turretSection = new GameObject();
+		possibleXLocations.Sort((a, b) => a.CompareTo(b));
+
+		// could be optimized
+		for (int i = 0; i < possibleXLocations.Count; i++)
+		{
+			for (int j = 0; j < bottomCorners.Count; j++)
+			{
+				if(possibleXLocations[i] < bottomCorners[j].x)
+				{
+					GameObject tempEnemyAI = (GameObject)Instantiate(_EnemyAI, new Vector3(possibleXLocations[i], bottomCorners[j].y, _EnemyAI.transform.position.z), Quaternion.identity);
+					tempEnemyAI.transform.parent = turretSection.transform;
+					break;
+				}
+			}
+		}
+        turretSection.name = "TurretSection";
+        return turretSection;
     }
 
-    private void ProcessLevelVertices(List<Vector3> levelVertices)
+    private List<Vector3> ProcessLevelVertices(List<Vector3> levelVertices)
     {
-        for (int i = 8; i < levelVertices.Count; i = i + 24)
+        List<Vector3> tempBottomCorners = new List<Vector3>();
+
+        for (int i = 10; i < levelVertices.Count; i = i + 24)
         {
-            squareCorners.Add(levelVertices[i]);
-            squareCorners.Add(levelVertices[i + 1]);
-            Debug.DrawLine(levelVertices[i], levelVertices[i + 1], Color.yellow, 20.0f);
-            squareCorners.Add(levelVertices[i + 2]);
-            Debug.DrawLine(levelVertices[i + 1], levelVertices[i + 2], Color.red, 20.0f);
-            squareCorners.Add(levelVertices[i + 3]);
-            Debug.DrawLine(levelVertices[i + 2], levelVertices[i + 3], Color.blue, 20.0f);
+            tempBottomCorners.Add(levelVertices[i + 1]);
+            tempBottomCorners.Add(levelVertices[i]);
+			Debug.DrawLine(levelVertices[i], levelVertices[i + 1], Color.yellow, 20.0f);
         }
+
+        return tempBottomCorners;
     }
 }
