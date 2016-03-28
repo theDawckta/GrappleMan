@@ -19,6 +19,7 @@ public class UIController : MonoBehaviour {
     public InputField EnemyMax;
     public GameObject ParentCanvas;
     public SideScrollerGenerator _SideScrollerGenerator;
+    public PlayerController _PlayerController;
     public LevelController _LevelController;
     public int SeedLength;
 
@@ -28,7 +29,6 @@ public class UIController : MonoBehaviour {
     {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
-        _LevelController.Init();
         _SideScrollerGenerator.Init(seed);
         DistanceTraveled.text = "0 m";
         ShowPanel("StartCanvas");
@@ -36,8 +36,8 @@ public class UIController : MonoBehaviour {
 	
 	void Update () 
     {
-        if (_LevelController.GameOn)
-            DistanceTraveled.text = _LevelController.DistanceTraveled.ToString() + " m";
+        if(_LevelController._PlayerController.playerStarted)
+            DistanceTraveled.text = _PlayerController.DistanceTraveled.ToString() + " m";
 	}
 
     public void NewGame()

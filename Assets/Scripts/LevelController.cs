@@ -13,18 +13,14 @@ public class LevelController : MonoBehaviour {
     public GameObject StartPlatform;
     public GameObject LevelBounds;
     [HideInInspector]
-    public int DistanceTraveled = 0;
-    [HideInInspector]
     public bool GameOn = false;
 
     private AudioSource playerAudio;
     private AudioClip song;
-    private Vector3 playerStartPosition;
     private int levelSections = 0;
 
     void Awake()
     {
-        playerStartPosition = _PlayerController.transform.position;
         playerAudio = GetComponent<AudioSource>();
         song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
         playerAudio.clip = song;
@@ -42,8 +38,6 @@ public class LevelController : MonoBehaviour {
 	
 	void Update () 
     {
-        if (_PlayerController.transform.position.x - playerStartPosition.x > DistanceTraveled)
-            DistanceTraveled = (int)(_PlayerController.transform.position.x - playerStartPosition.x);
 		if(_PlayerController.transform.position.x > (levelSections * _SideScrollerGenerator.TotalLength) - _SideScrollerGenerator.TotalLength / 2)
 		{
  			AddLevelSection();
@@ -64,7 +58,6 @@ public class LevelController : MonoBehaviour {
     public void Init()
     {
         StartPlatform.SetActive(true);
-        _PlayerController.transform.position = playerStartPosition;
         _PlayerController.Init();
         _CaveLightController.Init();
         _SideScrollerGenerator.Init(_SideScrollerGenerator.seed);

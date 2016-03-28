@@ -20,6 +20,8 @@ public class PlayerController : MonoBehaviour
     public GameObject GrappleArmEnd;
     public LayerMask RopeLayerMask;
     public Text DebugText;
+    [HideInInspector]
+    public bool playerStarted;
     public delegate void OnPlayerStartedEvent();
     public event OnPlayerStartedEvent OnPlayerStarted;
     public delegate void OnPlayerDiedEvent();
@@ -29,8 +31,10 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem GunImpact;
     public ParticleSystem MuzzleFlash;
     public Light MuzzleFlashLight;
+    [HideInInspector]
+    public float DistanceTraveled;
 
-    private bool playerStarted;
+    private Vector3 playerStartPosition;
     private Animator anim;
     private GameObject playerBody;
     private GameObject grappleShoulder;
@@ -59,8 +63,8 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
+        playerStartPosition = transform.position;
         wallHookGraphic = GameObject.Find("WallHook").gameObject;
-
         wallHook = new GameObject();
         wallHook.name = "WallHookFixedJoint";
         wallHookFixedJoint = wallHook.AddComponent<FixedJoint>();
@@ -72,6 +76,7 @@ public class PlayerController : MonoBehaviour
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.FindChild("PlayerBody").gameObject;
         playerRigidbody = GetComponent<Rigidbody>();
+        playerRigidbody.detectCollisions = false;
         grappleShoulder = playerBody.transform.FindChild("GrappleShoulder").gameObject;
         gunShoulder = playerBody.transform.FindChild("GunShoulder").gameObject;
         playerAudio = GetComponent<AudioSource>();
@@ -95,6 +100,8 @@ public class PlayerController : MonoBehaviour
         hookActive = false;
         wallHookOut = false;
         hooked = false;
+        transform.position = playerStartPosition;
+        playerRigidbody.detectCollisions = false;
     }
 
     void Update()
@@ -195,6 +202,7 @@ public class PlayerController : MonoBehaviour
                                                                           RigidbodyConstraints.FreezeRotationX |
                                                                           RigidbodyConstraints.FreezeRotationY;
                         playerRigidbody.isKinematic = false;
+                        playerRigidbody.detectCollisions = true;
                         OnPlayerStarted();
                     }
 
@@ -223,6 +231,9 @@ public class PlayerController : MonoBehaviour
                 transform.GetComponent<Rigidbody>().velocity = playerVelocity;
             }
         }
+
+        if (transform.position.x - playerStartPosition.x > DistanceTraveled)
+            DistanceTraveled = (int)(transform.position.x - playerStartPosition.x);
     }
 
     void FixedUpdate()
