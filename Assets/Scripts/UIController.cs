@@ -31,7 +31,7 @@ public class UIController : MonoBehaviour {
         _LevelController.Init();
         _SideScrollerGenerator.Init(seed);
         DistanceTraveled.text = "0 m";
-        ShowPanel("StartPanel");
+        ShowPanel("StartCanvas");
 	}
 	
 	void Update () 
@@ -43,7 +43,7 @@ public class UIController : MonoBehaviour {
     public void NewGame()
     {
         DistanceTraveled.text = "0 m";
-        ShowPanel("StartPanel");
+        ShowPanel("StartCanvas");
         _LevelController.Init();
     }
 
