@@ -17,12 +17,19 @@ public class LevelController : MonoBehaviour {
     [HideInInspector]
     public bool GameOn = false;
 
+    private AudioSource playerAudio;
+    private AudioClip song;
     private Vector3 playerStartPosition;
     private int levelSections = 0;
 
     void Awake()
     {
         playerStartPosition = _PlayerController.transform.position;
+        playerAudio = GetComponent<AudioSource>();
+        song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
+        playerAudio.clip = song;
+        playerAudio.loop = true;
+        playerAudio.Play();
     }
 	void Start () 
     {
