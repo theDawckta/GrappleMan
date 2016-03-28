@@ -3,7 +3,7 @@ using System.Collections;
 
 public class EnemyAI : MonoBehaviour {
 
-    public float HitPoints = 10.0f;
+    public float HitPoints = 3.0f;
     public ENEMY_STATE states;
 
     public enum ENEMY_STATE
