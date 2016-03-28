@@ -5,7 +5,6 @@ public class EnemyAI : MonoBehaviour {
 
     public float HitPoints = 10.0f;
     public ENEMY_STATE states;
-    private Collider WakeTrigger;
 
     public enum ENEMY_STATE
     {
@@ -18,7 +17,6 @@ public class EnemyAI : MonoBehaviour {
     void Awake()
     {
         states = ENEMY_STATE.INACTIVE;
-        WakeTrigger = gameObject.GetComponent<SphereCollider>();
     }
 
 	// Use this for initialization
