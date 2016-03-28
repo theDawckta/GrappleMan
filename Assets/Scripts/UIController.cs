@@ -17,6 +17,7 @@ public class UIController : MonoBehaviour {
     public InputField DepthMax;
     public InputField EnemyMin;
     public InputField EnemyMax;
+    public Slider Volume;
     public GameObject ParentCanvas;
     public SideScrollerGenerator _SideScrollerGenerator;
     public PlayerController _PlayerController;
@@ -153,5 +154,10 @@ public class UIController : MonoBehaviour {
         {
             DepthMax.text = "1";
         }
+    }
+
+    public void OnVolumeChanged()
+    {
+        _LevelController.SetVolume(Volume.value);
     }
 }

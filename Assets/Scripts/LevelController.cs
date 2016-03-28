@@ -23,9 +23,10 @@ public class LevelController : MonoBehaviour {
     {
         playerAudio = GetComponent<AudioSource>();
         song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
+
         playerAudio.clip = song;
         playerAudio.loop = true;
-        playerAudio.Play();
+        SetVolume(_UIController.Volume.value);
     }
 	void Start () 
     {
@@ -57,6 +58,7 @@ public class LevelController : MonoBehaviour {
 
     public void Init()
     {
+        playerAudio.Play();
         StartPlatform.SetActive(true);
         _PlayerController.Init();
         _CaveLightController.Init();
@@ -84,6 +86,11 @@ public class LevelController : MonoBehaviour {
 		LevelBounds.transform.localScale = new Vector3(levelSections + 1, 1.0f, 1.0f);
 
         levelSections = levelSections + 1;
+    }
+
+    public void SetVolume(float volume)
+    {
+        AudioListener.volume = volume;
     }
 
     public void PlayerReady()
