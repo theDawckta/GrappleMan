@@ -88,6 +88,7 @@ public class PlayerController : MonoBehaviour
         wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
         wallHookGraphic.transform.parent = GrappleArmEnd.transform;
         wallHookFixedJoint.connectedBody = null;
+        playerRigidbody.isKinematic = true;
         transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
         ropeBendAngles.Clear();
         lineRenderPositions.Clear();
@@ -193,6 +194,7 @@ public class PlayerController : MonoBehaviour
                         transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
                                                                           RigidbodyConstraints.FreezeRotationX |
                                                                           RigidbodyConstraints.FreezeRotationY;
+                        playerRigidbody.isKinematic = false;
                         OnPlayerStarted();
                     }
 
@@ -364,26 +366,34 @@ public class PlayerController : MonoBehaviour
         RaycastHit GunHit = new RaycastHit();
         Vector3 clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
                                                                            HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z) + 1));
+                                                                           -(Camera.main.transform.position.z + transform.position.z)));
         Vector3 origin = new Vector3(gunShoulder.transform.position.x, gunShoulder.transform.position.y, gunShoulder.transform.position.z + -gunShoulder.transform.position.z);
-        Vector3 direction = clickPosition - (origin + new Vector3(0.0f, 0.0f, 1.0f));
+        Vector3 direction = clickPosition - origin;
         playerAudio.PlayOneShot(GunFireSoundEffect);
         MuzzleFlash.Emit(1);
         StartCoroutine("GunFlash");
-        
-        if (Physics.Raycast(transform.position + new Vector3(0.0f, 0.0f, 0.0f), direction.normalized, out GunHit, Mathf.Infinity))
-        {Debug.DrawLine(transform.position + new Vector3(0.0f, 0.0f, 0.0f), GunHit.point, Color.yellow);
+        Debug.DrawRay(origin, direction * 10.0f, Color.yellow, 2.0f);
+        if (Physics.Raycast(origin, direction.normalized, out GunHit, Mathf.Infinity))
+        {
             ParticleSystem.EmitParams emitDirection = new ParticleSystem.EmitParams();
-            emitDirection.velocity = GunHit.normal;
+            emitDirection.velocity = Vector3.Reflect(direction, GunHit.normal);
             emitDirection.position = GunHit.point;
+            if (GunHit.collider.transform.parent.GetComponent<EnemyAI>() != null)
+            {
+                playerAudio.PlayOneShot(GunHitSoundEffect);
+                GunHit.collider.transform.parent.GetComponent<EnemyAI>().TakeDamage(1.0f);
+            }
             GunImpact.Emit(emitDirection, 1);
         }
-        if (Physics.Raycast(transform.position + new Vector3(0.0f, 0.0f, 1.0f), direction.normalized, out GunHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
-        {
-            if (GunHit.collider.tag == "EnemyTurret")
-                playerAudio.PlayOneShot(GunHitSoundEffect);
-            Debug.DrawLine(transform.position + new Vector3(0.0f, 0.0f, 1.0f), GunHit.point, Color.yellow);
-        }
+        //if (Physics.Raycast(transform.position + new Vector3(0.0f, 0.0f, 1.0f), direction.normalized, out GunHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
+        //{
+        //    if (GunHit.collider.tag == "Enemy")
+        //    {
+                
+        //        GunHit.transform.gameObject.GetComponent<EnemyAI>().TakeDamage(1.0f);
+        //    }
+        //    Debug.DrawLine(transform.position + new Vector3(0.0f, 0.0f, 1.0f), GunHit.point, Color.yellow);
+        //}
 
         while (timePassed < GunCoolDown)
         {
@@ -639,12 +649,6 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") || collision.gameObject.layer == LayerMask.NameToLayer("Ground") || collision.gameObject.layer == LayerMask.NameToLayer("Bullet"))
-        {
-            playerStarted = false;
-            StartCoroutine("PlayerDied");
-        }
-
-        if (collision.gameObject.layer == LayerMask.NameToLayer("End"))
         {
             playerStarted = false;
             StartCoroutine("PlayerDied");

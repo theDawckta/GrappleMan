@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PressureController : MonoBehaviour {
+public class CaveLightController : MonoBehaviour
+{
 
-	public float PressureSpeed = 15.0f;
+    public float PressureSpeed = 5.0f;
     private bool active = false;
     private Vector3 startingPosition;
-	
+
     void Awake()
     {
         startingPosition = transform.position;
@@ -17,18 +18,19 @@ public class PressureController : MonoBehaviour {
         transform.position = startingPosition;
     }
 
-	void Update () {
+    void Update()
+    {
         if (active)
         {
             transform.Translate(Vector3.right * PressureSpeed * Time.deltaTime);
         }
-	}
+    }
 
-    public void LavaFlow()
+    public void LightGo()
     {
         active = true;
     }
-    public void LavaFlowStop()
+    public void LightStop()
     {
         active = false;
     }

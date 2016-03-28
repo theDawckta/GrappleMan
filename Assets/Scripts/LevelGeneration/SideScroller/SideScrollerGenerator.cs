@@ -99,10 +99,10 @@ public class SideScrollerGenerator : MonoBehaviour
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
 
-        //GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
-        //tempEnemySection.transform.position = geoLocation;
-        //tempEnemySection.transform.parent = transform;
-        //enemySections.Add(tempEnemySection);
+        GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
+        tempEnemySection.transform.position = geoLocation;
+        tempEnemySection.transform.parent = transform;
+        enemySections.Add(tempEnemySection);
 
         vertices.Clear();
         triangles.Clear();
