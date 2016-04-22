@@ -7,6 +7,7 @@ public class PlayerInput : MonoBehaviour {
     [HideInInspector]
     public bool InputActive = false;
     private bool firing = false;
+    private bool jetting = false;
 
 	public float Move()
 	{
@@ -112,19 +113,47 @@ public class PlayerInput : MonoBehaviour {
         {
             if (Mobile)
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire1"))
+            else if (Input.GetButtonDown("Fire2"))
             {
                 StartCoroutine("ActivateGunTimer", gunFireDelay);
                 return false;
             }
-            else if (firing && Input.GetButton("Fire1"))
+            else if (firing && Input.GetButton("Fire2"))
+            {
+                return true;
+            }
+            else if (Input.GetButtonUp("Fire2"))
+            {
+                StopCoroutine("ActivateGunTimer");
+                firing = false;
+                return false;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+
+    public bool JetPressed(float jetPackDelay)
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+            else if (Input.GetButtonDown("Fire1"))
+            {
+                StartCoroutine("ActivateJetTimer", jetPackDelay);
+                return false;
+            }
+            else if (jetting && Input.GetButton("Fire1"))
             {
                 return true;
             }
             else if (Input.GetButtonUp("Fire1"))
             {
-                StopCoroutine("ActivateGunTimer");
-                firing = false;
+                StopCoroutine("ActivateJetTimer");
+                jetting = false;
                 return false;
             }
             else
@@ -140,7 +169,7 @@ public class PlayerInput : MonoBehaviour {
         {
             if (Mobile)
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire1"))
+            else if (Input.GetButtonDown("Fire2"))
                 return true;
             else
                 return false;
@@ -150,27 +179,27 @@ public class PlayerInput : MonoBehaviour {
     }
 
 
-	public bool RopePressed()
+	public bool HookPressed()
 	{
         if (InputActive)
         {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return (!firing && Input.GetButtonUp("Fire1"));
+			    return (!firing && Input.GetButtonUp("Fire2"));
         }
         else
             return false;
 	}
 
-    public bool HookPressed()
+    public bool BoostPressed()
     {
         if (InputActive)
         {
             if (Mobile)
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
             else
-                return Input.GetButtonDown("Fire2");
+                return Input.GetButtonDown("Fire1");
         }
         else 
             return false;
@@ -197,7 +226,17 @@ public class PlayerInput : MonoBehaviour {
             timePassed = timePassed + Time.deltaTime;
             yield return null;
         }
-        Debug.Log("start firing");
         firing = true;
+    }
+
+    IEnumerator ActivateJetTimer(float jetFireDelay)
+    {
+        float timePassed = 0.0f;
+        while (timePassed < jetFireDelay)
+        {
+            timePassed = timePassed + Time.deltaTime;
+            yield return null;
+        }
+        jetting = true;
     }
 }

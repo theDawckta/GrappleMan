@@ -16,7 +16,11 @@ public class PlayerController : MonoBehaviour
     public float LineSpeed = 90.0f;
     public float ClimbSpeed = 30.0f;
     public float ClimbSlowDownForce = 20.0f;
-    public float GunFireDelay = 0.3f;
+    public float GunFireDelay = 0.2f;
+    public float JetFireDelay = 0.2f;
+    public float JetPower = 7.0f;
+    public float FuelTime = 2.0f;
+    public float RechargeTime = 3.0f;
     public GameObject GrappleArmEnd;
     public LayerMask RopeLayerMask;
     public Text DebugText;
@@ -59,6 +63,8 @@ public class PlayerController : MonoBehaviour
     private AudioClip GunFireSoundEffect;
     private float MuzzleFlashRange;
     private bool firing = false;
+    private bool jetting = false;
+    private float currentFuelTime;
     private bool aiming = false;
 
     void Awake()
@@ -84,6 +90,7 @@ public class PlayerController : MonoBehaviour
         GunHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         MuzzleFlashRange = MuzzleFlashLight.range;
         MuzzleFlashLight.range = 0;
+        currentFuelTime = FuelTime;
     }
 
     public void Init()
@@ -100,13 +107,14 @@ public class PlayerController : MonoBehaviour
         hookActive = false;
         wallHookOut = false;
         hooked = false;
+        currentFuelTime = FuelTime;
         transform.position = playerStartPosition;
         playerRigidbody.detectCollisions = false;
     }
 
     void Update()
     {
-        if (HookPlayerInput.RopePressed())
+        if (HookPlayerInput.BoostPressed())
         {
             if (hooked)
             {
@@ -115,19 +123,15 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (HookPlayerInput.GunPressed(GunFireDelay))
+        if(Input.GetKey(KeyCode.Space))
         {
-            if (!firing)
-            {
-                StartCoroutine("FireGun");
-            }
+            playerRigidbody.AddForce(new Vector3(0.0f, JetPower, 0.0f).normalized, ForceMode.Acceleration);
         }
 
         if (HookPlayerInput.GunButtonDown())
         {
             if (!aiming)
             {
-                Debug.Log("aiming");
                 StartCoroutine("AimGun");
             }
         }
@@ -232,6 +236,14 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        if (HookPlayerInput.GunPressed(GunFireDelay))
+        {
+            if (!firing)
+            {
+                StartCoroutine("FireGun");
+            }
+        }
+
         if (transform.position.x - playerStartPosition.x > DistanceTraveled)
             DistanceTraveled = (int)(transform.position.x - playerStartPosition.x);
     }
@@ -318,13 +330,22 @@ public class PlayerController : MonoBehaviour
             wallHookFixedJoint.connectedBody = null;
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed / Time.deltaTime;
-            transform.GetComponent<Rigidbody>().AddForce(climbForce, ForceMode.Acceleration);
+            playerRigidbody.AddForce(climbForce, ForceMode.Acceleration);
         }
         else if (HookPlayerInput.RopeClimbReleased() && hooked)
         {
             Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
             climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
-            transform.GetComponent<Rigidbody>().AddForce(-climbForce, ForceMode.Acceleration);
+            playerRigidbody.AddForce(-climbForce, ForceMode.Acceleration);
+        }
+        if (HookPlayerInput.JetPressed(JetFireDelay))
+        {
+            Debug.Log("boosting");
+            playerRigidbody.AddForce(new Vector3(0, JetPower, 0), ForceMode.Acceleration);
+            //if (!jetting)
+            //{
+            //    StartCoroutine("FireJets");
+            //}
         }
         DoDebugDrawing();
     }
@@ -547,6 +568,15 @@ public class PlayerController : MonoBehaviour
         }
         hookActive = false;
     }
+
+    //IEnumerator FireJets()
+    //{
+    //    while (currentFuelTime > 0.0f)
+    //    {
+    //        playerRigidbody.AddForce(new Vector3(0, 10, 0), ForceMode.Acceleration);
+    //    }
+    //    yield return null;
+    //}
 
     IEnumerator ClimbRope()
     {

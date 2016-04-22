@@ -36,9 +36,9 @@ public class EnemyTurret : EnemyAI
         {
             //Debug.Log("starting idle");
             // During state code
-            int randomRotation = Random.Range(1, 360);
-            float movementTime = Random.Range(2.0f, 3.0f);
-            float nextMovementTime = Random.Range(1.0f, 5.0f);
+            int randomRotation = Random.Range(90, -90);
+            float movementTime = Random.Range(0.5f,1.0f);
+            float nextMovementTime = Random.Range(1.0f, 2.0f);
             float timePassed = 0.0f;
             Quaternion originalRotation = TurretBarrelBody.transform.rotation;
 
@@ -64,9 +64,9 @@ public class EnemyTurret : EnemyAI
 
     IEnumerator HandleAttack()
     {
-        float nextShotTime = Random.Range(1.0f, 2.0f);
+        float nextShotTime = Random.Range(0.5f, 0.5f);
         float shotInterval = Random.Range(0.1f, 0.5f);
-        float findSpeed = Random.Range(1.0f, 2.0f);
+        float findSpeed = Random.Range(0.5f, 1.0f);
         int numberOfShots = Random.Range(3, 5);
         Quaternion newRotation;
         Vector3 direction;
@@ -75,18 +75,8 @@ public class EnemyTurret : EnemyAI
 
         while (states == ENEMY_STATE.ATTACK)
         {
-
             float timePassed = 0.0f;
-            while (timePassed < nextShotTime)
-            {
-                newRotation = Quaternion.LookRotation(player.position - TurretBarrelBody.transform.position, Vector3.forward);
-                newRotation.x = 0.0f;
-                newRotation.y = 0.0f;
-                TurretBarrelBody.transform.rotation = newRotation;
-                timePassed = timePassed + Time.deltaTime;
-                yield return null;
-            }
-            timePassed = 0.0f;
+            
             for (int i = 0; i < numberOfShots; i++)
             {
                 while (timePassed < shotInterval)
@@ -119,7 +109,15 @@ public class EnemyTurret : EnemyAI
             }
             if (!CheckForPlayer())
                 states = ENEMY_STATE.IDLE;
-
+            while (timePassed < nextShotTime)
+            {
+                newRotation = Quaternion.LookRotation(player.position - TurretBarrelBody.transform.position, Vector3.forward);
+                newRotation.x = 0.0f;
+                newRotation.y = 0.0f;
+                TurretBarrelBody.transform.rotation = newRotation;
+                timePassed = timePassed + Time.deltaTime;
+                yield return null;
+            }
             yield return null;
         }
     }

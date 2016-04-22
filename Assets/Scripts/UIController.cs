@@ -18,6 +18,7 @@ public class UIController : MonoBehaviour {
     public InputField EnemyMin;
     public InputField EnemyMax;
     public Slider Volume;
+    public Slider FuelGauge;
     public GameObject ParentCanvas;
     public SideScrollerGenerator _SideScrollerGenerator;
     public PlayerController _PlayerController;
