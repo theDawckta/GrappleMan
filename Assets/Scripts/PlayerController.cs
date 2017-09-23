@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     public float GunFireDelay = 0.2f;
     public float JetFireDelay = 0.2f;
     public float JetPower = 7.0f;
-    public float FuelTime = 2.0f;
+    //public float FuelTime = 2.0f;
     public float RechargeTime = 3.0f;
     public GameObject GrappleArmEnd;
     public LayerMask RopeLayerMask;
@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour
     private FixedJoint wallHookFixedJoint;
     private Vector3 wallHookHitPosition = new Vector3();
     private bool hookActive = false;
-    private bool wallHookOut = false;
+    //private bool wallHookOut = false;
     private bool hooked = false;
     private Vector3 hookPrepStartPosition;
     private Vector3 hookPrepEndPosition;
@@ -63,8 +63,7 @@ public class PlayerController : MonoBehaviour
     private AudioClip GunFireSoundEffect;
     private float MuzzleFlashRange;
     private bool firing = false;
-    private bool jetting = false;
-    private float currentFuelTime;
+    //private bool jetting = false;
     private bool aiming = false;
 
     void Awake()
@@ -80,17 +79,16 @@ public class PlayerController : MonoBehaviour
                                                          RigidbodyConstraints.FreezeRotationX |
                                                          RigidbodyConstraints.FreezeRotationY;
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
-        playerBody = transform.FindChild("PlayerBody").gameObject;
+        playerBody = transform.Find("PlayerBody").gameObject;
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.detectCollisions = false;
-        grappleShoulder = playerBody.transform.FindChild("GrappleShoulder").gameObject;
-        gunShoulder = playerBody.transform.FindChild("GunShoulder").gameObject;
+        grappleShoulder = playerBody.transform.Find("GrappleShoulder").gameObject;
+        gunShoulder = playerBody.transform.Find("GunShoulder").gameObject;
         playerAudio = GetComponent<AudioSource>();
         GunFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         GunHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         MuzzleFlashRange = MuzzleFlashLight.range;
         MuzzleFlashLight.range = 0;
-        currentFuelTime = FuelTime;
     }
 
     public void Init()
@@ -105,24 +103,13 @@ public class PlayerController : MonoBehaviour
         ropeBendAngles.Clear();
         lineRenderPositions.Clear();
         hookActive = false;
-        wallHookOut = false;
         hooked = false;
-        currentFuelTime = FuelTime;
         transform.position = playerStartPosition;
         playerRigidbody.detectCollisions = false;
     }
 
     void Update()
     {
-        if (HookPlayerInput.BoostPressed())
-        {
-            if (hooked)
-            {
-                StartCoroutine(RetrieveHookRope());
-                BoostPlayer();
-            }
-        }
-
         if(Input.GetKey(KeyCode.Space))
         {
             playerRigidbody.AddForce(new Vector3(0.0f, JetPower, 0.0f).normalized, ForceMode.Acceleration);
@@ -194,46 +181,39 @@ public class PlayerController : MonoBehaviour
         if (HookPlayerInput.HookPressed())
         {
             transform.GetComponent<Rigidbody>().isKinematic = false;
-            if (!hookActive)
+            if (!hookActive && !hooked)
             {
-                if (!wallHookOut && !hooked)
+                if (playerStarted == false)
                 {
-                    if (playerStarted == false)
-                    {
-                        playerStarted = true;
-                        grounded = false;
-                        transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                                          RigidbodyConstraints.FreezeRotationX |
-                                                                          RigidbodyConstraints.FreezeRotationY;
-                        playerRigidbody.isKinematic = false;
-                        playerRigidbody.detectCollisions = true;
-                        OnPlayerStarted();
-                    }
+                    playerStarted = true;
+                    grounded = false;
+                    transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                                        RigidbodyConstraints.FreezeRotationX |
+                                                                        RigidbodyConstraints.FreezeRotationY;
+                    playerRigidbody.isKinematic = false;
+                    playerRigidbody.detectCollisions = true;
+                    OnPlayerStarted();
+                }
 
-                    if (CheckHookHit())
-                    {
-                        StartCoroutine(ShootHook(wallHookHitPosition));
-                        // comment out if you want to wait to shoot the rope
-                        StartCoroutine(ShootRope(wallHookHitPosition));
-                    }
-                }
-                else if (wallHookOut && !hooked)
+                if (CheckHookHit())
                 {
-                    // uncomment to wait to shoot rope
-                    //StartCoroutine(ShootRope(wallHookPosition));
-                }
-                else if (wallHookOut && hooked)
-                {
-                    StartCoroutine(RetrieveHookRope());
+                    StartCoroutine(ShootHook(wallHookHitPosition));
+                    StartCoroutine(ShootRope(wallHookHitPosition));
                 }
             }
-            else if (wallHookOut && hooked && hookActive)
+            else if (!hookActive && hooked)
             {
-                StopCoroutine("ClimbRope");
+                BoostPlayer();
                 StartCoroutine(RetrieveHookRope());
-                Vector3 playerVelocity = (transform.position - playerPreviousPosition) / Time.deltaTime;
-                transform.GetComponent<Rigidbody>().velocity = playerVelocity;
             }
+
+            //else if (wallHookOut && hooked && hookActive)
+            //{
+            //    StopCoroutine("ClimbRope");
+            //    StartCoroutine(RetrieveHookRope());
+            //    Vector3 playerVelocity = (transform.position - playerPreviousPosition) / Time.deltaTime;
+            //    transform.GetComponent<Rigidbody>().velocity = playerVelocity;
+            //}
         }
 
         if (HookPlayerInput.GunPressed(GunFireDelay))
@@ -250,18 +230,15 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (hooked)
-            CheckRopeSlack();
-        if (hooked)
+        if (hooked && lineRenderPositions.Count > 0)
         {
+            CheckRopeSlack();
             RaycastHit playerRaycastOut;
             Vector3 direction = lineRenderPositions[lineRenderPositions.Count - 1] - transform.position;
             bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Ground"));
 
             if (hit)
             {
-                // figure where to add the wallHook
-
                 RaycastHit nextPlayerRaycastOut;
                 if (Physics.Raycast(lineRenderPositions[lineRenderPositions.Count - 1], -direction, out nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
                 {
@@ -338,15 +315,15 @@ public class PlayerController : MonoBehaviour
             climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
             playerRigidbody.AddForce(-climbForce, ForceMode.Acceleration);
         }
-        if (HookPlayerInput.JetPressed(JetFireDelay))
-        {
-            Debug.Log("boosting");
-            playerRigidbody.AddForce(new Vector3(0, JetPower, 0), ForceMode.Acceleration);
-            //if (!jetting)
-            //{
-            //    StartCoroutine("FireJets");
-            //}
-        }
+        //if (HookPlayerInput.JetPressed(JetFireDelay))
+        //{
+        //    Debug.Log("boosting");
+        //    playerRigidbody.AddForce(new Vector3(0, JetPower, 0), ForceMode.Acceleration);
+        //    //if (!jetting)
+        //    //{
+        //    //    StartCoroutine("FireJets");
+        //    //}
+        //}
         DoDebugDrawing();
     }
 
@@ -358,7 +335,7 @@ public class PlayerController : MonoBehaviour
         if (lineRenderPositions.Count > 0)
         {
             // draw rope if hooked
-            ropeLineRenderer.SetVertexCount(lineRenderPositions.Count + 1);
+            ropeLineRenderer.positionCount = lineRenderPositions.Count + 1;
             for (int i = 0; i < lineRenderPositions.Count; i++)
             {
                 ropeLineRenderer.SetPosition(i, lineRenderPositions[i]);
@@ -448,17 +425,17 @@ public class PlayerController : MonoBehaviour
     IEnumerator GunFlash()
     {
         float timePassed = 0.0f;
-        while (timePassed < MuzzleFlash.startLifetime / 2)
+        while (timePassed < MuzzleFlash.main.startLifetimeMultiplier / 2)
         {
-            float percentageComplete = timePassed / (MuzzleFlash.startLifetime / 2);
+            float percentageComplete = timePassed / (MuzzleFlash.main.startLifetimeMultiplier / 2);
             MuzzleFlashLight.range = Mathf.Lerp(0, MuzzleFlashRange, percentageComplete);
             timePassed = timePassed + Time.deltaTime;
             yield return null;
         }
         timePassed = 0.0f;
-        while (timePassed < MuzzleFlash.startLifetime / 2)
+        while (timePassed < MuzzleFlash.main.startLifetimeMultiplier / 2)
         {
-            float percentageComplete = timePassed / (MuzzleFlash.startLifetime / 2);
+            float percentageComplete = timePassed / (MuzzleFlash.main.startLifetimeMultiplier / 2);
             MuzzleFlashLight.range = Mathf.Lerp(MuzzleFlashRange, 0, percentageComplete);
             timePassed = timePassed + Time.deltaTime;
             yield return null;
@@ -488,7 +465,7 @@ public class PlayerController : MonoBehaviour
             timePassed += Time.deltaTime;
             yield return null;
         }
-        wallHookOut = true;
+        hooked = true;
         hookActive = false;
     }
 
@@ -501,7 +478,7 @@ public class PlayerController : MonoBehaviour
         Vector3 origin = new Vector3(grappleShoulder.transform.position.x, grappleShoulder.transform.position.y, grappleShoulder.transform.position.z);
         var dist = Vector3.Distance(origin, wallHookHitPosition);
         float timeTakenDuringLerp = dist / HookSpeed;
-        ropeLineRenderer.SetVertexCount(2);
+        ropeLineRenderer.positionCount = 2;
         while (elapsedTime < timeTakenDuringLerp)
         {
             float percentageComplete = elapsedTime / timeTakenDuringLerp;
@@ -521,10 +498,9 @@ public class PlayerController : MonoBehaviour
     IEnumerator RetrieveHookRope()
     {
         // have to fix the line coming back
-        wallHookFixedJoint.connectedBody = null;
         hooked = false;
         hookActive = true;
-        wallHookOut = false;
+        wallHookFixedJoint.connectedBody = null;
         grounded = true;
         float elapsedTime = 0;
         float dist;
@@ -571,7 +547,7 @@ public class PlayerController : MonoBehaviour
 
     //IEnumerator FireJets()
     //{
-    //    while (currentFuelTime > 0.0f)
+    //    while (FuelTime > 0.0f)
     //    {
     //        playerRigidbody.AddForce(new Vector3(0, 10, 0), ForceMode.Acceleration);
     //    }
@@ -606,7 +582,7 @@ public class PlayerController : MonoBehaviour
         }
         //        LockPlayerPosition();
         lineRenderPositions.Clear();
-        ropeLineRenderer.SetVertexCount(0);
+        ropeLineRenderer.positionCount = 0;
         hookActive = false;
     }
 
@@ -620,14 +596,11 @@ public class PlayerController : MonoBehaviour
         Debug.DrawRay(transform.position, direction.normalized * BoostForce, Color.red, 10.0f);
 
         playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
-
-
     }
 
     void LockPlayerPosition()
     {
         hooked = false;
-        wallHookOut = false;
         transform.GetComponent<Rigidbody>().isKinematic = true;
         ropeLineRenderer.enabled = false;
         wallHookFixedJoint.connectedBody = null;

@@ -113,16 +113,16 @@ public class PlayerInput : MonoBehaviour {
         {
             if (Mobile)
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire2"))
+            else if (Input.GetButtonDown("Fire1"))
             {
                 StartCoroutine("ActivateGunTimer", gunFireDelay);
                 return false;
             }
-            else if (firing && Input.GetButton("Fire2"))
+            else if (firing && Input.GetButton("Fire1"))
             {
                 return true;
             }
-            else if (Input.GetButtonUp("Fire2"))
+            else if (Input.GetButtonUp("Fire1"))
             {
                 StopCoroutine("ActivateGunTimer");
                 firing = false;
@@ -169,7 +169,7 @@ public class PlayerInput : MonoBehaviour {
         {
             if (Mobile)
                 return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire2"))
+            else if (Input.GetButtonDown("Fire1"))
                 return true;
             else
                 return false;
@@ -191,19 +191,6 @@ public class PlayerInput : MonoBehaviour {
         else
             return false;
 	}
-
-    public bool BoostPressed()
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else
-                return Input.GetButtonDown("Fire1");
-        }
-        else 
-            return false;
-    }
 
 	public Vector3 GetPlayerTouchPosition()
 	{

@@ -89,7 +89,7 @@ public class SideScrollerGenerator : MonoBehaviour
         mesh.triangles = triangles.ToArray();
 
         mesh.RecalculateBounds();
-        mesh.Optimize();
+        ;
         collider.sharedMesh = mesh;
 
         levelSection.layer = LayerMask.NameToLayer("Ground");

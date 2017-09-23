@@ -3,9 +3,8 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections;
 
-public class LevelController : MonoBehaviour {
-    
-    public CaveLightController _CaveLightController;
+public class LevelController : MonoBehaviour
+{
     public PlayerController _PlayerController;
     public UIController _UIController;
     public SideScrollerGenerator _SideScrollerGenerator;
@@ -33,7 +32,6 @@ public class LevelController : MonoBehaviour {
 	    _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
         _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
         _SideScrollerGenerator.Init(_UIController.SeedInputField.text);
-        _CaveLightController.Init();
         Init();
 	}
 	
@@ -61,7 +59,6 @@ public class LevelController : MonoBehaviour {
         playerAudio.Play();
         StartPlatform.SetActive(true);
         _PlayerController.Init();
-        _CaveLightController.Init();
         _SideScrollerGenerator.Init(_SideScrollerGenerator.seed);
         if(_UIController.ParentCanvas.gameObject.activeSelf == false)
             _PlayerController.HookPlayerInput.InputActive = true;
@@ -102,7 +99,6 @@ public class LevelController : MonoBehaviour {
     void _PlayerController_OnPlayerDied()
     {
         _UIController.EndGame();
-        _CaveLightController.LightStop();
         Time.timeScale = 0.0f;
         _PlayerController.HookPlayerInput.InputActive = false;
         GameOn = false;
@@ -112,7 +108,6 @@ public class LevelController : MonoBehaviour {
     {
         GameOn = true;
         StartPlatform.SetActive(false);
-        _CaveLightController.LightGo();
     }
 
     void _PlayerController_OnPlayerWon()

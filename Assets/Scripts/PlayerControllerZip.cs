@@ -35,7 +35,7 @@ public class PlayerControllerZip : MonoBehaviour {
 
 	void Awake() 
     {
-        wallHookGraphic = transform.FindChild("WallHook").gameObject;
+        wallHookGraphic = transform.Find("WallHook").gameObject;
         wallHook = new GameObject();
         wallHook.name = "WallHookFixedJoint";
         wallHookFixedJoint = wallHook.AddComponent<FixedJoint>();
@@ -45,17 +45,17 @@ public class PlayerControllerZip : MonoBehaviour {
                                                          RigidbodyConstraints.FreezeRotationX |
                                                          RigidbodyConstraints.FreezeRotationY;
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
-        playerBody = transform.FindChild("PlayerBody").gameObject;
+        playerBody = transform.Find("PlayerBody").gameObject;
 	}
 
 	void Update()
 	{
 
-		if(HookPlayerInput.RopePressed())
-		{
-            //if(hooked)
-            //    UnHook();
-		}
+		//if(HookPlayerInput.RopePressed())
+		//{
+  //          //if(hooked)
+  //          //    UnHook();
+		//}
 
         if (HookPlayerInput.JumpPressed())
         {
@@ -220,7 +220,7 @@ public class PlayerControllerZip : MonoBehaviour {
         if (lineRenderPositions.Count > 0)
 		{
 			// draw rope if hooked
-            ropeLineRenderer.SetVertexCount(lineRenderPositions.Count + 1);
+            ropeLineRenderer.positionCount = lineRenderPositions.Count + 1;
             for (int i = 0; i < lineRenderPositions.Count; i++ )
             {
                 ropeLineRenderer.SetPosition(i, lineRenderPositions[i]); 
@@ -271,7 +271,7 @@ public class PlayerControllerZip : MonoBehaviour {
         Vector3 ropeEndPoint = new Vector3();
         var dist = Vector3.Distance(transform.position, wallHookGraphic.transform.position);
         float timeTakenDuringLerp = dist / HookSpeed;
-        ropeLineRenderer.SetVertexCount(2);
+        ropeLineRenderer.positionCount = 2;
         while (elapsedTime < timeTakenDuringLerp)
         {
             float percentageComplete = elapsedTime / timeTakenDuringLerp;
@@ -364,7 +364,7 @@ public class PlayerControllerZip : MonoBehaviour {
         }
 
         lineRenderPositions.Clear();
-        ropeLineRenderer.SetVertexCount(0);
+        ropeLineRenderer.positionCount = 0;
 		LockPlayerPosition(); 
 		hookActive = false;
     }
