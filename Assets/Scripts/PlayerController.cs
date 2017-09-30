@@ -6,21 +6,14 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-
     public PlayerInput HookPlayerInput;
     public float MaxSpeed = 10.0f;
     public float JumpForce = 900.0f;
     public float BoostForce = 5.0f;
-    public float GunCoolDown = 0.5f;
     public float HookSpeed = 80.0f;
     public float LineSpeed = 90.0f;
     public float ClimbSpeed = 30.0f;
     public float ClimbSlowDownForce = 20.0f;
-    public float GunFireDelay = 0.2f;
-    public float JetFireDelay = 0.2f;
-    public float JetPower = 7.0f;
-    //public float FuelTime = 2.0f;
-    public float RechargeTime = 3.0f;
     public GameObject GrappleArmEnd;
     public LayerMask RopeLayerMask;
     public Text DebugText;
@@ -32,17 +25,11 @@ public class PlayerController : MonoBehaviour
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
     public event OnPlayerWonEvent OnPlayerWon;
-    public ParticleSystem GunImpact;
-    public ParticleSystem MuzzleFlash;
-    public Light MuzzleFlashLight;
-    [HideInInspector]
-    public float DistanceTraveled;
 
     private Vector3 playerStartPosition;
     private Animator anim;
     private GameObject playerBody;
     private GameObject grappleShoulder;
-    private GameObject gunShoulder;
     private Rigidbody playerRigidbody;
     private bool grounded = false;
     private GameObject wallHookGraphic;
@@ -53,18 +40,14 @@ public class PlayerController : MonoBehaviour
     private FixedJoint wallHookFixedJoint;
     private Vector3 wallHookHitPosition = new Vector3();
     private bool hookActive = false;
-    //private bool wallHookOut = false;
     private bool hooked = false;
     private Vector3 hookPrepStartPosition;
     private Vector3 hookPrepEndPosition;
     private Vector3 playerPreviousPosition;
     private AudioSource playerAudio;
-    private AudioClip GunHitSoundEffect;
-    private AudioClip GunFireSoundEffect;
+    private AudioClip HookHitSoundEffect;
+    private AudioClip HookFireSoundEffect;
     private float MuzzleFlashRange;
-    private bool firing = false;
-    //private bool jetting = false;
-    private bool aiming = false;
 
     void Awake()
     {
@@ -81,14 +64,10 @@ public class PlayerController : MonoBehaviour
         ropeLineRenderer = wallHookGraphic.GetComponent<LineRenderer>();
         playerBody = transform.Find("PlayerBody").gameObject;
         playerRigidbody = GetComponent<Rigidbody>();
-        playerRigidbody.detectCollisions = false;
         grappleShoulder = playerBody.transform.Find("GrappleShoulder").gameObject;
-        gunShoulder = playerBody.transform.Find("GunShoulder").gameObject;
         playerAudio = GetComponent<AudioSource>();
-        GunFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
-        GunHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
-        MuzzleFlashRange = MuzzleFlashLight.range;
-        MuzzleFlashLight.range = 0;
+        HookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
+        HookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
     }
 
     public void Init()
@@ -105,43 +84,10 @@ public class PlayerController : MonoBehaviour
         hookActive = false;
         hooked = false;
         transform.position = playerStartPosition;
-        playerRigidbody.detectCollisions = false;
     }
 
     void Update()
     {
-        if(Input.GetKey(KeyCode.Space))
-        {
-            playerRigidbody.AddForce(new Vector3(0.0f, JetPower, 0.0f).normalized, ForceMode.Acceleration);
-        }
-
-        if (HookPlayerInput.GunButtonDown())
-        {
-            if (!aiming)
-            {
-                StartCoroutine("AimGun");
-            }
-        }
-
-        //if (HookPlayerInput.JumpPressed())
-        //{
-        //    if (hooked)
-        //    {
-        //        if(!grounded)
-        //        {   
-        //            StartCoroutine(RetrieveHookRope());
-        //        }
-        //        GetComponent<Rigidbody>().AddForce(new Vector3(0.0f, JumpForce, 0.0f));
-        //        return;
-        //    }
-
-        //    if (grounded || playerRigidbody.isKinematic)
-        //    {
-        //        playerRigidbody.isKinematic = false;
-        //        playerRigidbody.AddForce(new Vector2(0, JumpForce));
-        //    }
-        //}
-
         if (hooked || hookActive)
         {
             if (HookPlayerInput.RopeReleasePressed())
@@ -172,12 +118,6 @@ public class PlayerController : MonoBehaviour
             grappleShoulder.transform.rotation = newRotation;
         }
 
-        //if (HookPlayerInput.RopeClimbPressed())
-        //{
-        //    if (hooked)
-        //        StartCoroutine("ClimbRope");
-        //}
-
         if (HookPlayerInput.HookPressed())
         {
             transform.GetComponent<Rigidbody>().isKinematic = false;
@@ -191,8 +131,8 @@ public class PlayerController : MonoBehaviour
                                                                         RigidbodyConstraints.FreezeRotationX |
                                                                         RigidbodyConstraints.FreezeRotationY;
                     playerRigidbody.isKinematic = false;
-                    playerRigidbody.detectCollisions = true;
-                    OnPlayerStarted();
+                    if(OnPlayerStarted != null)
+                        OnPlayerStarted();
                 }
 
                 if (CheckHookHit())
@@ -206,26 +146,7 @@ public class PlayerController : MonoBehaviour
                 BoostPlayer();
                 StartCoroutine(RetrieveHookRope());
             }
-
-            //else if (wallHookOut && hooked && hookActive)
-            //{
-            //    StopCoroutine("ClimbRope");
-            //    StartCoroutine(RetrieveHookRope());
-            //    Vector3 playerVelocity = (transform.position - playerPreviousPosition) / Time.deltaTime;
-            //    transform.GetComponent<Rigidbody>().velocity = playerVelocity;
-            //}
         }
-
-        if (HookPlayerInput.GunPressed(GunFireDelay))
-        {
-            if (!firing)
-            {
-                StartCoroutine("FireGun");
-            }
-        }
-
-        if (transform.position.x - playerStartPosition.x > DistanceTraveled)
-            DistanceTraveled = (int)(transform.position.x - playerStartPosition.x);
     }
 
     void FixedUpdate()
@@ -302,28 +223,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         //HandleMove();
-        if (HookPlayerInput.RopeClimbPressed() && hooked)
-        {
-            wallHookFixedJoint.connectedBody = null;
-            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
-            climbForce = climbForce * ClimbSpeed / Time.deltaTime;
-            playerRigidbody.AddForce(climbForce, ForceMode.Acceleration);
-        }
-        else if (HookPlayerInput.RopeClimbReleased() && hooked)
-        {
-            Vector3 climbForce = (lineRenderPositions[lineRenderPositions.Count - 1] - transform.position).normalized;
-            climbForce = climbForce * ClimbSpeed * ClimbSlowDownForce / Time.deltaTime;
-            playerRigidbody.AddForce(-climbForce, ForceMode.Acceleration);
-        }
-        //if (HookPlayerInput.JetPressed(JetFireDelay))
-        //{
-        //    Debug.Log("boosting");
-        //    playerRigidbody.AddForce(new Vector3(0, JetPower, 0), ForceMode.Acceleration);
-        //    //if (!jetting)
-        //    //{
-        //    //    StartCoroutine("FireJets");
-        //    //}
-        //}
+
         DoDebugDrawing();
     }
 
@@ -344,108 +244,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator AimGun()
-    {
-        aiming = true;
-        float timePassed = 0.0f;
-        while (timePassed < GunFireDelay)
-        {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z) + 1));
-            Vector3 _direction = (mousePosition - gunShoulder.transform.position).normalized;
-
-            //create the rotation we need to be in to look at the target
-            Quaternion _lookRotation = Quaternion.LookRotation(_direction, Vector3.back);
-            _lookRotation.x = 0.0f;
-            _lookRotation.y = 0.0f;
-            //rotate us over time according to speed until we are in the required rotation
-            gunShoulder.transform.rotation = Quaternion.Slerp(gunShoulder.transform.rotation, _lookRotation, timePassed / GunFireDelay);
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-        aiming = false;
-    }
-
-    IEnumerator FireGun()
-    {
-        firing = true;
-        float timePassed = 0.0f;
-
-        RaycastHit GunHit = new RaycastHit();
-        Vector3 clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-        Vector3 origin = new Vector3(gunShoulder.transform.position.x, gunShoulder.transform.position.y, gunShoulder.transform.position.z + -gunShoulder.transform.position.z);
-        Vector3 direction = clickPosition - origin;
-        playerAudio.PlayOneShot(GunFireSoundEffect);
-        MuzzleFlash.Emit(1);
-        StartCoroutine("GunFlash");
-        Debug.DrawRay(origin, direction * 10.0f, Color.yellow, 2.0f);
-        if (Physics.Raycast(origin, direction.normalized, out GunHit, Mathf.Infinity))
-        {
-            ParticleSystem.EmitParams emitDirection = new ParticleSystem.EmitParams();
-            emitDirection.velocity = Vector3.Reflect(direction, GunHit.normal);
-            emitDirection.position = GunHit.point;
-            if (GunHit.collider.transform.parent.GetComponent<EnemyAI>() != null)
-            {
-                playerAudio.PlayOneShot(GunHitSoundEffect);
-                GunHit.collider.transform.parent.GetComponent<EnemyAI>().TakeDamage(1.0f);
-            }
-            GunImpact.Emit(emitDirection, 1);
-        }
-        //if (Physics.Raycast(transform.position + new Vector3(0.0f, 0.0f, 1.0f), direction.normalized, out GunHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Ground")))
-        //{
-        //    if (GunHit.collider.tag == "Enemy")
-        //    {
-                
-        //        GunHit.transform.gameObject.GetComponent<EnemyAI>().TakeDamage(1.0f);
-        //    }
-        //    Debug.DrawLine(transform.position + new Vector3(0.0f, 0.0f, 1.0f), GunHit.point, Color.yellow);
-        //}
-
-        while (timePassed < GunCoolDown)
-        {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                          -(Camera.main.transform.position.z + transform.position.z) + 1));
-            Quaternion newRotation = Quaternion.LookRotation(mousePosition - gunShoulder.transform.position, Vector3.back);
-            newRotation.x = 0.0f;
-            newRotation.y = 0.0f;
-            gunShoulder.transform.rotation = newRotation;
-
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-       
-        firing = false;
-        yield return null;
-    }
-
-    IEnumerator GunFlash()
-    {
-        float timePassed = 0.0f;
-        while (timePassed < MuzzleFlash.main.startLifetimeMultiplier / 2)
-        {
-            float percentageComplete = timePassed / (MuzzleFlash.main.startLifetimeMultiplier / 2);
-            MuzzleFlashLight.range = Mathf.Lerp(0, MuzzleFlashRange, percentageComplete);
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-        timePassed = 0.0f;
-        while (timePassed < MuzzleFlash.main.startLifetimeMultiplier / 2)
-        {
-            float percentageComplete = timePassed / (MuzzleFlash.main.startLifetimeMultiplier / 2);
-            MuzzleFlashLight.range = Mathf.Lerp(MuzzleFlashRange, 0, percentageComplete);
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-        yield return null;
-    }
-
     IEnumerator ShootHook(Vector3 location)
     {
         hookActive = true;
+        playerAudio.PlayOneShot(HookFireSoundEffect);
         float timePassed = 0;
         // This is code for sending hook out in mid air, just keeping it around
         //Vector3 hookEndPoint = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
@@ -491,6 +293,7 @@ public class PlayerController : MonoBehaviour
         lineRenderPositions.Add(wallHookGraphic.transform.position);
         wallHook.transform.position = ropeEndPoint;
         wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+        playerAudio.PlayOneShot(HookHitSoundEffect);
         hooked = true;
         hookActive = false;
     }
@@ -500,6 +303,7 @@ public class PlayerController : MonoBehaviour
         // have to fix the line coming back
         hooked = false;
         hookActive = true;
+        playerAudio.PlayOneShot(HookHitSoundEffect);
         wallHookFixedJoint.connectedBody = null;
         grounded = true;
         float elapsedTime = 0;
@@ -542,47 +346,6 @@ public class PlayerController : MonoBehaviour
             wallHookGraphic.transform.parent = GrappleArmEnd.transform;
             
         }
-        hookActive = false;
-    }
-
-    //IEnumerator FireJets()
-    //{
-    //    while (FuelTime > 0.0f)
-    //    {
-    //        playerRigidbody.AddForce(new Vector3(0, 10, 0), ForceMode.Acceleration);
-    //    }
-    //    yield return null;
-    //}
-
-    IEnumerator ClimbRope()
-    {
-        grounded = false;
-        hookActive = true;
-        Vector3 startPosition = transform.position;
-        float elapsedTime = 0;
-        float scale = 0.1f;
-        Vector3 midBezierPoint = wallHookGraphic.transform.position - transform.position;
-        transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                          RigidbodyConstraints.FreezeRotationX |
-                                                          RigidbodyConstraints.FreezeRotationY;
-        midBezierPoint.Normalize();
-        Vector3 midPoint = (transform.position + (scale * midBezierPoint)) + transform.GetComponent<Rigidbody>().velocity * 0.2f;
-        wallHookFixedJoint.connectedBody = null;
-        transform.GetComponent<Rigidbody>().isKinematic = true;
-        var dist = Vector3.Distance(transform.position, wallHookGraphic.transform.position);
-        float timeTakenDuringLerp = dist / ClimbSpeed;
-
-        while (elapsedTime < timeTakenDuringLerp)
-        {
-            playerPreviousPosition = transform.position;
-            float percentageComplete = elapsedTime / timeTakenDuringLerp;
-            transform.position = Vector3.Lerp(Vector3.Lerp(startPosition, midPoint, percentageComplete), Vector3.Lerp(midPoint, wallHookGraphic.transform.localPosition, percentageComplete), percentageComplete);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-        //        LockPlayerPosition();
-        lineRenderPositions.Clear();
-        ropeLineRenderer.positionCount = 0;
         hookActive = false;
     }
 
@@ -642,21 +405,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void HandleMove()
-    {
-        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && !hooked)
-            GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * MaxSpeed, GetComponent<Rigidbody>().velocity.y);
-    }
-
     IEnumerator PlayerDied()
     {
-        OnPlayerDied();
+        if(OnPlayerDied != null)
+            OnPlayerDied();
         yield return null;
     }
 
     IEnumerator PlayerWon()
     {
-        OnPlayerWon();
+        if(OnPlayerWon != null)
+            OnPlayerWon();
         yield return null;
     }
 
@@ -709,20 +468,6 @@ public class PlayerController : MonoBehaviour
         // angle in [-179,180]
         float signed_angle = angle * sign;
         return signed_angle;
-    }
-
-    float GetRopeDistance()
-    {
-        float distance = 0.0f;
-        for (int i = 0; i <= lineRenderPositions.Count - 1; i++)
-        {
-            if (i < lineRenderPositions.Count - 1)
-                distance += Vector3.Distance(lineRenderPositions[i], lineRenderPositions[i + 1]);
-            else
-                distance += Vector3.Distance(lineRenderPositions[i], transform.position);
-
-        }
-        return distance;
     }
 
     void DoDebugDrawing()

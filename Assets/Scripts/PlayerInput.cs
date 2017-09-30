@@ -4,10 +4,7 @@ using System.Collections;
 public class PlayerInput : MonoBehaviour {
 
 	public bool Mobile;
-    [HideInInspector]
     public bool InputActive = false;
-    private bool firing = false;
-    private bool jetting = false;
 
 	public float Move()
 	{
@@ -24,41 +21,6 @@ public class PlayerInput : MonoBehaviour {
         else
             return 0;
 	}
-
-    public bool RopeClimbPressed()
-	{
-        if (InputActive)
-        {
-            if (Mobile)
-            {
-                Debug.Log("implement RopeMove in PlayerInput for mobile");
-                return false;
-            }
-            else if (Input.GetKey("w"))
-                return true;
-            else
-                return false;
-        }
-        else
-            return false;
-	}
-    public bool RopeClimbReleased()
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-            {
-                Debug.Log("implement RopeMove in PlayerInput for mobile");
-                return false;
-            }
-            else if (Input.GetKeyUp("w"))
-                return true;
-            else
-                return false;
-        }
-        else
-            return false;
-    }
 	
 	public bool JumpPressed()
 	{
@@ -107,78 +69,6 @@ public class PlayerInput : MonoBehaviour {
             return false;
     }
 
-    public bool GunPressed(float gunFireDelay)
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire1"))
-            {
-                StartCoroutine("ActivateGunTimer", gunFireDelay);
-                return false;
-            }
-            else if (firing && Input.GetButton("Fire1"))
-            {
-                return true;
-            }
-            else if (Input.GetButtonUp("Fire1"))
-            {
-                StopCoroutine("ActivateGunTimer");
-                firing = false;
-                return false;
-            }
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
-    public bool JetPressed(float jetPackDelay)
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire1"))
-            {
-                StartCoroutine("ActivateJetTimer", jetPackDelay);
-                return false;
-            }
-            else if (jetting && Input.GetButton("Fire1"))
-            {
-                return true;
-            }
-            else if (Input.GetButtonUp("Fire1"))
-            {
-                StopCoroutine("ActivateJetTimer");
-                jetting = false;
-                return false;
-            }
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
-    public bool GunButtonDown()
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-            else if (Input.GetButtonDown("Fire1"))
-                return true;
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
-
 	public bool HookPressed()
 	{
         if (InputActive)
@@ -186,7 +76,7 @@ public class PlayerInput : MonoBehaviour {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return (!firing && Input.GetButtonUp("Fire2"));
+			    return (Input.GetButtonUp("Fire1"));
         }
         else
             return false;
@@ -204,26 +94,4 @@ public class PlayerInput : MonoBehaviour {
         else
             return new Vector3();
 	}
-
-    IEnumerator ActivateGunTimer(float gunFireDelay)
-    {
-        float timePassed = 0.0f;
-        while (timePassed < gunFireDelay)
-        {
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-        firing = true;
-    }
-
-    IEnumerator ActivateJetTimer(float jetFireDelay)
-    {
-        float timePassed = 0.0f;
-        while (timePassed < jetFireDelay)
-        {
-            timePassed = timePassed + Time.deltaTime;
-            yield return null;
-        }
-        jetting = true;
-    }
 }

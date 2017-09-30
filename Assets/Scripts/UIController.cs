@@ -4,25 +4,13 @@ using System;
 using System.Linq;
 using System.Collections;
 
-public class UIController : MonoBehaviour {
-
-    public Text EndText;
-    public Text DistanceTraveled;
+public class UIController : MonoBehaviour
+{
     public InputField SeedInputField;
-    public InputField WidthMin;
-    public InputField WidthMax;
-    public InputField HeightMin;
-    public InputField HeightMax;
-    public InputField DepthMin;
-    public InputField DepthMax;
-    public InputField EnemyMin;
-    public InputField EnemyMax;
     public Slider Volume;
-    public Slider FuelGauge;
     public GameObject ParentCanvas;
-    public SideScrollerGenerator _SideScrollerGenerator;
     public PlayerController _PlayerController;
-    public LevelController _LevelController;
+    public SceneController _SceneController;
     public int SeedLength;
 
     private String seed;
@@ -31,36 +19,25 @@ public class UIController : MonoBehaviour {
     {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
-        _SideScrollerGenerator.Init(seed);
-        DistanceTraveled.text = "0 m";
-        ShowPanel("StartCanvas");
-	}
-	
-	void Update () 
-    {
-        if(_LevelController._PlayerController.playerStarted)
-            DistanceTraveled.text = _PlayerController.DistanceTraveled.ToString() + " m";
+        // init levelgenerator here when ready
+        // LevelGenerator.Init(seed);
 	}
 
     public void NewGame()
     {
-        DistanceTraveled.text = "0 m";
-        ShowPanel("StartCanvas");
-        _LevelController.Init();
+        _SceneController.Init();
+        ToggleUIController();
     }
 
     public void RestartGame()
     {
-        DistanceTraveled.text = "0 m";
         ToggleUIController();
-        _LevelController.Init();
+        _SceneController.Init();
     }
 
     public void EndGame()
     {
-        EndText.text = "You traveled " + DistanceTraveled.text;
         ToggleUIController();
-        ShowPanel("EndPanel");
     }
 
     public void SetSeed()
@@ -69,17 +46,8 @@ public class UIController : MonoBehaviour {
         {
             seed = SeedInputField.text;
 
-            _SideScrollerGenerator.Init(seed);
-
-            _SideScrollerGenerator.MakeLevel(Int32.Parse(WidthMin.text),
-                                            Int32.Parse(WidthMax.text),
-                                            Int32.Parse(HeightMin.text),
-                                            Int32.Parse(HeightMax.text),
-                                            Int32.Parse(DepthMin.text),
-                                            Int32.Parse(DepthMax.text),
-                                            Int32.Parse(EnemyMin.text),
-                                            Int32.Parse(EnemyMax.text),
-                                            new Vector3(0.0f, 0.0f, 0.0f));
+            // init levelgenerator here when ready
+            // LevelGenerator.Init(seed);
         }
     }
 
@@ -88,17 +56,8 @@ public class UIController : MonoBehaviour {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
 
-        _SideScrollerGenerator.Init(seed);
-
-        _SideScrollerGenerator.MakeLevel(Int32.Parse(WidthMin.text),
-                                        Int32.Parse(WidthMax.text),
-                                        Int32.Parse(HeightMin.text),
-                                        Int32.Parse(HeightMax.text),
-                                        Int32.Parse(DepthMin.text),
-                                        Int32.Parse(DepthMax.text),
-                                        Int32.Parse(EnemyMin.text),
-                                        Int32.Parse(EnemyMax.text),
-                                        new Vector3(0.0f, 0.0f, 0.0f));
+        // init levelgenerator here when ready
+        // LevelGenerator.Init(seed);
     }
 
     public static string RandomString(int length)
@@ -113,52 +72,8 @@ public class UIController : MonoBehaviour {
         ParentCanvas.gameObject.SetActive(!ParentCanvas.gameObject.activeSelf);
     }
 
-    void ShowPanel(string panelName)
-    {
-        foreach (Transform child in ParentCanvas.transform)
-        {
-            child.gameObject.SetActive(false);
-        }
-
-        ParentCanvas.SetActive(true);
-        ParentCanvas.transform.Find(panelName).gameObject.SetActive(true);
-    }
-
-    public void CheckInputs()
-    {
-        if(WidthMin.text == "0")
-        {
-            WidthMin.text = "1";
-        }
-
-        if (WidthMax.text == "0")
-        {
-            WidthMax.text = "1";
-        }
-
-        if (HeightMin.text == "0")
-        {
-            HeightMin.text = "1";
-        }
-
-        if (HeightMax.text == "0")
-        {
-            HeightMax.text = "1";
-        }
-
-        if (DepthMin.text == "0")
-        {
-            DepthMin.text = "1";
-        }
-
-        if (DepthMax.text == "0")
-        {
-            DepthMax.text = "1";
-        }
-    }
-
     public void OnVolumeChanged()
     {
-        _LevelController.SetVolume(Volume.value);
+        _SceneController.SetVolume(Volume.value);
     }
 }
