@@ -4,42 +4,38 @@ using UnityEngine;
 
 public class SceneController : MonoBehaviour
 {
-    public PlayerController _PlayerController;
-    public UIController _UIController;
-    public GameObject StartPlatform;
-    [HideInInspector]
-    public bool GameOn = false;
+    public PlayerController PlayerController;
+    public UIController UIController;
 
-    private AudioSource playerAudio;
-    private AudioClip song;
+    private AudioSource _playerAudio;
+    private AudioClip _song;
 
     void Awake()
     {
-        playerAudio = GetComponent<AudioSource>();
-        song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
+        _playerAudio = GetComponent<AudioSource>();
+        _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
 
-        playerAudio.clip = song;
-        playerAudio.loop = true;
-        SetVolume(_UIController.Volume.value);
+        _playerAudio.clip = _song;
+        _playerAudio.loop = true;
+        SetVolume(UIController.Volume.value);
     }
+
     void Start()
     {
-        _PlayerController.OnPlayerDied += _PlayerController_OnPlayerDied;
-        _PlayerController.OnPlayerStarted += _PlayerController_OnPlayerStarted;
-        Init();
-    }
-
-    void Update()
-    {
+        PlayerController.OnPlayerDied += PlayerControllerOnPlayerDied;
     }
 
     public void Init()
     {
-        playerAudio.Play();
-        StartPlatform.SetActive(true);
-        _PlayerController.Init();
-        _PlayerController.HookPlayerInput.InputActive = true;
+        _playerAudio.Play();
+        PlayerController.Init();
+        PlayerController.HookPlayerInput.InputActive = false;
         Time.timeScale = 1.0f;
+    }
+
+    public void OnPlayerStarted()
+    {
+        PlayerController.HookPlayerInput.InputActive = true;
     }
 
     public void SetVolume(float volume)
@@ -47,34 +43,20 @@ public class SceneController : MonoBehaviour
         AudioListener.volume = volume;
     }
 
-    public void PlayerReady()
+    void PlayerControllerOnPlayerDied()
     {
-        _PlayerController.HookPlayerInput.InputActive = true;
-        _UIController.ToggleUIController();
-    }
-
-    void _PlayerController_OnPlayerDied()
-    {
-        _UIController.EndGame();
+        UIController.EndGame();
         Time.timeScale = 0.0f;
-        _PlayerController.HookPlayerInput.InputActive = false;
-        GameOn = false;
+        PlayerController.HookPlayerInput.InputActive = false;
     }
 
-    void _PlayerController_OnPlayerStarted()
-    {
-        GameOn = true;
-        StartPlatform.SetActive(false);
-    }
-
-    void _PlayerController_OnPlayerWon()
+    void PlayerControllerOnPlayerWon()
     {
         // just leaving this here, not sure if the player will be able to actually win
     }
 
     void OnDestroy()
     {
-        _PlayerController.OnPlayerDied -= _PlayerController_OnPlayerDied;
-        _PlayerController.OnPlayerStarted -= _PlayerController_OnPlayerStarted;
+        PlayerController.OnPlayerDied -= PlayerControllerOnPlayerDied;
     }
 }

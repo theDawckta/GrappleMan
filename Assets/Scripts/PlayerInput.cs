@@ -21,22 +21,6 @@ public class PlayerInput : MonoBehaviour {
         else
             return 0;
 	}
-	
-	public bool JumpPressed()
-	{
-        if (InputActive)
-        {
-		    if (Mobile) 
-		    {
-			    Debug.Log("implement JumpPressed in PlayerInput for mobile");
-			    return false;
-		    } 
-		    else
-			    return Input.GetButtonDown ("Jump") ? true:false;
-        }
-        else
-            return false;
-	}
 
 	public bool RopeReleasePressed()
 	{
@@ -48,26 +32,11 @@ public class PlayerInput : MonoBehaviour {
 			    return false;
 		    } 
 		    else
-			    return Input.GetKey ("s") ? true:false;
+			    return Input.GetButton("Fire2") ? true:false;
         }
         else
             return false;
 	}
-    public bool RopeReleaseReleased()
-    {
-        if (InputActive)
-        {
-            if (Mobile)
-            {
-                Debug.Log("implement HookReleaseReleased in PlayerInput for mobile");
-                return false;
-            }
-            else
-                return Input.GetKeyUp("e") ? true : false;
-        }
-        else
-            return false;
-    }
 
 	public bool HookPressed()
 	{

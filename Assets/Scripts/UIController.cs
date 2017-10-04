@@ -25,14 +25,8 @@ public class UIController : MonoBehaviour
 
     public void NewGame()
     {
-        _SceneController.Init();
+        _SceneController.OnPlayerStarted();
         ToggleUIController();
-    }
-
-    public void RestartGame()
-    {
-        ToggleUIController();
-        _SceneController.Init();
     }
 
     public void EndGame()
@@ -67,13 +61,13 @@ public class UIController : MonoBehaviour
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-    public void ToggleUIController()
-    {
-        ParentCanvas.gameObject.SetActive(!ParentCanvas.gameObject.activeSelf);
-    }
-
     public void OnVolumeChanged()
     {
         _SceneController.SetVolume(Volume.value);
+    }
+
+    void ToggleUIController()
+    {
+        ParentCanvas.gameObject.SetActive(!ParentCanvas.gameObject.activeSelf);
     }
 }
