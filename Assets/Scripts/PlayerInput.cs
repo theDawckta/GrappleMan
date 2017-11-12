@@ -45,13 +45,26 @@ public class PlayerInput : MonoBehaviour {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return (Input.GetButtonUp("Fire1"));
+			    return (Input.GetButton("Fire1"));
         }
         else
             return false;
 	}
 
-	public Vector3 GetPlayerTouchPosition()
+    public bool HookReleased()
+    {
+        if (InputActive)
+        {
+            if (Mobile)
+                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended);
+            else
+                return (Input.GetButtonUp("Fire1"));
+        }
+        else
+            return false;
+    }
+
+    public Vector3 GetPlayerTouchPosition()
 	{
         if (InputActive)
         {

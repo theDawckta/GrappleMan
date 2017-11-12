@@ -8,9 +8,8 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
-    public float BoostForce = 5.0f;
+    public float MaxVelocity = 10.0f;
     public float HookSpeed = 80.0f;
-    public float LineSpeed = 90.0f;
     public float ClimbSpeed = 30.0f;
     public float ClimbSlowDownForce = 20.0f;
     public GameObject GrappleArmEnd;
@@ -76,30 +75,27 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        Debug.Log(_grounded);
         Quaternion grappleShoulderRotation = new Quaternion();
 
         if (HookPlayerInput.HookPressed())
         {
-            if (!_hookActive && !_hooked && _grounded)
-            {
-                BoostPlayer();
-            }
-            else if (!_hookActive && !_hooked && !_grounded)
+            if (!_hookActive && !_hooked)
             {
                 if (CheckHookHit())
                 {
                     StartCoroutine(ShootHook(_wallHookHitPosition));
                 }
             }
-            else if (!_hookActive && _hooked && !_grounded)
+            else if (!_hookActive && _hooked)
             {
-                BoostPlayer();
-                StartCoroutine(RetrieveHookRope());
+                ClimbRope();
             }
-            else if (!_hookActive && _hooked && _grounded)
+        }
+        else if (HookPlayerInput.HookReleased())
+        {
+            if (!_hookActive && _hooked && !_grounded && _lineRenderPositions.Count > 0)
             {
-                StartCoroutine(RetrieveHookRope());
+                StartCoroutine(RetrieveHookSegment(_lineRenderPositions[0]));
             }
         }
 
@@ -113,8 +109,8 @@ public class PlayerController : MonoBehaviour
         else
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                        HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                    -(Camera.main.transform.position.z + transform.position.z) + 1));
+                                                                               HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                               -(Camera.main.transform.position.z + transform.position.z) + 1));
             grappleShoulderRotation = Quaternion.LookRotation(mousePosition - _grappleShoulder.transform.position, Vector3.back);
         }
 
@@ -125,9 +121,20 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (_hooked && _lineRenderPositions.Count > 0)
+        // limit velocity
+        if (_playerRigidbody.velocity.magnitude > MaxVelocity)
         {
-            CheckRopeSlack();
+            float brakeSpeed = _playerRigidbody.velocity.magnitude - MaxVelocity;
+            Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
+            Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
+            _playerRigidbody.AddForce(-brakeVelocity);
+        }
+
+        if ((_hooked || _hookActive) && _lineRenderPositions.Count > 0)
+        {
+            if(_hooked)
+                CheckRopeSlack();
+
             RaycastHit playerRaycastOut;
             Vector3 direction = _lineRenderPositions[_lineRenderPositions.Count - 1] - transform.position;
             bool hit = Physics.Raycast(transform.position, direction, out playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Ground"));
@@ -164,7 +171,7 @@ public class PlayerController : MonoBehaviour
                             _lineRenderPositions.Add(intersection);
                             _wallHook.GetComponent<FixedJoint>().connectedBody = null;
                             _wallHook.transform.position = intersection;
-                            _wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                            _wallHookFixedJoint.connectedBody = _playerRigidbody;
 
                             // store rope bend polarity to check when we swing back
                             Vector3 playersAngle = transform.position - _lineRenderPositions[_lineRenderPositions.Count - 1];
@@ -191,7 +198,7 @@ public class PlayerController : MonoBehaviour
                     _wallHook.GetComponent<FixedJoint>().connectedBody = null;
                     _wallHook.transform.position = _lineRenderPositions[_lineRenderPositions.Count - 2];
                     _lineRenderPositions.RemoveAt(_lineRenderPositions.Count - 1);
-                    _wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                    _wallHookFixedJoint.connectedBody = _playerRigidbody;
                     _ropeBendAngles.RemoveAt(_ropeBendAngles.Count - 1);
                 }
             }
@@ -225,9 +232,9 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator ShootHook(Vector3 location)
     {
+        float timePassed = 0;
         _hookActive = true;
         _playerAudio.PlayOneShot(_hookFireSoundEffect);
-        float timePassed = 0;
 
         _wallHookGraphic.transform.parent = null;
         _ropeLineRenderer.enabled = true;
@@ -240,14 +247,9 @@ public class PlayerController : MonoBehaviour
         while (timePassed < timeTakenDuringLerp)
         {
             float percentageComplete = timePassed / timeTakenDuringLerp;
-
-            _wallHookGraphic.transform.position = Vector3.Lerp(_wallHookGraphic.transform.position,
-                                                        location,
-                                                        percentageComplete);
-
-            ropeEndPoint = Vector3.Lerp(origin, location, percentageComplete);
+            _wallHookGraphic.transform.position = Vector3.Lerp(origin, location, percentageComplete);
             _ropeLineRenderer.SetPosition(0, _grappleShoulder.transform.position);
-            _ropeLineRenderer.SetPosition(1, ropeEndPoint);
+            _ropeLineRenderer.SetPosition(1, _wallHookGraphic.transform.position);
 
             timePassed += Time.deltaTime;
             yield return null;
@@ -255,70 +257,59 @@ public class PlayerController : MonoBehaviour
 
         _lineRenderPositions.Add(_wallHookGraphic.transform.position);
         _wallHook.transform.position = ropeEndPoint;
-        _wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+        _wallHookFixedJoint.transform.position = location;
+        _wallHookFixedJoint.connectedBody = _playerRigidbody;
         _playerAudio.PlayOneShot(_hookHitSoundEffect);
 
         _hooked = true;
         _hookActive = false;
     }
 
-    IEnumerator RetrieveHookRope()
+    IEnumerator RetrieveHookSegment(Vector3 startPosition)
     {
-        // have to fix the line coming back
         _hooked = false;
         _hookActive = true;
         _playerAudio.PlayOneShot(_hookHitSoundEffect);
         _wallHookFixedJoint.connectedBody = null;
         float elapsedTime = 0;
-        float dist;
-        Vector3 startPosition = new Vector3();
-        Vector3 endPosition = new Vector3();
-        if (_lineRenderPositions.Count > 1)
-        {
-            dist = Vector3.Distance(_lineRenderPositions[0], _lineRenderPositions[1]);
-            startPosition = _lineRenderPositions[0];
-            endPosition = _lineRenderPositions[1];
-        }
-        else
-        {
-            dist = Vector3.Distance(_lineRenderPositions[0], GrappleArmEnd.transform.position);
-            startPosition = _lineRenderPositions[0];
-            endPosition = GrappleArmEnd.transform.position;
-        }
-        float timeTakenDuringLerp = dist / HookSpeed;
-        while (elapsedTime < timeTakenDuringLerp)
-        {
-            // retrieve rope
-            float percentageComplete = elapsedTime / timeTakenDuringLerp;
-            //Debug.Log("percentage complete: " + percentageComplete + "   elapsed time: " + elapsedTime + "   line render position: " + lineRenderPositions[0] + "time taken: " + timeTakenDuringLerp);
-            _lineRenderPositions[0] = Vector3.Lerp(startPosition, endPosition, percentageComplete);
+        float timeTakenDuringLerp = 0.0f;
+        Vector3 endPosition;
 
-            // retrieve hook
+        while (elapsedTime < timeTakenDuringLerp || elapsedTime == 0.0f)
+        {
+            if (_lineRenderPositions.Count == 1)
+                endPosition = GrappleArmEnd.transform.position;
+            else
+                endPosition = _lineRenderPositions[1];
+
+            timeTakenDuringLerp =  Vector3.Distance(startPosition, endPosition) / HookSpeed;
+            float percentageComplete = elapsedTime / timeTakenDuringLerp;
+            _lineRenderPositions[0] = Vector3.Lerp(startPosition, endPosition, percentageComplete);
             _wallHookGraphic.transform.position = _lineRenderPositions[0];
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
         _lineRenderPositions.RemoveAt(0);
+
         if (_lineRenderPositions.Count > 0)
-            StartCoroutine(RetrieveHookRope());
-        else
         {
-            _ropeLineRenderer.enabled = false;
-            _wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
-            _wallHookGraphic.transform.parent = GrappleArmEnd.transform;
-            
+            Debug.Log("START SEGMENT " + _lineRenderPositions.Count);
+            yield return StartCoroutine(RetrieveHookSegment(_lineRenderPositions[0]));
         }
+
+        _ropeLineRenderer.enabled = false;
+        _wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
+        _wallHookGraphic.transform.parent = GrappleArmEnd.transform;
         _hookActive = false;
     }
 
-    void BoostPlayer()
+    void ClimbRope()
     {
-        Vector3 direction = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                        -(Camera.main.transform.position.z + transform.position.z)));
-        direction = direction - transform.position;
-        _playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
+        _wallHookFixedJoint.connectedBody = null;
+        Vector3 climbForce = (_lineRenderPositions[_lineRenderPositions.Count - 1] - transform.position).normalized;
+        climbForce = climbForce * ClimbSpeed / Time.deltaTime;
+        _playerRigidbody.AddForce(climbForce, ForceMode.Acceleration);
     }
 
     bool CheckHookHit()
@@ -354,12 +345,10 @@ public class PlayerController : MonoBehaviour
                                                                                  transform.GetComponent<Rigidbody>().velocity);
             if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
             {
-                Debug.Log("RELEASED");
                 _wallHookFixedJoint.connectedBody = null;
             }
-                
             else
-                _wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                _wallHookFixedJoint.connectedBody = _playerRigidbody;
         }
     }
 
@@ -411,7 +400,7 @@ public class PlayerController : MonoBehaviour
                                                               RigidbodyConstraints.FreezeRotationY;
             if (_hooked)
             {
-                _wallHookFixedJoint.connectedBody = transform.GetComponent<Rigidbody>();
+                _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
     }
