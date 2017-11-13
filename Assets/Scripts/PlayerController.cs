@@ -67,7 +67,8 @@ public class PlayerController : MonoBehaviour
         _wallHookFixedJoint.connectedBody = null;
         transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
         _ropeBendAngles.Clear();
-        _lineRenderPositions.Clear();
+        //_lineRenderPositions.Clear();
+        _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
         transform.position = _playerStartPosition;
@@ -93,19 +94,16 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.HookReleased())
         {
-            if (!_hookActive && _hooked && !_grounded && _lineRenderPositions.Count > 0)
+            if (!_hookActive && _hooked && !_grounded && _ropeLineRenderer.positionCount > 1)
             {
-                StartCoroutine(RetrieveHookSegment(_lineRenderPositions[0]));
+				StartCoroutine(RetrieveHookSegment(_ropeLineRenderer.GetPosition(0)));
             }
         }
 
-        if (_hooked || _hookActive)
-        {
-            if (_lineRenderPositions.Count > 0)
-            {
-                grappleShoulderRotation = Quaternion.LookRotation(_lineRenderPositions[_lineRenderPositions.Count - 1] - _grappleShoulder.transform.position, Vector3.back);
-            }
-        }
+        if (_hooked)
+			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
+		else if (_hookActive)
+			grappleShoulderRotation = Quaternion.LookRotation(_wallHookGraphic.transform.position - _grappleShoulder.transform.position, Vector3.back);
         else
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
