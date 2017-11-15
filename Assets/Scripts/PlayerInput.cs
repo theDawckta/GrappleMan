@@ -32,7 +32,7 @@ public class PlayerInput : MonoBehaviour {
 			    return false;
 		    } 
 		    else
-			    return Input.GetButton("Fire2") ? true:false;
+			    return Input.GetKey(KeyCode.E) ? true:false;
         }
         else
             return false;
@@ -45,20 +45,36 @@ public class PlayerInput : MonoBehaviour {
 		    if (Mobile) 
 			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
 		    else 
-			    return (Input.GetButton("Fire1"));
+			    return (Input.GetButtonDown("Fire1"));
         }
         else
             return false;
 	}
 
-    public bool HookReleased()
+//    public bool HookReleased()
+//    {
+//        if (InputActive)
+//        {
+//            if (Mobile)
+//                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended);
+//            else
+//                return (Input.GetButtonUp("Fire1"));
+//        }
+//        else
+//            return false;
+//    }
+
+	public bool ClimbPressed()
     {
         if (InputActive)
         {
             if (Mobile)
-                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended);
+            {
+				Debug.Log("implement ClimbPressed in PlayerInput for mobile");
+				return false;
+			}
             else
-                return (Input.GetButtonUp("Fire1"));
+                return (Input.GetKey(KeyCode.Q));
         }
         else
             return false;

@@ -8,51 +8,54 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
+    public float BoostForce = 10.0f;
     public float MaxVelocity = 10.0f;
     public float HookSpeed = 80.0f;
-    public float ClimbSpeed = 30.0f;
-    public float ClimbSlowDownForce = 20.0f;
+    public float ClimbSpeed = 1.0f;
     public GameObject GrappleArmEnd;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
     public event OnPlayerWonEvent OnPlayerWon;
 
-    private Vector3 _playerStartPosition;
-    private GameObject _playerBody;
-    private GameObject _grappleShoulder;
-    private Rigidbody _playerRigidbody;
-    private bool _grounded = false;
-    private GameObject _wallHookGraphic;
-    private LineRenderer _ropeLineRenderer;
+	
+	private GameObject _wallHookGraphic;
+	private GameObject _wallHook;
+	private FixedJoint _wallHookFixedJoint;
+	private Vector3 _playerStartPosition;
+	private GameObject _playerBody; 
+	private Rigidbody _playerRigidbody;
+	private AudioSource _playerAudio;
+	private GameObject _grappleShoulder;	
+	private LineRenderer _ropeLineRenderer;
+	private float _ropeMinLength;
+	private AudioClip _hookHitSoundEffect;
+    private AudioClip _hookFireSoundEffect;
     private List<float> _ropeBendAngles = new List<float>();
-    private GameObject _wallHook;
-    private FixedJoint _wallHookFixedJoint;
     private Vector3 _wallHookHitPosition = new Vector3();
+	private bool _grounded = false;
     private bool _hookActive = false;
     private bool _hooked = false;
-    private AudioSource _playerAudio;
-    private AudioClip _hookHitSoundEffect;
-    private AudioClip _hookFireSoundEffect;
     private Plane _gameSurfacePlane = new Plane(Vector3.back, Vector3.zero);
 
     void Awake()
     {
-        _playerStartPosition = transform.position;
         _wallHookGraphic = GameObject.Find("WallHook").gameObject;
         _wallHook = new GameObject();
         _wallHook.name = "WallHookFixedJoint";
         _wallHookFixedJoint = _wallHook.AddComponent<FixedJoint>();
         _wallHook.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionX |
-                                                         RigidbodyConstraints.FreezePositionY |
-                                                         RigidbodyConstraints.FreezePositionZ |
-                                                         RigidbodyConstraints.FreezeRotationX |
-                                                         RigidbodyConstraints.FreezeRotationY;
+                                                          RigidbodyConstraints.FreezePositionY |
+                                                          RigidbodyConstraints.FreezePositionZ |
+                                                          RigidbodyConstraints.FreezeRotationX |
+                                                          RigidbodyConstraints.FreezeRotationY;
+		_playerStartPosition = transform.position;
+		_playerBody = transform.Find("PlayerBody").gameObject;
+		_playerRigidbody = GetComponent<Rigidbody>();
+		_playerAudio = GetComponent<AudioSource>();
+		_grappleShoulder = _playerBody.transform.Find("GrappleShoulder").gameObject;
         _ropeLineRenderer = _wallHookGraphic.GetComponent<LineRenderer>();
-        _playerBody = transform.Find("PlayerBody").gameObject;
-        _playerRigidbody = GetComponent<Rigidbody>();
-        _grappleShoulder = _playerBody.transform.Find("GrappleShoulder").gameObject;
-        _playerAudio = GetComponent<AudioSource>();
+		_ropeMinLength = (_grappleShoulder.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
     }
@@ -92,15 +95,15 @@ public class PlayerController : MonoBehaviour
             }
             else if (!_hookActive && _hooked)
             {
-                ClimbRope();
-            }
-        }
-        else if (HookPlayerInput.HookReleased())
-        {
-            if (!_hookActive && _hooked && _ropeLineRenderer.positionCount > 1)
-            {
+            	if(!_grounded)
+                	BoostPlayer();
 				StartCoroutine(RetrieveHookSegment());
             }
+        }
+		else if(HookPlayerInput.ClimbPressed())
+        {
+			if (_hooked)
+        		ClimbRope();
         }
 
         if (_hooked)
@@ -197,7 +200,7 @@ public class PlayerController : MonoBehaviour
                 if (Mathf.Sign(currentAngle) != Mathf.Sign(_ropeBendAngles[_ropeBendAngles.Count - 1]))
                 {
                     _wallHook.GetComponent<FixedJoint>().connectedBody = null;
-                    _wallHook.transform.position = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
+                    _wallHook.transform.position = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
                     _ropeLineRenderer.positionCount = _ropeLineRenderer.positionCount - 1;
                     _wallHookFixedJoint.connectedBody = _playerRigidbody;
                     _ropeBendAngles.RemoveAt(_ropeBendAngles.Count - 1);
@@ -306,10 +309,29 @@ public class PlayerController : MonoBehaviour
 
     void ClimbRope()
     {
-        _wallHookFixedJoint.connectedBody = null;
-		Vector3 climbForce = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
-		climbForce = climbForce * ClimbSpeed / Time.deltaTime;
-        _playerRigidbody.AddForce(climbForce, ForceMode.Acceleration);
+		Vector3 direction;
+		float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
+
+		if(currentRopeLength > _ropeMinLength)
+		{
+	        _wallHookFixedJoint.connectedBody = null;
+			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
+			direction = direction * ClimbSpeed / Time.deltaTime;
+			_playerRigidbody.AddForce(direction, ForceMode.Acceleration);
+        }
+        else
+        {
+			_wallHookFixedJoint.connectedBody = null;
+		}
+    }
+
+	void BoostPlayer()
+    {
+        Vector3 direction = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
+                                                                        -(Camera.main.transform.position.z + transform.position.z)));
+        direction = direction - transform.position;
+        _playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
     }
 
     bool CheckHookHit()
@@ -340,10 +362,11 @@ public class PlayerController : MonoBehaviour
     {
         if (!_grounded)
         {
+			float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-            if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
+			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed() || currentRopeLength < _ropeMinLength )
             {
                 _wallHookFixedJoint.connectedBody = null;
             }
