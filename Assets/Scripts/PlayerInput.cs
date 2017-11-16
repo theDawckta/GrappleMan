@@ -38,7 +38,7 @@ public class PlayerInput : MonoBehaviour {
             return false;
 	}
 
-	public bool HookPressed()
+	public bool HookButtonDown()
 	{
         if (InputActive)
         {
@@ -51,20 +51,20 @@ public class PlayerInput : MonoBehaviour {
             return false;
 	}
 
-//    public bool HookReleased()
-//    {
-//        if (InputActive)
-//        {
-//            if (Mobile)
-//                return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended);
-//            else
-//                return (Input.GetButtonUp("Fire1"));
-//        }
-//        else
-//            return false;
-//    }
+	public bool ClimbButtonUp()
+	{
+        if (InputActive)
+        {
+		    if (Mobile) 
+			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
+		    else 
+				return (Input.GetKeyUp(KeyCode.Q));
+        }
+        else
+            return false;
+	}
 
-	public bool ClimbPressed()
+	public bool ClimbButtonPressed()
     {
         if (InputActive)
         {
