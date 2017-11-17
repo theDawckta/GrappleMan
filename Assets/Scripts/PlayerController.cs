@@ -178,6 +178,8 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
+		if(TestObject != null)
+				TestObject.transform.rotation = Quaternion.LookRotation(-_playerRigidbody.velocity);
 		Quaternion grappleShoulderRotation = new Quaternion();
 
         // adjust playerBody for parents rotation
@@ -186,8 +188,6 @@ public class PlayerController : MonoBehaviour
         // adjust arm rotation
         if (_hooked)
         {
-//        	if(!_grounded && TestObject != null)
-//				TestObject.transform.rotation = Quaternion.LookRotation(-_playerRigidbody.velocity);
 			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
 		}
 		else if (_hookActive)
