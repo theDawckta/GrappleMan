@@ -20,11 +20,6 @@ public class SceneController : MonoBehaviour
         SetVolume(UIController.Volume.value);
     }
 
-    void Start()
-    {
-        PlayerController.OnPlayerDied += PlayerControllerOnPlayerDied;
-    }
-
     public void Init()
     {
         _playerAudio.Play();

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public class PlayerController : MonoBehaviour
 {
 	public GameObject TestObject;
+	public Text TestText;
+
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
     public float BoostForce = 10.0f;
@@ -14,12 +16,14 @@ public class PlayerController : MonoBehaviour
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
 	public float ClimbingBrakeSpeedModifier = 0.5f;
+	public float animationSmoothTime = 0.3F;
     public GameObject GrappleArmEnd;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
     public event OnPlayerWonEvent OnPlayerWon;
 
+	private Vector3 velocity = Vector3.zero;
 	private RaycastHit _playerRaycastOut;
 	private RaycastHit _nextPlayerRaycastOut;
 	private GameObject _wallHookGraphic;
@@ -81,6 +85,15 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+    	//Debug.Log("GROUNDED: " + _grounded + "     HOOKED: " + _hooked + "     HOOKACTIVE: " + _hookActive);
+		Debug.DrawRay(transform.position, _playerRigidbody.velocity * _playerRigidbody.velocity.magnitude * 0.05f, Color.yellow);
+
+		HandleBodyRotation();
+
+		// show linerenderer if active
+        if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
+        	_ropeLineRenderer.enabled = true;
+
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
             if (!_hooked)
@@ -178,8 +191,6 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
-		if(TestObject != null)
-				TestObject.transform.rotation = Quaternion.LookRotation(-_playerRigidbody.velocity);
 		Quaternion grappleShoulderRotation = new Quaternion();
 
         // adjust playerBody for parents rotation
@@ -204,9 +215,7 @@ public class PlayerController : MonoBehaviour
         grappleShoulderRotation.y = 0.0f;
         _grappleShoulder.transform.rotation = grappleShoulderRotation;
 
-        // show linerenderer if active
-        if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
-        	_ropeLineRenderer.enabled = true;
+       
     }
 
     IEnumerator MoveHook(Vector3 startPosition, Vector3 destination, bool ropeShooting)
@@ -390,6 +399,35 @@ public class PlayerController : MonoBehaviour
             else
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
         }
+    }
+
+    void HandleBodyRotation()
+    {
+		if(TestObject != null)
+		{
+			if(_grounded)
+			{
+				TestText.text = "GROUNDED";
+				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
+			}
+			else if(_hooked && _wallHookFixedJoint.connectedBody != null)	
+			{	
+				TestText.text = "HOOKED";
+				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, _playerRigidbody.velocity.x * 4);
+			}
+			else if(_hookActive)
+			{
+				TestText.text = "HOOK ACTIVE";
+				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 4);
+			}
+			else if(HookPlayerInput.RopeReleasePressed() || !_grounded)
+			{
+				TestText.text = "FLOATING";
+			}
+		}
+
+//		Vector3 targetPosition = target.TransformPoint(new Vector3(0, 5, -10));
+//        TestObject.transform.eulerAngles = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
     }
 
     IEnumerator PlayerDied()

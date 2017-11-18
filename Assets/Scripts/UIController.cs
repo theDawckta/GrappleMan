@@ -8,6 +8,7 @@ public class UIController : MonoBehaviour
 {
     public InputField SeedInputField;
     public Slider Volume;
+    public Text TestText;
     public GameObject ParentCanvas;
     public PlayerController _PlayerController;
     public SceneController _SceneController;
@@ -21,6 +22,7 @@ public class UIController : MonoBehaviour
         SeedInputField.text = seed;
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
+		_SceneController.OnPlayerStarted();
 	}
 
     public void NewGame()
@@ -43,6 +45,11 @@ public class UIController : MonoBehaviour
             // init levelgenerator here when ready
             // LevelGenerator.Init(seed);
         }
+    }
+
+    public void SetTestText(string newText)
+    {
+    	TestText.text = newText;
     }
 
     public void RandomSeed()
