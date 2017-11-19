@@ -27,7 +27,7 @@ public class UIController : MonoBehaviour
 
     public void NewGame()
     {
-        _SceneController.OnPlayerStarted();
+        _PlayerController.Init();
         //ToggleUIController();
     }
 

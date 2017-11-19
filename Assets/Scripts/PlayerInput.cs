@@ -1,23 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerInput : MonoBehaviour {
-
-	public bool Mobile;
+public class PlayerInput : MonoBehaviour 
+{
     public bool InputActive = false;
+	public delegate void OnSwipeLeftEvent(Vector2 direction);
+	public event OnSwipeLeftEvent OnSwipeLeft;
+	public delegate void OnSwipeRightHeldEvent(Vector2 direction);
+	public event OnSwipeRightHeldEvent OnSwipeRightHeld;
+	public delegate void OnSwipeRightEndedEvent(Vector2 direction);
+	public event OnSwipeRightEndedEvent OnSwipeRightEnded;
+
+	private Vector2 firstPressPos;
+	private Vector2 secondPressPos;
+	private Vector2 currentSwipe;
+
+	void Update() 
+	{
+		if (InputActive)
+			CheckSwipe();
+    }
 
 	public float Move()
 	{
         if (InputActive)
-        {
-            if (Mobile)
-            {
-                Debug.Log("implement Move in PlayerInput for mobile");
-                return 0;
-            }
-            else
-                return Input.GetAxis("Horizontal");
-        }
+           	return Input.GetAxis("Horizontal");
         else
             return 0;
 	}
@@ -25,15 +32,7 @@ public class PlayerInput : MonoBehaviour {
 	public bool RopeReleasePressed()
 	{
         if (InputActive)
-        {
-		    if (Mobile) 
-		    {
-			    Debug.Log("implement HookReleasePressed in PlayerInput for mobile");
-			    return false;
-		    } 
-		    else
-			    return Input.GetKey(KeyCode.E) ? true:false;
-        }
+			return Input.GetKey(KeyCode.E) ? true:false;
         else
             return false;
 	}
@@ -41,12 +40,7 @@ public class PlayerInput : MonoBehaviour {
 	public bool HookButtonDown()
 	{
         if (InputActive)
-        {
-		    if (Mobile) 
-			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-		    else 
-			    return (Input.GetButtonDown("Fire1"));
-        }
+			return (Input.GetButtonDown("Fire1"));
         else
             return false;
 	}
@@ -54,12 +48,7 @@ public class PlayerInput : MonoBehaviour {
 	public bool ClimbButtonUp()
 	{
         if (InputActive)
-        {
-		    if (Mobile) 
-			    return (Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began);
-		    else 
-				return (Input.GetKeyUp(KeyCode.Q));
-        }
+			return (Input.GetKeyUp(KeyCode.Q));
         else
             return false;
 	}
@@ -67,15 +56,7 @@ public class PlayerInput : MonoBehaviour {
 	public bool ClimbButtonPressed()
     {
         if (InputActive)
-        {
-            if (Mobile)
-            {
-				Debug.Log("implement ClimbPressed in PlayerInput for mobile");
-				return false;
-			}
-            else
-                return (Input.GetKey(KeyCode.Q));
-        }
+          	return (Input.GetKey(KeyCode.Q));
         else
             return false;
     }
@@ -83,13 +64,45 @@ public class PlayerInput : MonoBehaviour {
     public Vector3 GetPlayerTouchPosition()
 	{
         if (InputActive)
-        {
-		    if (Mobile) 
-			    return Input.GetTouch(0).position;
-		    else 
-			    return Input.mousePosition;
-        }
+			return Input.mousePosition;
         else
             return new Vector3();
+	}
+
+	void CheckSwipe()
+	{
+		if(Input.touches.Length > 0)
+		{
+			Debug.Log("TOUCH LENGTH GREATER THAN ZERO");
+			Touch t = Input.GetTouch(0);
+
+			if(t.phase == TouchPhase.Moved)
+			{
+				Debug.Log("TOUCH HAS MOVED");
+				firstPressPos = new Vector2(t.position.x,t.position.y);
+				if (t.position.x > Screen.width / 2) 
+					OnSwipeRightHeld(t.deltaPosition);
+			}
+
+			if(t.phase == TouchPhase.Ended)
+			{
+				secondPressPos = new Vector2(t.position.x,t.position.y);
+			           
+				currentSwipe = new Vector3(secondPressPos.x - firstPressPos.x, secondPressPos.y - firstPressPos.y);
+
+				if (t.position.x > Screen.width / 2)
+				{
+					Debug.Log("SWIPE RIGHT ENDED");
+					OnSwipeRightEnded(t.deltaPosition);
+				}
+				if (t.position.x < Screen.width / 2) 
+				{
+					Debug.Log("SWIPE LEFT");
+					OnSwipeLeft(currentSwipe);
+				}
+
+				Debug.Log(currentSwipe);
+			}
+		}		
 	}
 }

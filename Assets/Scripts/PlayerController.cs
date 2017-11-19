@@ -43,7 +43,8 @@ public class PlayerController : MonoBehaviour
     private bool _hookActive = false;
     private bool _hooked = false;
     private bool _hookShooting = false;
-    private Plane _gameSurfacePlane = new Plane(Vector3.back, Vector3.zero);
+    private bool _floating = false;
+    private bool _swipeRightDownHeld = false;
 
     void Awake()
     {
@@ -77,12 +78,13 @@ public class PlayerController : MonoBehaviour
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
+        _floating = false;
         transform.position = _playerStartPosition;
     }
 
     void Update()
     {
-    	//Debug.Log("GROUNDED: " + _grounded + "     HOOKED: " + _hooked + "     HOOKACTIVE: " + _hookActive);
+		Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
 
 		HandleBodyRotation();
 
@@ -90,15 +92,16 @@ public class PlayerController : MonoBehaviour
         if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
         	_ropeLineRenderer.enabled = true;
 
+        // Handle PC Input
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
             if (!_hooked)
             {
-                if (CheckHookHit())
-                {
-					_hookShooting = !_hookShooting;
-					StartCoroutine(MoveHook(_wallHookGraphic.transform.position, _wallHookHitPosition, _hookShooting));
-                }
+		        Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
+		                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
+		                                                                           -(Camera.main.transform.position.z + transform.position.z)));
+				Vector3 direction = wallHookPosition - RopeOrigin.transform.position;
+				CheckHookHit(direction);
             }
             else
             {
@@ -115,7 +118,7 @@ public class PlayerController : MonoBehaviour
         }
 		else if (HookPlayerInput.ClimbButtonUp() && _hooked)
 		{
-			// brake player a little whe done climbing
+			// brake player a little when done climbing
 			float brakeSpeed = _playerRigidbody.velocity.magnitude * ClimbingBrakeSpeedModifier;
             Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
             Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
@@ -133,6 +136,9 @@ public class PlayerController : MonoBehaviour
             Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
             _playerRigidbody.AddForce(-brakeVelocity);
         }
+
+        if(_grounded)
+        	_floating = false;	
 
         // check if rope hit an edge and handle if true
         if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
@@ -187,26 +193,16 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
-		Quaternion grappleShoulderRotation = new Quaternion();
+		Quaternion grappleShoulderRotation = RopeOrigin.transform.rotation;
 
-        // adjust playerBody for parents rotation
-        //_playerBody.transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -transform.rotation.z);
-
-        // adjust arm rotation
         if (_hooked)
-        {
 			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
-		}
 		else if (_hookActive)
 			grappleShoulderRotation = Quaternion.LookRotation(_wallHookGraphic.transform.position - RopeOrigin.transform.position, Vector3.back);
-        else
+		else
         {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                               HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                               -(Camera.main.transform.position.z + transform.position.z) + 1));
-            grappleShoulderRotation = Quaternion.LookRotation(mousePosition - RopeOrigin.transform.position, Vector3.back);
+			// Handle grappleShoulderRotation for !_hooked !_hookActive 
         }
-
         grappleShoulderRotation.x = 0.0f;
         grappleShoulderRotation.y = 0.0f;
         RopeOrigin.transform.rotation = grappleShoulderRotation;
@@ -265,6 +261,8 @@ public class PlayerController : MonoBehaviour
 
         _playerAudio.PlayOneShot(_hookHitSoundEffect);
         _hookActive = false;
+        if(!_grounded)
+        	_floating = true;
     }
 
     void RestartMoveHook()
@@ -335,15 +333,19 @@ public class PlayerController : MonoBehaviour
 		Vector3 direction;
 		float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 
-		if(currentRopeLength > _ropeMinLength)
+		if(_ropeLineRenderer.positionCount < 3 && currentRopeLength < _ropeMinLength)
+		{
+			Debug.Log("BRAKES");
+			return;
+		}
+
+		if(_hooked)
 		{
 	        _wallHookFixedJoint.connectedBody = null;
 			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
 			direction = direction * ClimbSpeed / Time.deltaTime;
 			_playerRigidbody.AddForce(direction, ForceMode.Acceleration);
-        }
-        else
-			_wallHookFixedJoint.connectedBody = null;
+		}
     }
 
 	void BoostPlayer()
@@ -355,28 +357,39 @@ public class PlayerController : MonoBehaviour
         _playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
     }
 
-    bool CheckHookHit()
+	void HandleSwipeLeft(Vector2 swipe)
     {
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-                                                           0.0f));
-        float enter;
-        if (_gameSurfacePlane.Raycast(ray, out enter))
-        {
-            RaycastHit wallHit = new RaycastHit();
-            Vector3 wallHookPosition = ray.GetPoint(enter);
-            Vector3 origin = new Vector3(RopeOrigin.transform.position.x, RopeOrigin.transform.position.y, RopeOrigin.transform.position.z);
-            Vector3 direction = wallHookPosition - origin;
-            if (Physics.Raycast(origin, direction, out wallHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
-            {
-                _wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
-                return true;
-            }
-            else
-                return false;
-        }
-        else
-            return false;
+		Debug.DrawRay(RopeOrigin.transform.position, swipe, Color.blue, 10.0f);
+    	CheckHookHit(swipe);
+    }
+
+    void HandleSwipeRightHeld(Vector2 swipe)
+    {
+		if(swipe.x > 0)
+		{
+			Debug.Log("SWIPE UP HELD");
+			_swipeRightDownHeld = false;
+			if(_hooked)
+				ClimbRope();
+		}
+		else
+		{
+			Debug.Log("SWIPE DOWN HELD");
+			_swipeRightDownHeld = true;
+		}
+    }
+
+	void HandleSwipeRightEnded(Vector2 swipe)
+    {
+		_swipeRightDownHeld = false;
+		if(swipe.x > 0)
+		{
+			// brake player a little when done climbing
+			float brakeSpeed = _playerRigidbody.velocity.magnitude * ClimbingBrakeSpeedModifier;
+            Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
+            Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
+            _playerRigidbody.AddForce(-brakeVelocity, ForceMode.Impulse);
+		}
     }
 
     void CheckRopeSlack()
@@ -387,11 +400,30 @@ public class PlayerController : MonoBehaviour
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-
-			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed() || currentRopeLength < _ropeMinLength)
+			if (playerMovingTowardHook || 
+				HookPlayerInput.RopeReleasePressed() ||
+				_swipeRightDownHeld)
+			{
+				_floating = true;
                 _wallHookFixedJoint.connectedBody = null;
+          	}
             else
+            {
+				_floating = false;
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
+            }
+        }
+    }
+
+	void CheckHookHit(Vector2 shotDirection)
+    {
+        RaycastHit wallHit = new RaycastHit();
+        Vector3 shotDirectionVector3 = new Vector3(shotDirection.x, shotDirection.y, 0.0f);
+		if (Physics.Raycast(RopeOrigin.transform.position, shotDirectionVector3, out wallHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
+        {
+            _wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
+			_hookShooting = !_hookShooting;
+			StartCoroutine(MoveHook(_wallHookGraphic.transform.position, _wallHookHitPosition, _hookShooting));
         }
     }
 
@@ -405,36 +437,27 @@ public class PlayerController : MonoBehaviour
 				TestText.text = "GROUNDED";
 				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
 			}
-			else if(_hooked && _wallHookFixedJoint.connectedBody != null)	
+			else if(_hooked && !_floating)	
 			{	
 				TestText.text = "HOOKED";
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 4);
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 3);
 			}
 			else if(_hookActive)
 			{
 				TestText.text = "HOOK ACTIVE";
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 4);
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 3);
 			}
 			else if(HookPlayerInput.RopeReleasePressed() || !_grounded)
 			{
                 if (_playerRigidbody.velocity.y > 0.0f)
-                {
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
-                    Debug.DrawRay(RopeOrigin.transform.position, newRotation * 10, Color.yellow);
-                }
                 else
-                {
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 2);
-                    Debug.DrawRay(RopeOrigin.transform.position, newRotation * 10, Color.yellow);
-                } 
 			}
 
 			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
 			PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, zAngle);
 		}
-
-//		Vector3 targetPosition = target.TransformPoint(new Vector3(0, 5, -10));
-//        TestObject.transform.eulerAngles = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
     }
 
     IEnumerator PlayerDied()
@@ -451,33 +474,31 @@ public class PlayerController : MonoBehaviour
         yield return null;
     }
 
-	void OnTriggerEnter(Collider collision)
+    void OnCollisionEnter(Collision collision)
     {
-//		if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") || collision.gameObject.layer == LayerMask.NameToLayer("Bullet"))
-//            StartCoroutine("PlayerDied");
-
-		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+		if (collision.contacts[0].normal == Vector3.up && collision.gameObject.layer == LayerMask.NameToLayer("Wall")) 
 		{
 			_grounded = true;
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY |
                                                               RigidbodyConstraints.FreezeRotationZ;
-            if (_hooked)
-                _wallHookFixedJoint.connectedBody = null;
-		}
+     	}
     }
 
-    void OnTriggerExit(Collider collision)
+    void OnCollisionExit(Collision collision)
     {
 		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
 		{
-			_grounded = false;
-            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                              RigidbodyConstraints.FreezeRotationX |
-                                                              RigidbodyConstraints.FreezeRotationY;
-            if (_hooked)
-                _wallHookFixedJoint.connectedBody = _playerRigidbody;
+//			if(_playerRigidbody.velocity.y > 0.0f)
+//			{
+				_grounded = false;
+	            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+	                                                              RigidbodyConstraints.FreezeRotationX |
+	                                                              RigidbodyConstraints.FreezeRotationY;
+				if (_hooked )
+                	_wallHookFixedJoint.connectedBody = _playerRigidbody;
+//            }
        	}
     }
 
@@ -500,5 +521,19 @@ public class PlayerController : MonoBehaviour
 		Array.Copy(tempLineRendererPositions, 1, tempLineRendererPositionsNew, 0, tempLineRendererPositions.Length - 1);
 		_ropeLineRenderer.SetPositions(tempLineRendererPositionsNew);
 		_ropeLineRenderer.positionCount = _ropeLineRenderer.positionCount - 1;
+    }
+
+    void OnEnable()
+    {
+    	HookPlayerInput.OnSwipeLeft += HandleSwipeLeft;
+		HookPlayerInput.OnSwipeRightHeld += HandleSwipeRightHeld;
+		HookPlayerInput.OnSwipeRightEnded += HandleSwipeRightEnded;
+    }
+
+    void OnDisable()
+    {
+		HookPlayerInput.OnSwipeLeft -= HandleSwipeLeft;
+		HookPlayerInput.OnSwipeRightHeld -= HandleSwipeRightHeld;
+		HookPlayerInput.OnSwipeRightEnded -= HandleSwipeRightEnded;
     }
 }
