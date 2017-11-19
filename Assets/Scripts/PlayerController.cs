@@ -83,7 +83,6 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
     	//Debug.Log("GROUNDED: " + _grounded + "     HOOKED: " + _hooked + "     HOOKACTIVE: " + _hookActive);
-		Debug.DrawRay(transform.position, _playerRigidbody.velocity * _playerRigidbody.velocity.magnitude * 0.05f, Color.yellow);
 
 		HandleBodyRotation();
 
@@ -211,8 +210,6 @@ public class PlayerController : MonoBehaviour
         grappleShoulderRotation.x = 0.0f;
         grappleShoulderRotation.y = 0.0f;
         RopeOrigin.transform.rotation = grappleShoulderRotation;
-
-       
     }
 
     IEnumerator MoveHook(Vector3 startPosition, Vector3 destination, bool ropeShooting)
@@ -420,8 +417,16 @@ public class PlayerController : MonoBehaviour
 			}
 			else if(HookPlayerInput.RopeReleasePressed() || !_grounded)
 			{
-				TestText.text = "FLOATING";
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -	_playerRigidbody.velocity.x);
+                if (_playerRigidbody.velocity.y > 0.0f)
+                {
+                    newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
+                    Debug.DrawRay(RopeOrigin.transform.position, newRotation * 10, Color.yellow);
+                }
+                else
+                {
+                    newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 2);
+                    Debug.DrawRay(RopeOrigin.transform.position, newRotation * 10, Color.yellow);
+                } 
 			}
 
 			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
