@@ -6,9 +6,11 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-	public GameObject TestObject;
 	public Text TestText;
 
+	public GameObject RopeOrigin;
+	public GameObject PlayerSprite;
+	public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
     public float BoostForce = 10.0f;
@@ -16,24 +18,21 @@ public class PlayerController : MonoBehaviour
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
 	public float ClimbingBrakeSpeedModifier = 0.5f;
-	public float animationSmoothTime = 0.3F;
-    public GameObject GrappleArmEnd;
+	public float AnimationSmoothTime = 0.3F;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
     public event OnPlayerWonEvent OnPlayerWon;
 
-	private Vector3 velocity = Vector3.zero;
+	private float zVelocity = 0.0f;
 	private RaycastHit _playerRaycastOut;
 	private RaycastHit _nextPlayerRaycastOut;
 	private GameObject _wallHookGraphic;
 	private GameObject _wallHook;
 	private FixedJoint _wallHookFixedJoint;
 	private Vector3 _playerStartPosition;
-	private GameObject _playerBody; 
 	private Rigidbody _playerRigidbody;
 	private AudioSource _playerAudio;
-	private GameObject _grappleShoulder;	
 	private LineRenderer _ropeLineRenderer;
 	private float _ropeMinLength;
 	private AudioClip _hookHitSoundEffect;
@@ -58,12 +57,10 @@ public class PlayerController : MonoBehaviour
                                                           RigidbodyConstraints.FreezeRotationX |
                                                           RigidbodyConstraints.FreezeRotationY;
 		_playerStartPosition = transform.position;
-		_playerBody = transform.Find("PlayerBody").gameObject;
 		_playerRigidbody = GetComponent<Rigidbody>();
 		_playerAudio = GetComponent<AudioSource>();
-		_grappleShoulder = _playerBody.transform.Find("GrappleShoulder").gameObject;
         _ropeLineRenderer = _wallHookGraphic.GetComponent<LineRenderer>();
-		_ropeMinLength = (_grappleShoulder.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
+		_ropeMinLength = (RopeOrigin.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
     }
@@ -183,7 +180,7 @@ public class PlayerController : MonoBehaviour
 		    	}
 			}
 
-			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, _grappleShoulder.transform.position);
+			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, RopeOrigin.transform.position);
         }
 
         HandleMove();
@@ -194,7 +191,7 @@ public class PlayerController : MonoBehaviour
 		Quaternion grappleShoulderRotation = new Quaternion();
 
         // adjust playerBody for parents rotation
-        _playerBody.transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -transform.rotation.z);
+        //_playerBody.transform.rotation = Quaternion.Euler(transform.rotation.x, transform.rotation.y, -transform.rotation.z);
 
         // adjust arm rotation
         if (_hooked)
@@ -202,18 +199,18 @@ public class PlayerController : MonoBehaviour
 			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
 		}
 		else if (_hookActive)
-			grappleShoulderRotation = Quaternion.LookRotation(_wallHookGraphic.transform.position - _grappleShoulder.transform.position, Vector3.back);
+			grappleShoulderRotation = Quaternion.LookRotation(_wallHookGraphic.transform.position - RopeOrigin.transform.position, Vector3.back);
         else
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
                                                                                HookPlayerInput.GetPlayerTouchPosition().y,
                                                                                -(Camera.main.transform.position.z + transform.position.z) + 1));
-            grappleShoulderRotation = Quaternion.LookRotation(mousePosition - _grappleShoulder.transform.position, Vector3.back);
+            grappleShoulderRotation = Quaternion.LookRotation(mousePosition - RopeOrigin.transform.position, Vector3.back);
         }
 
         grappleShoulderRotation.x = 0.0f;
         grappleShoulderRotation.y = 0.0f;
-        _grappleShoulder.transform.rotation = grappleShoulderRotation;
+        RopeOrigin.transform.rotation = grappleShoulderRotation;
 
        
     }
@@ -371,7 +368,7 @@ public class PlayerController : MonoBehaviour
         {
             RaycastHit wallHit = new RaycastHit();
             Vector3 wallHookPosition = ray.GetPoint(enter);
-            Vector3 origin = new Vector3(_grappleShoulder.transform.position.x, _grappleShoulder.transform.position.y, _grappleShoulder.transform.position.z + -_grappleShoulder.transform.position.z);
+            Vector3 origin = new Vector3(RopeOrigin.transform.position.x, RopeOrigin.transform.position.y, RopeOrigin.transform.position.z);
             Vector3 direction = wallHookPosition - origin;
             if (Physics.Raycast(origin, direction, out wallHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
             {
@@ -403,27 +400,32 @@ public class PlayerController : MonoBehaviour
 
     void HandleBodyRotation()
     {
-		if(TestObject != null)
+		if(PlayerSprite != null)
 		{
+			Vector3 newRotation = PlayerSprite.transform.eulerAngles;
 			if(_grounded)
 			{
 				TestText.text = "GROUNDED";
-				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
 			}
 			else if(_hooked && _wallHookFixedJoint.connectedBody != null)	
 			{	
 				TestText.text = "HOOKED";
-				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, _playerRigidbody.velocity.x * 4);
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 4);
 			}
 			else if(_hookActive)
 			{
 				TestText.text = "HOOK ACTIVE";
-				TestObject.transform.eulerAngles = new Vector3(TestObject.transform.eulerAngles.x,TestObject.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 4);
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 4);
 			}
 			else if(HookPlayerInput.RopeReleasePressed() || !_grounded)
 			{
 				TestText.text = "FLOATING";
+				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -	_playerRigidbody.velocity.x);
 			}
+
+			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
+			PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, zAngle);
 		}
 
 //		Vector3 targetPosition = target.TransformPoint(new Vector3(0, 5, -10));
@@ -444,30 +446,24 @@ public class PlayerController : MonoBehaviour
         yield return null;
     }
 
-	void OnCollisionEnter(Collision collision)
+	void OnTriggerEnter(Collider collision)
     {
 //		if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") || collision.gameObject.layer == LayerMask.NameToLayer("Bullet"))
 //            StartCoroutine("PlayerDied");
 
-		if(collision.contacts.Length > 0 && collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
 		{
-			ContactPoint contact = collision.contacts[0];
-			if(Vector3.Dot(contact.normal, Vector3.up) > 0.5)
-			{
-				_grounded = true;
-	            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-	                                                              RigidbodyConstraints.FreezeRotationX |
-	                                                              RigidbodyConstraints.FreezeRotationY |
-	                                                              RigidbodyConstraints.FreezeRotationZ;
-	            if (_hooked)
-	            {
-	                _wallHookFixedJoint.connectedBody = null;
-	            }
-			}
+			_grounded = true;
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY |
+                                                              RigidbodyConstraints.FreezeRotationZ;
+            if (_hooked)
+                _wallHookFixedJoint.connectedBody = null;
 		}
     }
 
-    void OnCollisionExit(Collision collision)
+    void OnTriggerExit(Collider collision)
     {
 		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
 		{
