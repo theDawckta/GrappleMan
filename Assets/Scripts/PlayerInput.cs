@@ -1,46 +1,129 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerInput : MonoBehaviour 
 {
     public bool InputActive = false;
-	public delegate void OnSwipeLeftEvent(Vector2 direction);
-	public event OnSwipeLeftEvent OnSwipeLeft;
-	public delegate void OnSwipeRightHeldEvent(Vector2 direction);
-	public event OnSwipeRightHeldEvent OnSwipeRightHeld;
-	public delegate void OnSwipeRightEndedEvent(Vector2 direction);
-	public event OnSwipeRightEndedEvent OnSwipeRightEnded;
+    public float MovementRampUpTime = 0.3f;
+    public Slider XAxis;
 
-	private Vector2 firstPressPos;
-	private Vector2 secondPressPos;
-	private Vector2 currentSwipe;
+    private bool _leftTouchStarted = false;
+	private Vector2 _leftStart = new Vector2();
+	private Vector2 _leftSwipe = new Vector2();
+	private bool _leftTouchDone = false;
+    private float _leftSwipeAxis = 0.0f;
+    private bool _rightTouchStarted = false;
+	private Vector2 _rightStart = new Vector2();
+	private Vector2 _rightSwipe = new Vector2();
+	private bool _rightTouchDone = false;
+    private float _rightSwipeAxis = 0.0f;
+    private float xVelocity = 0.0F;
 
 	void Update() 
 	{
-		if (InputActive)
-			CheckSwipe();
+        Debug.Log("RIGHT SWIPE AXIS: " + _rightSwipeAxis);
+        if (Input.GetKeyDown(KeyCode.F))
+            _rightTouchStarted = true;
+        if (Input.GetKeyUp(KeyCode.F))
+        {
+            _rightTouchStarted = false;
+            XAxis.value = 0.0f;
+            _rightSwipeAxis = 0.0f;
+        }
+        
+		foreach (Touch touch in Input.touches) 
+		{
+			if (touch.position.x < Screen.width / 2)
+			{	
+				if (touch.phase == TouchPhase.Began)
+                {
+                    _leftTouchStarted = true;
+                    _leftStart = touch.position;
+                }
+                if (touch.phase == TouchPhase.Moved)
+                    _leftSwipe = touch.position - _leftStart;
+                if (touch.phase == TouchPhase.Ended)
+                {
+                    _leftTouchStarted = false;
+                    _leftTouchDone = true;
+                    _leftSwipe = touch.position - _leftStart;
+                    _leftSwipeAxis = 0.0f;
+                }
+			}
+            else
+            {
+				if (touch.phase == TouchPhase.Began)
+                {
+                    _rightTouchStarted = true;
+                    _rightStart = touch.position;
+                }
+				if (touch.phase == TouchPhase.Moved)
+                    _rightSwipe = touch.position - _rightStart;
+				if (touch.phase == TouchPhase.Ended)
+				{
+                    _rightTouchStarted = false;
+					_rightTouchDone = true;
+                    _rightSwipe = touch.position - _rightStart;
+                    _rightSwipeAxis = 0.0f;
+				}
+            }
+        }
     }
 
-	public float Move()
-	{
+    public bool HookButtonDown()
+    {
         if (InputActive)
-           	return Input.GetAxis("Horizontal");
+        {
+#if (UNITY_STANDALONE || UNITY_EDITOR)
+            return (Input.GetButtonDown("Fire1"));
+
+#elif (UNITY_IOS || UNITY_ANDROID)
+            if (_leftTouchDone)
+            {
+                _leftTouchDone = false;
+                return true;
+            }
+            else
+                return false;
+#endif
+        }
         else
-            return 0;
-	}
+            return false;
+    }
+
+    public bool ClimbButtonPressed()
+    {
+        if (InputActive)
+        {
+#if (UNITY_STANDALONE || UNITY_EDITOR)
+            return (Input.GetKey(KeyCode.Q));
+
+#elif (UNITY_IOS || UNITY_ANDROID)
+            if (_rightSwipe.y > 0 && _rightTouchStarted)
+                return true;
+            else
+                return false;
+#endif
+        }
+        else
+            return false;
+    }
 
 	public bool RopeReleasePressed()
 	{
         if (InputActive)
+        {
+			#if (UNITY_STANDALONE || UNITY_EDITOR)
 			return Input.GetKey(KeyCode.E) ? true:false;
-        else
-            return false;
-	}
 
-	public bool HookButtonDown()
-	{
-        if (InputActive)
-			return (Input.GetButtonDown("Fire1"));
+			#elif (UNITY_IOS || UNITY_ANDROID)
+            if (_rightSwipe.y < 0 && _rightTouchStarted)
+				return true;
+			else
+				return false;
+			#endif
+		}
         else
             return false;
 	}
@@ -48,61 +131,70 @@ public class PlayerInput : MonoBehaviour
 	public bool ClimbButtonUp()
 	{
         if (InputActive)
+        {
+			#if (UNITY_STANDALONE || UNITY_EDITOR)
 			return (Input.GetKeyUp(KeyCode.Q));
+
+			#elif (UNITY_IOS || UNITY_ANDROID)
+			if (_rightTouchDone)
+			{
+				_rightTouchDone = false;
+				return true;
+			}
+			else
+				return false;
+			#endif
+		}
         else
             return false;
 	}
 
-	public bool ClimbButtonPressed()
-    {
-        if (InputActive)
-          	return (Input.GetKey(KeyCode.Q));
-        else
-            return false;
-    }
-
-    public Vector3 GetPlayerTouchPosition()
+    public Vector3 GetDirection()
 	{
         if (InputActive)
-			return Input.mousePosition;
+        {
+			#if (UNITY_STANDALONE || UNITY_EDITOR)
+            Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
+                                                                                  Input.mousePosition.y,
+                                                                                   -(Camera.main.transform.position.z + transform.position.z)));
+            Vector3 direction = wallHookPosition - transform.position;
+
+			return direction;
+
+            #elif (UNITY_IOS || UNITY_ANDROID)
+            return _leftSwipe;
+			#endif
+		}
         else
             return new Vector3();
 	}
 
-	void CheckSwipe()
-	{
-		if(Input.touches.Length > 0)
-		{
-			Debug.Log("TOUCH LENGTH GREATER THAN ZERO");
-			Touch t = Input.GetTouch(0);
+    public float Move()
+    {
+        if (InputActive)
+        {
+            #if (UNITY_STANDALONE || UNITY_EDITOR)
+            {
+                Debug.Log(Input.GetAxis("Horizontal"));
+                return Input.GetAxis("Horizontal");
+            }   
 
-			if(t.phase == TouchPhase.Moved)
-			{
-				Debug.Log("TOUCH HAS MOVED");
-				firstPressPos = new Vector2(t.position.x,t.position.y);
-				if (t.position.x > Screen.width / 2) 
-					OnSwipeRightHeld(t.deltaPosition);
-			}
-
-			if(t.phase == TouchPhase.Ended)
-			{
-				secondPressPos = new Vector2(t.position.x,t.position.y);
-			           
-				currentSwipe = new Vector3(secondPressPos.x - firstPressPos.x, secondPressPos.y - firstPressPos.y);
-
-				if (t.position.x > Screen.width / 2)
-				{
-					Debug.Log("SWIPE RIGHT ENDED");
-					OnSwipeRightEnded(t.deltaPosition);
-				}
-				if (t.position.x < Screen.width / 2) 
-				{
-					Debug.Log("SWIPE LEFT");
-					OnSwipeLeft(currentSwipe);
-				}
-
-				Debug.Log(currentSwipe);
-			}
-		}		
-	}
+            #elif (UNITY_IOS || UNITY_ANDROID)
+            {
+                if (_rightTouchStarted)
+                {
+                    float targetValue = 0.0f;
+                    if (_rightSwipe.x > 0.0f)
+                        targetValue = 1.0f;
+                    else if (_rightSwipe.x < 0.0f)
+                        targetValue = -1.0f;
+                    _rightSwipeAxis = Mathf.SmoothDamp(_rightSwipeAxis, targetValue, ref xVelocity, MovementRampUpTime);
+                }
+                return _rightSwipeAxis;
+            }
+            #endif
+        }
+        else
+            return 0;
+    }
 }

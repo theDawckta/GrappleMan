@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
     private bool _hooked = false;
     private bool _hookShooting = false;
     private bool _floating = false;
-    private bool _swipeRightDownHeld = false;
+    private bool _swipeRightHeld = false;
 
     void Awake()
     {
@@ -84,7 +84,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-		Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
+    	// keep this around for debugging
+		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
 
 		HandleBodyRotation();
 
@@ -92,16 +93,11 @@ public class PlayerController : MonoBehaviour
         if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
         	_ropeLineRenderer.enabled = true;
 
-        // Handle PC Input
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
             if (!_hooked)
             {
-		        Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-		                                                                           HookPlayerInput.GetPlayerTouchPosition().y,
-		                                                                           -(Camera.main.transform.position.z + transform.position.z)));
-				Vector3 direction = wallHookPosition - RopeOrigin.transform.position;
-				CheckHookHit(direction);
+                CheckHookHit(HookPlayerInput.GetDirection());
             }
             else
             {
@@ -335,12 +331,12 @@ public class PlayerController : MonoBehaviour
 
 		if(_ropeLineRenderer.positionCount < 3 && currentRopeLength < _ropeMinLength)
 		{
-			Debug.Log("BRAKES");
 			return;
 		}
 
 		if(_hooked)
 		{
+            Debug.Log("CLIMBING");
 	        _wallHookFixedJoint.connectedBody = null;
 			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
 			direction = direction * ClimbSpeed / Time.deltaTime;
@@ -350,46 +346,8 @@ public class PlayerController : MonoBehaviour
 
 	void BoostPlayer()
     {
-        Vector3 direction = Camera.main.ScreenToWorldPoint(new Vector3(HookPlayerInput.GetPlayerTouchPosition().x,
-                                                                          HookPlayerInput.GetPlayerTouchPosition().y,
-                                                                        -(Camera.main.transform.position.z + transform.position.z)));
-        direction = direction - transform.position;
-        _playerRigidbody.AddForce(direction.normalized * BoostForce, ForceMode.VelocityChange);
-    }
-
-	void HandleSwipeLeft(Vector2 swipe)
-    {
-		Debug.DrawRay(RopeOrigin.transform.position, swipe, Color.blue, 10.0f);
-    	CheckHookHit(swipe);
-    }
-
-    void HandleSwipeRightHeld(Vector2 swipe)
-    {
-		if(swipe.x > 0)
-		{
-			Debug.Log("SWIPE UP HELD");
-			_swipeRightDownHeld = false;
-			if(_hooked)
-				ClimbRope();
-		}
-		else
-		{
-			Debug.Log("SWIPE DOWN HELD");
-			_swipeRightDownHeld = true;
-		}
-    }
-
-	void HandleSwipeRightEnded(Vector2 swipe)
-    {
-		_swipeRightDownHeld = false;
-		if(swipe.x > 0)
-		{
-			// brake player a little when done climbing
-			float brakeSpeed = _playerRigidbody.velocity.magnitude * ClimbingBrakeSpeedModifier;
-            Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
-            Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
-            _playerRigidbody.AddForce(-brakeVelocity, ForceMode.Impulse);
-		}
+        Debug.Log("BOOSTED");
+        _playerRigidbody.AddForce(HookPlayerInput.GetDirection().normalized * BoostForce, ForceMode.VelocityChange);
     }
 
     void CheckRopeSlack()
@@ -400,9 +358,7 @@ public class PlayerController : MonoBehaviour
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-			if (playerMovingTowardHook || 
-				HookPlayerInput.RopeReleasePressed() ||
-				_swipeRightDownHeld)
+			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
 			{
 				_floating = true;
                 _wallHookFixedJoint.connectedBody = null;
@@ -490,15 +446,12 @@ public class PlayerController : MonoBehaviour
     {
 		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
 		{
-//			if(_playerRigidbody.velocity.y > 0.0f)
-//			{
-				_grounded = false;
-	            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-	                                                              RigidbodyConstraints.FreezeRotationX |
-	                                                              RigidbodyConstraints.FreezeRotationY;
-				if (_hooked )
-                	_wallHookFixedJoint.connectedBody = _playerRigidbody;
-//            }
+			_grounded = false;
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY;
+			if (_hooked )
+            	_wallHookFixedJoint.connectedBody = _playerRigidbody;
        	}
     }
 
@@ -521,19 +474,5 @@ public class PlayerController : MonoBehaviour
 		Array.Copy(tempLineRendererPositions, 1, tempLineRendererPositionsNew, 0, tempLineRendererPositions.Length - 1);
 		_ropeLineRenderer.SetPositions(tempLineRendererPositionsNew);
 		_ropeLineRenderer.positionCount = _ropeLineRenderer.positionCount - 1;
-    }
-
-    void OnEnable()
-    {
-    	HookPlayerInput.OnSwipeLeft += HandleSwipeLeft;
-		HookPlayerInput.OnSwipeRightHeld += HandleSwipeRightHeld;
-		HookPlayerInput.OnSwipeRightEnded += HandleSwipeRightEnded;
-    }
-
-    void OnDisable()
-    {
-		HookPlayerInput.OnSwipeLeft -= HandleSwipeLeft;
-		HookPlayerInput.OnSwipeRightHeld -= HandleSwipeRightHeld;
-		HookPlayerInput.OnSwipeRightEnded -= HandleSwipeRightEnded;
     }
 }

@@ -9,6 +9,7 @@ public class UIController : MonoBehaviour
     public InputField SeedInputField;
     public Slider Volume;
     public Text TestText;
+    public InputField ClimbSpeedText;
     public GameObject ParentCanvas;
     public PlayerController _PlayerController;
     public SceneController _SceneController;
@@ -16,14 +17,15 @@ public class UIController : MonoBehaviour
 
     private String seed;
 
-	void Start () 
+    void Start()
     {
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
-		_SceneController.OnPlayerStarted();
-	}
+        _SceneController.OnPlayerStarted();
+        ClimbSpeedText.text = _PlayerController.ClimbSpeed.ToString();
+    }
 
     public void NewGame()
     {
@@ -38,7 +40,7 @@ public class UIController : MonoBehaviour
 
     public void SetSeed()
     {
-        if(SeedInputField.text != "")
+        if (SeedInputField.text != "")
         {
             seed = SeedInputField.text;
 
@@ -49,7 +51,7 @@ public class UIController : MonoBehaviour
 
     public void SetTestText(string newText)
     {
-    	TestText.text = newText;
+        TestText.text = newText;
     }
 
     public void RandomSeed()
@@ -71,6 +73,11 @@ public class UIController : MonoBehaviour
     public void OnVolumeChanged()
     {
         _SceneController.SetVolume(Volume.value);
+    }
+
+    public void OnClimbSpeedChanged()
+    {
+        _PlayerController.ClimbSpeed = float.Parse(ClimbSpeedText.text);
     }
 
     void ToggleUIController()
