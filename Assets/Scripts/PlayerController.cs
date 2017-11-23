@@ -44,7 +44,6 @@ public class PlayerController : MonoBehaviour
     private bool _hooked = false;
     private bool _hookShooting = false;
     private bool _floating = false;
-    private bool _swipeRightHeld = false;
 
     void Awake()
     {
@@ -336,7 +335,6 @@ public class PlayerController : MonoBehaviour
 
 		if(_hooked)
 		{
-            Debug.Log("CLIMBING");
 	        _wallHookFixedJoint.connectedBody = null;
 			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
 			direction = direction * ClimbSpeed / Time.deltaTime;
@@ -346,7 +344,6 @@ public class PlayerController : MonoBehaviour
 
 	void BoostPlayer()
     {
-        Debug.Log("BOOSTED");
         _playerRigidbody.AddForce(HookPlayerInput.GetDirection().normalized * BoostForce, ForceMode.VelocityChange);
     }
 
@@ -444,15 +441,18 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionExit(Collision collision)
     {
-		if(collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
-		{
-			_grounded = false;
-            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                              RigidbodyConstraints.FreezeRotationX |
-                                                              RigidbodyConstraints.FreezeRotationY;
-			if (_hooked )
-            	_wallHookFixedJoint.connectedBody = _playerRigidbody;
-       	}
+        if (_grounded && Math.Abs(collision.relativeVelocity.y) > Math.Abs(collision.relativeVelocity.x))
+        {
+            if (collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+            {
+                _grounded = false;
+                transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                                  RigidbodyConstraints.FreezeRotationX |
+                                                                  RigidbodyConstraints.FreezeRotationY;
+                if (_hooked)
+                    _wallHookFixedJoint.connectedBody = _playerRigidbody;
+            }
+        }
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)

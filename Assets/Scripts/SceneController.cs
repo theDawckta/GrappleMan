@@ -12,6 +12,7 @@ public class SceneController : MonoBehaviour
 
     void Awake()
     {
+        Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
 

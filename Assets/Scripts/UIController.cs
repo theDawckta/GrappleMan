@@ -9,6 +9,7 @@ public class UIController : MonoBehaviour
     public InputField SeedInputField;
     public Slider Volume;
     public Text TestText;
+    public Text FPSText;
     public InputField ClimbSpeedText;
     public GameObject ParentCanvas;
     public PlayerController _PlayerController;
@@ -19,6 +20,7 @@ public class UIController : MonoBehaviour
 
     void Start()
     {
+        StartCoroutine(FPS());
         seed = RandomString(SeedLength);
         SeedInputField.text = seed;
         // init levelgenerator here when ready
@@ -83,5 +85,18 @@ public class UIController : MonoBehaviour
     void ToggleUIController()
     {
         ParentCanvas.gameObject.SetActive(!ParentCanvas.gameObject.activeSelf);
+    }
+
+    IEnumerator FPS()
+    {
+        for (;;)
+        {
+            int lastFrameCount = Time.frameCount;
+            float lastTime = Time.realtimeSinceStartup;
+            yield return new WaitForSeconds(0.5f);
+            float timeSpan = Time.realtimeSinceStartup - lastTime;
+            int frameCount = Time.frameCount - lastFrameCount;
+            FPSText.text = Mathf.RoundToInt(frameCount / timeSpan) + " fps";
+        }
     }
 }

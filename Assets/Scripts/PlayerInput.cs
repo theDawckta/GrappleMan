@@ -22,15 +22,15 @@ public class PlayerInput : MonoBehaviour
 
 	void Update() 
 	{
-        Debug.Log("RIGHT SWIPE AXIS: " + _rightSwipeAxis);
-        if (Input.GetKeyDown(KeyCode.F))
-            _rightTouchStarted = true;
-        if (Input.GetKeyUp(KeyCode.F))
-        {
-            _rightTouchStarted = false;
-            XAxis.value = 0.0f;
-            _rightSwipeAxis = 0.0f;
-        }
+        //Debug.Log("RIGHT SWIPE AXIS: " + _rightSwipeAxis);
+        //if (Input.GetKeyDown(KeyCode.F))
+        //    _rightTouchStarted = true;
+        //if (Input.GetKeyUp(KeyCode.F))
+        //{
+        //    _rightTouchStarted = false;
+        //    XAxis.value = 0.0f;
+        //    _rightSwipeAxis = 0.0f;
+        //}
         
 		foreach (Touch touch in Input.touches) 
 		{
@@ -175,7 +175,6 @@ public class PlayerInput : MonoBehaviour
         {
             #if (UNITY_STANDALONE || UNITY_EDITOR)
             {
-                Debug.Log(Input.GetAxis("Horizontal"));
                 return Input.GetAxis("Horizontal");
             }   
 
