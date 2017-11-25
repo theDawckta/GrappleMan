@@ -441,9 +441,9 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionExit(Collision collision)
     {
-        if (_grounded && Math.Abs(collision.relativeVelocity.y) > Math.Abs(collision.relativeVelocity.x))
-        {
-            if (collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        //if (_grounded && Math.Abs(collision.relativeVelocity.y) > Math.Abs(collision.relativeVelocity.x))
+        //{
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall") && _playerRigidbody.velocity.y > 0 || _playerRigidbody.velocity.y < 0)
             {
                 _grounded = false;
                 transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
@@ -452,7 +452,7 @@ public class PlayerController : MonoBehaviour
                 if (_hooked)
                     _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
-        }
+        //}
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
