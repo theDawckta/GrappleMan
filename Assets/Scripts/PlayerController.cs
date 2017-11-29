@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
     public float BoostForce = 10.0f;
+    public float SwingBoostForce = 1.0f;
     public float MaxVelocity = 10.0f;
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
@@ -43,6 +44,7 @@ public class PlayerController : MonoBehaviour
     private bool _hookActive = false;
     private bool _hooked = false;
     private bool _hookShooting = false;
+    private bool _hookBoostReady = true;
     private bool _floating = false;
 
     void Awake()
@@ -63,6 +65,7 @@ public class PlayerController : MonoBehaviour
 		_ropeMinLength = (RopeOrigin.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
+        HookPlayerInput.InputActive = true;
     }
 
     public void Init()
@@ -77,6 +80,7 @@ public class PlayerController : MonoBehaviour
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
+        _hookBoostReady = true;
         _floating = false;
         transform.position = _playerStartPosition;
     }
@@ -87,7 +91,6 @@ public class PlayerController : MonoBehaviour
 		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
 
 		HandleBodyRotation();
-
 		// show linerenderer if active
         if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
         	_ropeLineRenderer.enabled = true;
@@ -98,7 +101,7 @@ public class PlayerController : MonoBehaviour
             {
                 CheckHookHit(HookPlayerInput.GetDirection());
             }
-            else
+            else if(HookPlayerInput.GetDirection() != Vector3.zero)
             {
             	if(!_grounded)
                 	BoostPlayer();
@@ -106,19 +109,16 @@ public class PlayerController : MonoBehaviour
 				StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
             }
         }
+        else if (HookPlayerInput.SwingBoost() && _hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.0f)
+        {
+            Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
+            _playerRigidbody.AddForce(force, ForceMode.VelocityChange);
+        }
 		else if(HookPlayerInput.ClimbButtonPressed())
         {
 			if (_hooked)
         		ClimbRope();
         }
-		else if (HookPlayerInput.ClimbButtonUp() && _hooked)
-		{
-			// brake player a little when done climbing
-			float brakeSpeed = _playerRigidbody.velocity.magnitude * ClimbingBrakeSpeedModifier;
-            Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
-            Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
-            _playerRigidbody.AddForce(-brakeVelocity, ForceMode.Impulse);
-		}
     }
 
     void FixedUpdate()
@@ -141,8 +141,10 @@ public class PlayerController : MonoBehaviour
 			bool hit = false;
 			Vector3 direction = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
 
-			if(_hooked)
+            if (_hooked)
+            {
                 CheckRopeSlack();
+            }
 
           	hit = Physics.Raycast(transform.position, direction, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
             if (hit)
@@ -167,7 +169,6 @@ public class PlayerController : MonoBehaviour
 				Vector3 playersAngle = transform.position - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
 				Vector3 previousAngle = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
                 float currentAngle = AngleFromAToB(playersAngle, previousAngle);
-
 		        if (Mathf.Sign(currentAngle) != Mathf.Sign(_ropeBendAngles[_ropeBendAngles.Count - 1]))
 		        {
 					if(_hookActive)
@@ -250,7 +251,8 @@ public class PlayerController : MonoBehaviour
 			_ropeBendAngles.Clear();
 			_ropeLineRenderer.positionCount = 0;
         	_wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
-        	_wallHookGraphic.transform.parent = GrappleArmEnd.transform;
+            _wallHookGraphic.transform.SetParent(GrappleArmEnd.transform, true);
+            _wallHookGraphic.transform.rotation = Quaternion.identity;
 			_hooked = false;
         }
 
@@ -416,7 +418,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator PlayerDied()
     {
         if(OnPlayerDied != null)
-            //OnPlayerDied();
+            OnPlayerDied();
         yield return null;
     }
 
@@ -429,14 +431,16 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-		if (collision.contacts[0].normal == Vector3.up && collision.gameObject.layer == LayerMask.NameToLayer("Wall")) 
-		{
-			_grounded = true;
+        if (collision.contacts[0].normal == Vector3.up && collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            _grounded = true;
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
                                                               RigidbodyConstraints.FreezeRotationX |
                                                               RigidbodyConstraints.FreezeRotationY |
                                                               RigidbodyConstraints.FreezeRotationZ;
-     	}
+        }
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+            Init();
     }
 
     void OnCollisionExit(Collision collision)

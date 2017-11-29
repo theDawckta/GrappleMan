@@ -23,7 +23,7 @@ public class PlayerInput : MonoBehaviour
 
     void Start()
     {
-        _dragDistance = Screen.height * 10 / 100;
+        _dragDistance = Screen.height * 20 / 100;
     }
 	void Update() 
 	{
@@ -89,6 +89,24 @@ public class PlayerInput : MonoBehaviour
                 _rightTouchDone = false;
                 return true;
             }
+            else
+                return false;
+#endif
+        }
+        else
+            return false;
+    }
+
+    public bool SwingBoost()
+    {
+        if (InputActive)
+        {
+#if (UNITY_STANDALONE || UNITY_EDITOR)
+            return (Input.GetKey(KeyCode.S));
+
+#elif (UNITY_IOS || UNITY_ANDROID)
+            if (_rightTouchStarted)
+                return true;
             else
                 return false;
 #endif
@@ -172,7 +190,7 @@ public class PlayerInput : MonoBehaviour
 #endif
         }
         else
-            return new Vector3();
+            return Vector3.zero;
 	}
 
     public float Move()

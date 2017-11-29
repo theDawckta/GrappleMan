@@ -25,8 +25,8 @@ public class UIController : MonoBehaviour
         SeedInputField.text = seed;
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
-        _SceneController.OnPlayerStarted();
         ClimbSpeedText.text = _PlayerController.ClimbSpeed.ToString();
+
     }
 
     public void NewGame()
