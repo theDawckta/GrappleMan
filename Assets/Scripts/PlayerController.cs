@@ -18,7 +18,6 @@ public class PlayerController : MonoBehaviour
     public float MaxVelocity = 10.0f;
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
-	public float ClimbingBrakeSpeedModifier = 0.5f;
 	public float AnimationSmoothTime = 0.3F;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
@@ -44,7 +43,6 @@ public class PlayerController : MonoBehaviour
     private bool _hookActive = false;
     private bool _hooked = false;
     private bool _hookShooting = false;
-    private bool _hookBoostReady = true;
     private bool _floating = false;
 
     void Awake()
@@ -80,7 +78,6 @@ public class PlayerController : MonoBehaviour
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
-        _hookBoostReady = true;
         _floating = false;
         transform.position = _playerStartPosition;
     }
@@ -91,9 +88,6 @@ public class PlayerController : MonoBehaviour
 		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
 
 		HandleBodyRotation();
-		// show linerenderer if active
-        if((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
-        	_ropeLineRenderer.enabled = true;
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -185,6 +179,10 @@ public class PlayerController : MonoBehaviour
         }
 
         HandleMove();
+
+        // show linerenderer if active
+        if ((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
+            _ropeLineRenderer.enabled = true;
     }
 
     void LateUpdate()
@@ -353,18 +351,17 @@ public class PlayerController : MonoBehaviour
     {
         if (!_grounded)
         {
-			float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
-			{
-				_floating = true;
+            if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
+            {
+                _floating = true;
                 _wallHookFixedJoint.connectedBody = null;
-          	}
+            }
             else
             {
-				_floating = false;
+                _floating = false;
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
@@ -447,7 +444,7 @@ public class PlayerController : MonoBehaviour
     {
         //if (_grounded && Math.Abs(collision.relativeVelocity.y) > Math.Abs(collision.relativeVelocity.x))
         //{
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall") && _playerRigidbody.velocity.y > 0 || _playerRigidbody.velocity.y < 0)
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall") && _playerRigidbody.velocity.y > 0)
             {
                 _grounded = false;
                 transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
