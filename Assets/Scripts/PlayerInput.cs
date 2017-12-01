@@ -97,24 +97,6 @@ public class PlayerInput : MonoBehaviour
             return false;
     }
 
-    public bool SwingBoost()
-    {
-        if (InputActive)
-        {
-#if (UNITY_STANDALONE || UNITY_EDITOR)
-            return (Input.GetKey(KeyCode.S));
-
-#elif (UNITY_IOS || UNITY_ANDROID)
-            if (_rightTouchStarted)
-                return true;
-            else
-                return false;
-#endif
-        }
-        else
-            return false;
-    }
-
     public bool ClimbButtonPressed()
     {
         if (InputActive)

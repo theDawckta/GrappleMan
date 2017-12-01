@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
     public float BoostForce = 10.0f;
-    public float SwingBoostForce = 1.0f;
+    public float SwingBoostForce = 1.5f;
     public float MaxVelocity = 10.0f;
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
@@ -105,16 +105,17 @@ public class PlayerController : MonoBehaviour
 				StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
             }
         }
-        else if (HookPlayerInput.SwingBoost() && _hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.0f)
+        else if (HookPlayerInput.ClimbButtonPressed())
+        {
+            if (_hooked)
+                ClimbRope();
+        }
+        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f)
         {
             Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
-            _playerRigidbody.AddForce(force, ForceMode.VelocityChange);
+            _playerRigidbody.AddForce(force, ForceMode.Acceleration);
         }
-		else if(HookPlayerInput.ClimbButtonPressed())
-        {
-			if (_hooked)
-        		ClimbRope();
-        }
+		
     }
 
     void FixedUpdate()
@@ -371,6 +372,8 @@ public class PlayerController : MonoBehaviour
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
+        else
+            _wallHookFixedJoint.connectedBody = null;
     }
 
 	void CheckHookHit(Vector2 shotDirection)
