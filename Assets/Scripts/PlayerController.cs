@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
 {
-	public Text TestText;
+    public Text TestText;
 
-	public GameObject RopeOrigin;
-	public GameObject PlayerSprite;
-	public GameObject GrappleArmEnd;
+    public GameObject RopeOrigin;
+    public GameObject PlayerSprite;
+    public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
     public float Speed = 10.0f;
     public float BoostForce = 10.0f;
@@ -18,28 +18,29 @@ public class PlayerController : MonoBehaviour
     public float MaxVelocity = 10.0f;
     public float HookSpeed = 60.0f;
     public float ClimbSpeed = 1.0f;
-	public float AnimationSmoothTime = 0.3F;
+    public float AnimationSmoothTime = 0.3F;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
     public delegate void OnPlayerWonEvent();
     public event OnPlayerWonEvent OnPlayerWon;
 
-	private float zVelocity = 0.0f;
-	private RaycastHit _playerRaycastOut;
-	private RaycastHit _nextPlayerRaycastOut;
-	private GameObject _wallHookGraphic;
-	private GameObject _wallHook;
-	private FixedJoint _wallHookFixedJoint;
-	private Vector3 _playerStartPosition;
-	private Rigidbody _playerRigidbody;
-	private AudioSource _playerAudio;
-	private LineRenderer _ropeLineRenderer;
-	private float _ropeMinLength;
-	private AudioClip _hookHitSoundEffect;
+    private float zVelocity = 0.0f;
+    private RaycastHit _playerRaycastOut;
+    private RaycastHit _nextPlayerRaycastOut;
+    private GameObject _wallHookGraphic;
+    private GameObject _wallHook;
+    private FixedJoint _wallHookFixedJoint;
+    private Vector3 _playerStartPosition;
+    private Rigidbody _playerRigidbody;
+    private AudioSource _playerAudio;
+    private LineRenderer _ropeLineRenderer;
+    private float _ropeMinLength;
+    private AudioClip _hookHitSoundEffect;
     private AudioClip _hookFireSoundEffect;
     private List<float> _ropeBendAngles = new List<float>();
     private Vector3 _wallHookHitPosition = new Vector3();
-	private bool _grounded = false;
+    private float _distToGround;
+    private bool _grounded { get{return Physics.Raycast(PlayerSprite.transform.position, Vector3.down, _distToGround + 0.1f);}}           
     private bool _hookActive = false;
     private bool _hooked = false;
     private bool _hookShooting = false;
@@ -63,6 +64,7 @@ public class PlayerController : MonoBehaviour
 		_ropeMinLength = (RopeOrigin.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
+        _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
         HookPlayerInput.InputActive = true;
     }
 
@@ -86,7 +88,7 @@ public class PlayerController : MonoBehaviour
     {
     	// keep this around for debugging
 		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
-
+     
 		HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
@@ -126,8 +128,16 @@ public class PlayerController : MonoBehaviour
             _playerRigidbody.AddForce(-brakeVelocity);
         }
 
-        if(_grounded)
-        	_floating = false;	
+        // handle _grounded
+        if (_grounded)
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY |
+                                                              RigidbodyConstraints.FreezeRotationZ;
+        else
+            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
+                                                              RigidbodyConstraints.FreezeRotationX |
+                                                              RigidbodyConstraints.FreezeRotationY;
 
         // check if rope hit an edge and handle if true
         if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
@@ -256,8 +266,6 @@ public class PlayerController : MonoBehaviour
 
         _playerAudio.PlayOneShot(_hookHitSoundEffect);
         _hookActive = false;
-        if(!_grounded)
-        	_floating = true;
     }
 
     void RestartMoveHook()
@@ -329,9 +337,7 @@ public class PlayerController : MonoBehaviour
 		float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 
 		if(_ropeLineRenderer.positionCount < 3 && currentRopeLength < _ropeMinLength)
-		{
 			return;
-		}
 
 		if(_hooked)
 		{
@@ -428,32 +434,12 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.contacts[0].normal == Vector3.up && collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
-        {
-            _grounded = true;
-            transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                              RigidbodyConstraints.FreezeRotationX |
-                                                              RigidbodyConstraints.FreezeRotationY |
-                                                              RigidbodyConstraints.FreezeRotationZ;
-        }
         if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
             Init();
     }
 
     void OnCollisionExit(Collision collision)
-    {
-        //if (_grounded && Math.Abs(collision.relativeVelocity.y) > Math.Abs(collision.relativeVelocity.x))
-        //{
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall") && _playerRigidbody.velocity.y > 0)
-            {
-                _grounded = false;
-                transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
-                                                                  RigidbodyConstraints.FreezeRotationX |
-                                                                  RigidbodyConstraints.FreezeRotationY;
-                if (_hooked)
-                    _wallHookFixedJoint.connectedBody = _playerRigidbody;
-            }
-        //}
+    {    
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
