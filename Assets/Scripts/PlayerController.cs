@@ -12,11 +12,11 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
-    public float Speed = 10.0f;
-    public float BoostForce = 10.0f;
-    public float SwingBoostForce = 1.5f;
-    public float MaxVelocity = 10.0f;
-    public float HookSpeed = 60.0f;
+    public float Speed = 1.0f;
+    public float BoostForce = 8.0f;
+    public float SwingBoostForce = 0.0f;
+    public float MaxVelocity = 20.0f;
+    public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
     public float AnimationSmoothTime = 0.3F;
     public delegate void OnPlayerDiedEvent();
@@ -107,7 +107,9 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.ClimbButtonPressed())
         {
-            if (_hooked)
+            float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
+
+            if (_hooked && _ropeLineRenderer.positionCount > 1 && currentRopeLength > _ropeMinLength)
                 ClimbRope();
         }
         else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f)
@@ -120,15 +122,6 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // limit velocity
-        if (_playerRigidbody.velocity.magnitude > MaxVelocity)
-        {
-            float brakeSpeed = _playerRigidbody.velocity.magnitude - MaxVelocity;
-            Vector3 normalisedVelocity = _playerRigidbody.velocity.normalized;
-            Vector3 brakeVelocity = normalisedVelocity * brakeSpeed;
-            _playerRigidbody.AddForce(-brakeVelocity);
-        }
-
         // handle _grounded
         if (_grounded)
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
@@ -327,18 +320,14 @@ public class PlayerController : MonoBehaviour
 
 	void HandleMove()
     {
-    	// moves player left and right
-        if ((HookPlayerInput.Move() < 0 || HookPlayerInput.Move() > 0) && (_grounded))
-            GetComponent<Rigidbody>().velocity = new Vector2(HookPlayerInput.Move() * Speed, GetComponent<Rigidbody>().velocity.y);
+        // moves player left and right
+        if (_grounded && _playerRigidbody.velocity.magnitude < MaxVelocity)
+            _playerRigidbody.AddForce(new Vector3(HookPlayerInput.Move() * Speed, 0.0f,  0.0f), ForceMode.VelocityChange);
     }
 
     void ClimbRope()
     {
 		Vector3 direction;
-		float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
-
-		if(_ropeLineRenderer.positionCount < 3 && currentRopeLength < _ropeMinLength)
-			return;
 
 		if(_hooked)
 		{
@@ -356,7 +345,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckRopeSlack()
     {
-        if (!_grounded)
+        if (!_grounded && _hooked)
         {
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
@@ -364,16 +353,14 @@ public class PlayerController : MonoBehaviour
             if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
             {
                 _floating = true;
-                _wallHookFixedJoint.connectedBody = null;
+               _wallHookFixedJoint.connectedBody = null;
             }
-            else
+            else if(!playerMovingTowardHook || HookPlayerInput.RopeReleaseUp())
             {
                 _floating = false;
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
-        else
-            _wallHookFixedJoint.connectedBody = null;
     }
 
 	void CheckHookHit(Vector2 shotDirection)
@@ -408,8 +395,9 @@ public class PlayerController : MonoBehaviour
 				TestText.text = "HOOK ACTIVE";
 				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 3);
 			}
-			else if(HookPlayerInput.RopeReleasePressed() || !_grounded)
+			else if(_floating || !_grounded)
 			{
+                TestText.text = "FLOATING";
                 if (_playerRigidbody.velocity.y > 0.0f)
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
                 else
