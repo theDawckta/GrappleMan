@@ -14,10 +14,11 @@ public class PlayerController : MonoBehaviour
     public PlayerInput HookPlayerInput;
     public float Speed = 1.0f;
     public float BoostForce = 8.0f;
-    public float SwingBoostForce = 0.0f;
-    public float MaxVelocity = 20.0f;
+    public float SwingBoostForce = 5.0f;
+    public float MaxVelocity = 18.0f;
     public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
+    public float MaxClimbVelocity = 27.0f;
     public float AnimationSmoothTime = 0.3F;
     public delegate void OnPlayerDiedEvent();
     public event OnPlayerDiedEvent OnPlayerDied;
@@ -35,6 +36,7 @@ public class PlayerController : MonoBehaviour
     private AudioSource _playerAudio;
     private LineRenderer _ropeLineRenderer;
     private float _ropeMinLength;
+    private float _currentRopeLength;
     private AudioClip _hookHitSoundEffect;
     private AudioClip _hookFireSoundEffect;
     private List<float> _ropeBendAngles = new List<float>();
@@ -88,8 +90,10 @@ public class PlayerController : MonoBehaviour
     {
     	// keep this around for debugging
 		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
-     
-		HandleBodyRotation();
+        if(_hooked)
+            _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
+		
+        HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -107,17 +111,14 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.ClimbButtonPressed())
         {
-            float currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
-
-            if (_hooked && _ropeLineRenderer.positionCount > 1 && currentRopeLength > _ropeMinLength)
+            if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
                 ClimbRope();
         }
-        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f)
+        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f && _currentRopeLength > _ropeMinLength * 2.0f)
         {
             Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
             _playerRigidbody.AddForce(force, ForceMode.Acceleration);
         }
-		
     }
 
     void FixedUpdate()
@@ -361,6 +362,8 @@ public class PlayerController : MonoBehaviour
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
+        else if(_grounded && _hooked)
+            _wallHookFixedJoint.connectedBody = null;
     }
 
 	void CheckHookHit(Vector2 shotDirection)
