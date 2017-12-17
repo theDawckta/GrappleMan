@@ -114,11 +114,11 @@ public class PlayerController : MonoBehaviour
             if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
                 ClimbRope();
         }
-        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f && _currentRopeLength > _ropeMinLength * 2.0f)
-        {
-            Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
-            _playerRigidbody.AddForce(force, ForceMode.Acceleration);
-        }
+//        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f && _currentRopeLength > _ropeMinLength * 2.0f)
+//        {
+//            Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
+//            _playerRigidbody.AddForce(force, ForceMode.Acceleration);
+//        }
     }
 
     void FixedUpdate()
