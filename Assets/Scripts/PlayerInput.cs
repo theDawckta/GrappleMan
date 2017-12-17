@@ -137,7 +137,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (InputActive)
         {
-            #if (UNITY_IOS || UNITY_ANDROID)
+#if (UNITY_IOS || UNITY_ANDROID)
             if (_leftTouchDone)
             {
                 _leftTouchDone = false;
@@ -145,7 +145,8 @@ public class PlayerInput : MonoBehaviour
             }
             else
                 return false;
-            #endif
+#endif
+            return false;
         }
         else
             return false;
