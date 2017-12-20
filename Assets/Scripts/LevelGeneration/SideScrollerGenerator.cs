@@ -13,7 +13,6 @@ public class SideScrollerGenerator : MonoBehaviour
     public float TotalLength = 280;
     public float AvailableHeight;
 	public int levelSectionsCount {get{return levelSections.Count;}}
-    public EnemyGenerator _EnemyGenerator;
     
     private List<GameObject> levelSections = new List<GameObject>();
     private List<GameObject> enemySections = new List<GameObject>();
@@ -98,11 +97,6 @@ public class SideScrollerGenerator : MonoBehaviour
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
         levelSection.transform.parent = transform;
-
-        GameObject tempEnemySection = _EnemyGenerator.MakeEnemySection(vertices, pseudoRandom, minEnemyCount, maxEnemyCount, TotalLength);
-        tempEnemySection.transform.position = geoLocation;
-        tempEnemySection.transform.parent = transform;
-        enemySections.Add(tempEnemySection);
 
         vertices.Clear();
         triangles.Clear();

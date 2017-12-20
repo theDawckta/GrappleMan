@@ -8,6 +8,15 @@ public class PlayerController : MonoBehaviour
 {
     public Text TestText;
 
+	public delegate void PlayerStart();
+	public static event PlayerStart OnPlayerStarted;
+	public delegate void PlayerCompleted();
+	public static event PlayerCompleted OnPlayerCompleted;
+	public delegate void OnPlayerDiedEvent();
+    public event OnPlayerDiedEvent OnPlayerDied;
+    public delegate void OnPlayerWonEvent();
+    public event OnPlayerWonEvent OnPlayerWon;
+
     public GameObject RopeOrigin;
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
@@ -20,15 +29,13 @@ public class PlayerController : MonoBehaviour
     public float ClimbSpeed = 1.0f;
     public float MaxClimbVelocity = 27.0f;
     public float AnimationSmoothTime = 0.3F;
-    public delegate void OnPlayerDiedEvent();
-    public event OnPlayerDiedEvent OnPlayerDied;
-    public delegate void OnPlayerWonEvent();
-    public event OnPlayerWonEvent OnPlayerWon;
+	public LineRenderer RopeLineRenderer {get {return _ropeLineRenderer;}}
+	public GameObject WallHookSprite {get {return _wallHookSprite;}}
 
     private float zVelocity = 0.0f;
     private RaycastHit _playerRaycastOut;
     private RaycastHit _nextPlayerRaycastOut;
-    private GameObject _wallHookGraphic;
+    private GameObject _wallHookSprite;
     private GameObject _wallHook;
     private FixedJoint _wallHookFixedJoint;
     private Vector3 _playerStartPosition;
@@ -50,7 +57,7 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
-        _wallHookGraphic = GameObject.Find("WallHook").gameObject;
+        _wallHookSprite = GameObject.Find("WallHookSprite").gameObject;
         _wallHook = new GameObject();
         _wallHook.name = "WallHookFixedJoint";
         _wallHookFixedJoint = _wallHook.AddComponent<FixedJoint>();
@@ -62,8 +69,8 @@ public class PlayerController : MonoBehaviour
 		_playerStartPosition = transform.position;
 		_playerRigidbody = GetComponent<Rigidbody>();
 		_playerAudio = GetComponent<AudioSource>();
-        _ropeLineRenderer = _wallHookGraphic.GetComponent<LineRenderer>();
-		_ropeMinLength = (RopeOrigin.transform.position - _wallHookGraphic.transform.position).magnitude * 2;
+        _ropeLineRenderer = _wallHookSprite.GetComponent<LineRenderer>();
+		_ropeMinLength = (RopeOrigin.transform.position - _wallHookSprite.transform.position).magnitude * 2;
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
@@ -74,8 +81,8 @@ public class PlayerController : MonoBehaviour
     {
         StopAllCoroutines();
         _ropeLineRenderer.enabled = false;
-        _wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
-        _wallHookGraphic.transform.parent = GrappleArmEnd.transform;
+        _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
+        _wallHookSprite.transform.parent = GrappleArmEnd.transform;
         _wallHookFixedJoint.connectedBody = null;
         transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
         _ropeBendAngles.Clear();
@@ -119,6 +126,11 @@ public class PlayerController : MonoBehaviour
 //            Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
 //            _playerRigidbody.AddForce(force, ForceMode.Acceleration);
 //        }
+
+		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
+			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, RopeOrigin.transform.position);
+
+		HandleShoulderRotation();
     }
 
     void FixedUpdate()
@@ -179,8 +191,6 @@ public class PlayerController : MonoBehaviour
 		    			RestartMoveHook();
 		    	}
 			}
-
-			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, RopeOrigin.transform.position);
         }
 
         HandleMove();
@@ -190,30 +200,13 @@ public class PlayerController : MonoBehaviour
             _ropeLineRenderer.enabled = true;
     }
 
-    void LateUpdate()
-    {
-		Quaternion grappleShoulderRotation = RopeOrigin.transform.rotation;
-
-        if (_hooked)
-			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
-		else if (_hookActive)
-			grappleShoulderRotation = Quaternion.LookRotation(_wallHookGraphic.transform.position - RopeOrigin.transform.position, Vector3.back);
-		else
-        {
-			// Handle grappleShoulderRotation for !_hooked !_hookActive 
-        }
-        grappleShoulderRotation.x = 0.0f;
-        grappleShoulderRotation.y = 0.0f;
-        RopeOrigin.transform.rotation = grappleShoulderRotation;
-    }
-
     IEnumerator MoveHook(Vector3 startPosition, Vector3 destination, bool ropeShooting)
     {
 		_hooked = false;
         _hookActive = true;
         _playerAudio.PlayOneShot(_hookFireSoundEffect);
 		_wallHookFixedJoint.connectedBody = null;
-        _wallHookGraphic.transform.parent = null;
+        _wallHookSprite.transform.parent = null;
 		var dist = Vector3.Distance(startPosition, destination);
 		float timePassed = 0;
         float timeTakenDuringLerp = dist / HookSpeed;
@@ -227,8 +220,8 @@ public class PlayerController : MonoBehaviour
 				destination = GrappleArmEnd.transform.position;
 
             float percentageComplete = timePassed / timeTakenDuringLerp;
-			_wallHookGraphic.transform.position = Vector3.Lerp(startPosition, destination, percentageComplete);
-			_ropeLineRenderer.SetPosition(0, _wallHookGraphic.transform.position);
+			_wallHookSprite.transform.position = Vector3.Lerp(startPosition, destination, percentageComplete);
+			_ropeLineRenderer.SetPosition(0, _wallHookSprite.transform.position);
 
             timePassed += Time.deltaTime;
  
@@ -239,7 +232,7 @@ public class PlayerController : MonoBehaviour
         {
 			_ropeLineRenderer.SetPosition(0, destination);
 	        _wallHook.transform.position = destination;
-			_wallHookGraphic.transform.position = destination;
+			_wallHookSprite.transform.position = destination;
 			_wallHookFixedJoint.transform.position = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
 			if(!_grounded)
 	        	_wallHookFixedJoint.connectedBody = _playerRigidbody;
@@ -253,9 +246,9 @@ public class PlayerController : MonoBehaviour
 			_ropeLineRenderer.enabled = false;
 			_ropeBendAngles.Clear();
 			_ropeLineRenderer.positionCount = 0;
-        	_wallHookGraphic.transform.position = GrappleArmEnd.transform.position;
-            _wallHookGraphic.transform.SetParent(GrappleArmEnd.transform, true);
-            _wallHookGraphic.transform.rotation = Quaternion.identity;
+        	_wallHookSprite.transform.position = GrappleArmEnd.transform.position;
+            _wallHookSprite.transform.SetParent(GrappleArmEnd.transform, true);
+            _wallHookSprite.transform.rotation = Quaternion.identity;
 			_hooked = false;
         }
 
@@ -266,7 +259,7 @@ public class PlayerController : MonoBehaviour
     void RestartMoveHook()
     {
 		if(_hookShooting)
-			StartCoroutine(MoveHook(_wallHookGraphic.transform.position, _wallHookHitPosition, _hookShooting));
+			StartCoroutine(MoveHook(_wallHookSprite.transform.position, _wallHookHitPosition, _hookShooting));
 		else
 			StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
     }
@@ -374,7 +367,7 @@ public class PlayerController : MonoBehaviour
         {
             _wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
 			_hookShooting = !_hookShooting;
-			StartCoroutine(MoveHook(_wallHookGraphic.transform.position, _wallHookHitPosition, _hookShooting));
+			StartCoroutine(MoveHook(_wallHookSprite.transform.position, _wallHookHitPosition, _hookShooting));
         }
     }
 
@@ -412,6 +405,23 @@ public class PlayerController : MonoBehaviour
 		}
     }
 
+    void HandleShoulderRotation()
+    {
+		Quaternion grappleShoulderRotation = RopeOrigin.transform.rotation;
+
+        if (_hooked)
+			grappleShoulderRotation = Quaternion.LookRotation(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1), Vector3.back);
+		else if (_hookActive)
+			grappleShoulderRotation = Quaternion.LookRotation(_wallHookSprite.transform.position - RopeOrigin.transform.position, Vector3.back);
+		else
+        {
+			// Handle grappleShoulderRotation for !_hooked !_hookActive 
+        }
+        grappleShoulderRotation.x = 0.0f;
+        grappleShoulderRotation.y = 0.0f;
+        RopeOrigin.transform.rotation = grappleShoulderRotation;
+    }
+
     IEnumerator PlayerDied()
     {
         if(OnPlayerDied != null)
@@ -429,7 +439,11 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+        {
             Init();
+            if(OnPlayerCompleted != null)
+            	OnPlayerCompleted();
+        }
     }
 
     void OnCollisionExit(Collision collision)

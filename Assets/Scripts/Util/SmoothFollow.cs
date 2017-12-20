@@ -15,9 +15,6 @@ public class SmoothFollow : MonoBehaviour
     public float heightDamping = 2.0f;
     public float rotationDamping = 3.0f;
 
-    // Place the script in the Camera-Control group in the component menu
-    [AddComponentMenu("Camera-Control/Smooth Follow")]
-
     void LateUpdate()
     {
         // Early out if we don't have a target
