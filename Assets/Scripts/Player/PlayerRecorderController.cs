@@ -8,7 +8,7 @@ public class PlayerRecorderController : MonoBehaviour
 {
     private PlayerController _player;
     private PlayerPlayback _playerPlayback;
-    private float _pollRate = 0.1f; 
+    private float _pollRate = 0.01f; 
     private bool _recording = false;
     private float _timePassed = 0.0f;
 
@@ -20,8 +20,8 @@ public class PlayerRecorderController : MonoBehaviour
     public void StartRecording()
     {
 		PlayerState tempPlayerState = new PlayerState(_player.gameObject.transform.position, 
-													  _player.PlayerSprite.transform.localRotation, 
-													  _player.RopeOrigin.transform.localRotation,
+													  _player.PlayerSprite.transform.rotation, 
+													  _player.RopeOrigin.transform.rotation,
 													  _player.WallHookSprite.transform.position,
 													  _player.RopeLineRenderer, 
 													  0.0f);
@@ -78,8 +78,8 @@ public class PlayerRecorderController : MonoBehaviour
     void AddState(float deltaTime)
     {
 		PlayerState tempPlayerState = new PlayerState(_player.gameObject.transform.position, 
-													  _player.PlayerSprite.transform.localRotation, 
-													  _player.RopeOrigin.transform.localRotation,
+													  _player.PlayerSprite.transform.rotation, 
+													  _player.RopeOrigin.transform.rotation,
 													  _player.WallHookSprite.transform.position,
 													  _player.RopeLineRenderer, 
 													  deltaTime);

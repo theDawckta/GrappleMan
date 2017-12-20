@@ -48,8 +48,8 @@ public class GhostPlaybackController : MonoBehaviour
 		_tempPlayerState = _playerPlayback.GetNextState();
 
 		_currentPosition = _ghostPlayer.transform.position;
-		_currentRotation = _ghostPlayer.GhostPlayerSprite.transform.localRotation;
-		_currentShoulderRotation = _ghostPlayer.RopeOrigin.transform.localRotation;
+		_currentRotation = _ghostPlayer.GhostPlayerSprite.transform.rotation;
+		_currentShoulderRotation = _ghostPlayer.RopeOrigin.transform.rotation;
 		_currentWallHookPosition = _ghostPlayer.WallHookSprite.transform.position;
 		_ghostPlayer.RopeLineRenderer.enabled = _tempPlayerState.RopeLineRendererEnabled;
 		_currentLineRendererPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
@@ -73,8 +73,8 @@ public class GhostPlaybackController : MonoBehaviour
 			float percentageComplete = _timePassed / _tempPlayerState.DeltaTime;
 			Debug.Log(_ghostPlayer.transform.position);
 			_ghostPlayer.transform.position = Vector3.Lerp(_currentPosition, _tempPlayerState.BodyPosition, percentageComplete);
-			_ghostPlayer.GhostPlayerSprite.transform.localRotation = Quaternion.Lerp(_currentRotation, _tempPlayerState.BodyRotation, percentageComplete);
-			_ghostPlayer.RopeOrigin.transform.localRotation = Quaternion.Lerp(_currentShoulderRotation, _tempPlayerState.ShoulderRotation, percentageComplete);
+			_ghostPlayer.GhostPlayerSprite.transform.rotation = Quaternion.Lerp(_currentRotation, _tempPlayerState.BodyRotation, percentageComplete);
+			_ghostPlayer.RopeOrigin.transform.rotation = Quaternion.Lerp(_currentShoulderRotation, _tempPlayerState.ShoulderRotation, percentageComplete);
 			_ghostPlayer.WallHookSprite.transform.position = Vector3.Lerp(_currentWallHookPosition, _tempPlayerState.WallHookPosition, percentageComplete);
 
             // lerp last 2 values of lineRenderer
@@ -97,8 +97,8 @@ public class GhostPlaybackController : MonoBehaviour
 		}
 
 		_ghostPlayer.transform.position = _tempPlayerState.BodyPosition;
-		_ghostPlayer.GhostPlayerSprite.transform.localRotation = _tempPlayerState.BodyRotation;
-		_ghostPlayer.RopeOrigin.transform.localRotation = _tempPlayerState.ShoulderRotation;
+		_ghostPlayer.GhostPlayerSprite.transform.rotation = _tempPlayerState.BodyRotation;
+		_ghostPlayer.RopeOrigin.transform.rotation = _tempPlayerState.ShoulderRotation;
 		_ghostPlayer.WallHookSprite.transform.position = _tempPlayerState.WallHookPosition;
 
         if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
