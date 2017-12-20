@@ -68,21 +68,21 @@ public class GhostPlaybackController : MonoBehaviour
 			_ghostPlayer.RopeOrigin.transform.localRotation = Quaternion.Lerp(_currentGhostShoulderRotation, _tempPlayerState.ShoulderRotation, percentageComplete);
 			_ghostPlayer.WallHookSprite.transform.position = Vector3.Lerp(_currentGhostWallHookPosition, _tempPlayerState.WallHookPosition, percentageComplete);
 
-			// lerp last 2 values of lineRenderer
-			if(_tempPlayerState.RopeLineRendererPositions.Length > 1)
-			{
-				_ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 1,
-														  Vector3.Lerp(_currentGhostLineRendererPositions[_currentGhostLineRendererPositions.Length - 1], 
-													                   _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1], 
-													                   percentageComplete));
+            // lerp last 2 values of lineRenderer
+            if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
+            {
+                _ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 1,
+                                                          Vector3.Lerp(_currentGhostLineRendererPositions[_currentGhostLineRendererPositions.Length - 1],
+                                                                       _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1],
+                                                                       percentageComplete));
 
-				_ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 2,
-														  Vector3.Lerp(_currentGhostLineRendererPositions[_currentGhostLineRendererPositions.Length - 2], 
-													                   _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2], 
-													                   percentageComplete));
-			}
+                _ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 2,
+                                                          Vector3.Lerp(_currentGhostLineRendererPositions[_currentGhostLineRendererPositions.Length - 2],
+                                                                       _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2],
+                                                                       percentageComplete));
+            }
 
-			_timePassed = _timePassed + Time.deltaTime;
+            _timePassed = _timePassed + Time.deltaTime;
 			Debug.Log("while loop ran once");
 			yield return null;
 		}
@@ -92,15 +92,15 @@ public class GhostPlaybackController : MonoBehaviour
 		_ghostPlayer.RopeOrigin.transform.localRotation = _tempPlayerState.ShoulderRotation;
 		_ghostPlayer.WallHookSprite.transform.position = _tempPlayerState.WallHookPosition;
 
-		if(_tempPlayerState.RopeLineRendererPositions.Length > 1)
-		{
-			_ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 1,
-													  _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1]);
-			_ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 2,
-													  _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2]);
-		}
+        if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
+        {
+            _ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 1,
+                                                      _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1]);
+            _ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 2,
+                                                      _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2]);
+        }
 
-		if(_playerPlayback.HasStates)
+        if (_playerPlayback.HasStates)
 		{
 			Debug.Log("ending loop");
 			yield return StartCoroutine(PlayGhostPlayback());
