@@ -90,7 +90,7 @@ public class GhostPlaybackController : MonoBehaviour
                 tempLineRendererPositions.RemoveAt(tempLineRendererPositions.Count - 1);
                 tempLineRendererPositions.Insert(tempLineRendererPositions.Count - 1, _lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2]);
                 _tempPlayerState.RopeLineRendererPositions = tempLineRendererPositions.ToArray();
-                _tempPlayerState.WallHookPosition = tempLineRendererPositions[tempLineRendererPositions.Count - 2];
+                _tempPlayerState.WallHookPosition = tempLineRendererPositions[0];
                 RemoveLastLineRendererPosition = true;
             }
             else if(_lerpFromLineRendererPositionCount > 1)
