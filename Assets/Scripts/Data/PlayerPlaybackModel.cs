@@ -44,7 +44,6 @@ namespace Grappler.DataModel
 		public Quaternion BodyRotation;
 		public Quaternion ShoulderRotation;
 		public Vector3 WallHookPosition;	
-		public bool RopeLineRendererEnabled;
 		public Vector3[] RopeLineRendererPositions;
     	public float DeltaTime;
 
@@ -53,8 +52,7 @@ namespace Grappler.DataModel
 			BodyPosition = Vector3.zero;
 			BodyRotation = Quaternion.identity;
 			ShoulderRotation = Quaternion.identity;
-			WallHookPosition = Vector3.zero;		
-			RopeLineRendererEnabled = false;
+			WallHookPosition = Vector3.zero;
     		DeltaTime = 0.0f;
     	}
 
@@ -64,7 +62,6 @@ namespace Grappler.DataModel
 			BodyRotation = bodyRotation;
 			ShoulderRotation = shoulderRotation;
 			WallHookPosition = wallHookPosition;		
-			RopeLineRendererEnabled = lineRenderer.enabled;
 			RopeLineRendererPositions = new Vector3[lineRenderer.positionCount];
 			lineRenderer.GetPositions(RopeLineRendererPositions);
 			DeltaTime = time;

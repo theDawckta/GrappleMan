@@ -23,6 +23,7 @@ public class GhostPlaybackController : MonoBehaviour
 	void Awake () 
 	{
 		_ghostPlayer = transform.parent.GetComponent<GhostController>();
+		_ghostPlayer.RopeLineRenderer.enabled = false;
 		_playerPlayback = LoadPlayerPlaybackData();
 	}
 
@@ -45,42 +46,65 @@ public class GhostPlaybackController : MonoBehaviour
 
 	IEnumerator PlayGhostPlayback()
 	{
+		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
+		bool lastFrame = false;
 		_tempPlayerState = _playerPlayback.GetNextState();
 
 		_currentPosition = _ghostPlayer.transform.position;
 		_currentRotation = _ghostPlayer.GhostPlayerSprite.transform.rotation;
 		_currentShoulderRotation = _ghostPlayer.RopeOrigin.transform.rotation;
 		_currentWallHookPosition = _ghostPlayer.WallHookSprite.transform.position;
-		_ghostPlayer.RopeLineRenderer.enabled = _tempPlayerState.RopeLineRendererEnabled;
 		_currentLineRendererPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
 		_currentLineRendererPositions = new Vector3[_tempPlayerState.RopeLineRendererPositions.Length];
 		_ghostPlayer.RopeLineRenderer.positionCount = _tempPlayerState.RopeLineRendererPositions.Length;
 		_ghostPlayer.RopeLineRenderer.GetPositions(_currentLineRendererPositions);
 		_ghostPlayer.RopeLineRenderer.SetPositions(_tempPlayerState.RopeLineRendererPositions);
 
-		if(_tempPlayerState.RopeLineRendererPositions.Length > 2)
-			Debug.Log("STOP");
-		if(_tempPlayerState.RopeLineRendererPositions.Length > _currentLineRendererPositionCount)
+		if(_ghostPlayer.RopeLineRenderer.positionCount > 1)
+			_ghostPlayer.RopeLineRenderer.enabled = true;
+
+		// Handle lerp points for firing, bending around a corner, swinging back from a corner, and coming back to the origin
+		if(previousPositionCount == 0 && _tempPlayerState.RopeLineRendererPositions.Length > 1)
 		{
-			int difference = _tempPlayerState.RopeLineRendererPositions.Length - _currentLineRendererPositionCount;
-			for (int i = _ghostPlayer.RopeLineRenderer.positionCount - difference; i < _tempPlayerState.RopeLineRendererPositions.Length; i++)
-				_currentLineRendererPositions[i] = _tempPlayerState.RopeLineRendererPositions[i];
+			_currentLineRendererPositions[_currentLineRendererPositions.Length - 2] = _ghostPlayer.RopeOrigin.transform.position;
+			_currentLineRendererPositions[_currentLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
 		}
+		else if(_tempPlayerState.RopeLineRendererPositions.Length > _currentLineRendererPositionCount)
+		{
+			_currentLineRendererPositions[_currentLineRendererPositions.Length - 2] = _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2];
+			_currentLineRendererPositions[_currentLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
+		}
+		else if(_tempPlayerState.RopeLineRendererPositions.Length < _currentLineRendererPositionCount && _currentLineRendererPositions.Length > 1)
+		{
+			//_ghostPlayer.RopeLineRenderer.positionCount = 3;
+//			_ghostPlayer.RopeLineRenderer.SetPosition
+			_currentLineRendererPositions[_currentLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
+		}
+		else if(previousPositionCount > 0 && _tempPlayerState.RopeLineRendererPositions.Length == 0)
+		{
+			_ghostPlayer.RopeLineRenderer.positionCount = 2;
+			_currentLineRendererPositions = new Vector3[]{_ghostPlayer.WallHookSprite.transform.position, _ghostPlayer.RopeOrigin.transform.position};
+			_ghostPlayer.RopeLineRenderer.SetPositions(_currentLineRendererPositions);
+			_tempPlayerState.RopeLineRendererPositions = new Vector3[] {_tempPlayerState.WallHookPosition, _tempPlayerState.WallHookPosition};
+			lastFrame = true;
+		}
+//		else if(_tempPlayerState.RopeLineRendererPositions.Length == 0 && _ghostPlayer.RopeLineRenderer.positionCount > 0)
+//		{
+//			_ghostPlayer.RopeLineRenderer.positionCount = 0;
+//		}
 
 		_timePassed = 0.0f;
 		while(_playing && _timePassed < _tempPlayerState.DeltaTime)
 		{
 			float percentageComplete = _timePassed / _tempPlayerState.DeltaTime;
-			Debug.Log(_ghostPlayer.transform.position);
 			_ghostPlayer.transform.position = Vector3.Lerp(_currentPosition, _tempPlayerState.BodyPosition, percentageComplete);
 			_ghostPlayer.GhostPlayerSprite.transform.rotation = Quaternion.Lerp(_currentRotation, _tempPlayerState.BodyRotation, percentageComplete);
 			_ghostPlayer.RopeOrigin.transform.rotation = Quaternion.Lerp(_currentShoulderRotation, _tempPlayerState.ShoulderRotation, percentageComplete);
 			_ghostPlayer.WallHookSprite.transform.position = Vector3.Lerp(_currentWallHookPosition, _tempPlayerState.WallHookPosition, percentageComplete);
 
             // lerp last 2 values of lineRenderer
-            if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
+			if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
             {
-				Debug.Log(_currentLineRendererPositions[_currentLineRendererPositions.Length - 1]);
                 _ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 1,
                                                           Vector3.Lerp(_currentLineRendererPositions[_currentLineRendererPositions.Length - 1],
                                                                        _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1],
@@ -109,6 +133,12 @@ public class GhostPlaybackController : MonoBehaviour
                                                       _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2]);
         }
 
+		if(lastFrame)
+		{
+			_ghostPlayer.RopeLineRenderer.positionCount = 0;
+			_ghostPlayer.RopeLineRenderer.enabled = false;
+		}
+		
         if (_playerPlayback.HasStates)
 			yield return StartCoroutine(PlayGhostPlayback());
 		else

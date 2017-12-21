@@ -8,7 +8,7 @@ public class PlayerRecorderController : MonoBehaviour
 {
     private PlayerController _player;
     private PlayerPlayback _playerPlayback;
-    private float _pollRate = 0.01f; 
+    private float _pollRate = 0.05f; 
     private bool _recording = false;
     private float _timePassed = 0.0f;
 
