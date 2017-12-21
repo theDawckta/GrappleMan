@@ -96,11 +96,7 @@ public class GhostPlaybackController : MonoBehaviour
             else if(_lerpFromLineRendererPositionCount > 1)
             {
                 Debug.Log("LAST LEG OF RETURN");
-                _ghostPlayer.RopeLineRenderer.positionCount = 2;
-                _lerpFromLineRendererPositions = new Vector3[] { _lerpFromWallHookPosition, _ghostPlayer.RopeOrigin.transform.position };
-                _tempPlayerState.RopeLineRendererPositions = new Vector3[] { _ghostPlayer.RopeOrigin.transform.position, _ghostPlayer.RopeOrigin.transform.position };
                 _ghostPlayer.RopeLineRenderer.enabled = false;
-                RemoveLastLineRendererPosition = true;
             }
         }
 
