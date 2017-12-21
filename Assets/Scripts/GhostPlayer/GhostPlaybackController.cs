@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -74,11 +75,18 @@ public class GhostPlaybackController : MonoBehaviour
 			_currentLineRendererPositions[_currentLineRendererPositions.Length - 2] = _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2];
 			_currentLineRendererPositions[_currentLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
 		}
-		else if(_tempPlayerState.RopeLineRendererPositions.Length < _currentLineRendererPositionCount && _currentLineRendererPositions.Length > 1)
+		else if(previousPositionCount > _tempPlayerState.RopeLineRendererPositions.Length && _ghostPlayer.RopeLineRenderer.positionCount > 0)
 		{
-			//_ghostPlayer.RopeLineRenderer.positionCount = 3;
-//			_ghostPlayer.RopeLineRenderer.SetPosition
-			_currentLineRendererPositions[_currentLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
+			Debug.Log("HIT UNRAVE:");
+//			List<Vector3> tempLineRendererPositions = new List<Vector3>();
+//
+//			_ghostPlayer.RopeLineRenderer.positionCount = _currentLineRendererPositionCount;
+//			_ghostPlayer.RopeLineRenderer.SetPositions(_currentLineRendererPositions);
+//			tempLineRendererPositions = _tempPlayerState.RopeLineRendererPositions.ToList();
+//			tempLineRendererPositions.Insert(tempLineRendererPositions.Count, tempLineRendererPositions[tempLineRendererPositions.Count - 2]);
+//			tempLineRendererPositions.RemoveAt(tempLineRendererPositions.Count - 1);
+//			tempLineRendererPositions.Insert(tempLineRendererPositions.Count - 1,  _currentLineRendererPositions[_currentLineRendererPositions.Length - 2]);
+//			_tempPlayerState.RopeLineRendererPositions = tempLineRendererPositions.ToArray();
 		}
 		else if(previousPositionCount > 0 && _tempPlayerState.RopeLineRendererPositions.Length == 0)
 		{
@@ -88,10 +96,6 @@ public class GhostPlaybackController : MonoBehaviour
 			_tempPlayerState.RopeLineRendererPositions = new Vector3[] {_tempPlayerState.WallHookPosition, _tempPlayerState.WallHookPosition};
 			lastFrame = true;
 		}
-//		else if(_tempPlayerState.RopeLineRendererPositions.Length == 0 && _ghostPlayer.RopeLineRenderer.positionCount > 0)
-//		{
-//			_ghostPlayer.RopeLineRenderer.positionCount = 0;
-//		}
 
 		_timePassed = 0.0f;
 		while(_playing && _timePassed < _tempPlayerState.DeltaTime)
@@ -102,7 +106,7 @@ public class GhostPlaybackController : MonoBehaviour
 			_ghostPlayer.RopeOrigin.transform.rotation = Quaternion.Lerp(_currentShoulderRotation, _tempPlayerState.ShoulderRotation, percentageComplete);
 			_ghostPlayer.WallHookSprite.transform.position = Vector3.Lerp(_currentWallHookPosition, _tempPlayerState.WallHookPosition, percentageComplete);
 
-            // lerp last 2 values of lineRenderer
+            // lerp last 2 values of lineRenderer, lerp the first value toward the WallHookSprite
 			if (_tempPlayerState.RopeLineRendererPositions.Length > 1)
             {
                 _ghostPlayer.RopeLineRenderer.SetPosition(_tempPlayerState.RopeLineRendererPositions.Length - 1,
@@ -114,6 +118,8 @@ public class GhostPlaybackController : MonoBehaviour
                                                           Vector3.Lerp(_currentLineRendererPositions[_currentLineRendererPositions.Length - 2],
                                                                        _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2],
                                                                        percentageComplete));
+
+				_ghostPlayer.RopeLineRenderer.SetPosition(0, Vector3.Lerp(_currentWallHookPosition, _tempPlayerState.WallHookPosition, percentageComplete));
             }
 
             _timePassed = _timePassed + Time.deltaTime;
