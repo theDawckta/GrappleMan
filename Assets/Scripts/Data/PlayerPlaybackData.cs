@@ -13,29 +13,84 @@ namespace Grappler.DataModel
 		private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
 		private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
 		private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
-		private static int _numOfRecords = 6;
+		private static int _numOfRecords = 4;
 
 		public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
 		{
-			List<PlayerPlaybackModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
+            string playerDataLocation;
+            List<PlayerPlaybackModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
 
-            if(playerPlaybackModels.Count == 0)
-                SavePlayerPlayback(playerPlayback, playerPlaybackModels.Count, playerCompleted);
+            if (playerCompleted)
+                playerDataLocation = _playerCompletedDataLocation;
             else
+                playerDataLocation = _playerDiedDataLocation;
+
+            Directory.CreateDirectory(playerDataLocation);
+
+            // trim any files if they remain to account for _numOfRecords getting smaller via json if need be
+            int tempNumOfRecords = _numOfRecords;
+            while (File.Exists(playerDataLocation + _playerDataFileName + tempNumOfRecords + ".json"))
             {
-                for (int i = 0; i < _numOfRecords && i < playerPlaybackModels.Count; i++)
+                File.Delete(playerDataLocation + _playerDataFileName + tempNumOfRecords + ".json");
+                tempNumOfRecords = tempNumOfRecords + 1;
+            }
+
+            for (int i = 0; i < _numOfRecords; i++)
+            {
+                if (playerPlaybackModels.Count == 0)
                 {
-                    if(i > playerPlaybackModels.Count - 1)
-                        SavePlayerPlayback(playerPlayback, i, playerCompleted);
-                    else if (playerPlayback.Time < playerPlaybackModels[i].Time)
-                        SavePlayerPlayback(playerPlayback, i, playerCompleted);
-					else
-                        SavePlayerPlayback(playerPlayback, i + 1, playerCompleted);
+                    SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                    return;
+                }
+                else if (i < playerPlaybackModels.Count)
+                {
+                    if (playerPlayback.Time < playerPlaybackModels[i].Time)
+                    {
+                        SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                        return;
+                    }
+                }
+                if (i == playerPlaybackModels.Count)
+                {
+                    SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                    return;
                 }
             }
 	    }
 
-		public static List<PlayerPlaybackModel> GetPlayerPlaybackLocal(int numOfRecords)
+        static void SavePlayerPlayback(PlayerPlaybackModel playerPlayback, int insertIndex, string playerDataLocation)
+        {
+            string lastItemFilePath;
+            string nextToLastFilePath;
+            string[] tempFiles;
+            int numOfExistingModels;
+
+            // serialize playerPlayback
+            var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerPlayback));
+
+            // find out how many files we currently have
+            tempFiles = Directory.GetFiles(playerDataLocation, "*.json", SearchOption.TopDirectoryOnly);
+            numOfExistingModels = tempFiles.Length;
+
+            try
+            {
+                // copy files down from insertIndex to make room for insertIndex item
+                for (int i = numOfExistingModels; i > insertIndex; i--)
+                {
+                    lastItemFilePath = playerDataLocation + _playerDataFileName + (i - 1) + ".json";
+                    nextToLastFilePath = playerDataLocation + _playerDataFileName + i + ".json";
+                    System.IO.File.Copy(lastItemFilePath, nextToLastFilePath, true);
+                }
+                // copy new file to insertIndex
+                File.WriteAllBytes(playerDataLocation + _playerDataFileName + insertIndex + ".json", bytes);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+
+        public static List<PlayerPlaybackModel> GetPlayerPlaybackLocal(int numOfRecords)
 	    {
 	    	List<PlayerPlaybackModel> playerPlaybacks = new List<PlayerPlaybackModel>();
 
@@ -50,48 +105,6 @@ namespace Grappler.DataModel
 			}
 
 			return playerPlaybacks;
-	    }
-
-		static void SavePlayerPlayback(PlayerPlaybackModel playerPlayback, int insertIndex, bool playerCompleted)
-	    {
-            Debug.Log("SAVING AT INDEX: " + insertIndex);
-			string lastItemFilePath;
-			string nextToLastFilePath;
-			var bytes = System.Text.Encoding.UTF8.GetBytes (JsonUtility.ToJson(playerPlayback));
-			string[] tempFiles = Directory.GetFiles(_playerCompletedDataLocation, "*.json", SearchOption.TopDirectoryOnly);
-			int numOfExistingModels = tempFiles.Length;
-
-			if(playerCompleted)
-			{
-				lastItemFilePath = _playerCompletedDataLocation + _playerDataFileName + insertIndex + ".json";
-				Directory.CreateDirectory(_playerCompletedDataLocation);
-			}
-			else
-			{
-				lastItemFilePath = _playerDiedDataLocation + _playerDataFileName + insertIndex + ".json";
-				Directory.CreateDirectory(_playerDiedDataLocation);
-			}
-
-			try
-			{
-                for (int i = numOfExistingModels - 1; i > numOfExistingModels; i--)
-				{
-					lastItemFilePath = _playerCompletedDataLocation + _playerDataFileName + i + ".json";
-					nextToLastFilePath = _playerCompletedDataLocation + _playerDataFileName + (i - 1) + ".json";
-                    if (!File.Exists(nextToLastFilePath))
-                        File.WriteAllBytes(_playerCompletedDataLocation + _playerDataFileName + insertIndex + ".json", bytes);
-                    else
-					    System.IO.File.Copy(nextToLastFilePath, lastItemFilePath, true);
-//					if(!File.Exists(lastItemFilePath) && File.Exists(nextFilePath))
-//					{
-//						File.WriteAllBytes (nextFilePath, bytes);
-//					}
-				}
-			}
-			catch(Exception e)
-			{
-				Debug.LogException(e);
-			}
 	    }
 
 	    // Implement server data, example call below
@@ -113,7 +126,25 @@ namespace Grappler.DataModel
 
 			callback(www.text);
 		}
-	}
+
+        public static void CleanupLocalPlayerFiles()
+        {
+            string[] playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
+
+            for (int i = 0; i < playerDataLocations.Length; i++)
+            {
+                Directory.CreateDirectory(playerDataLocations[i]);
+
+                // trim any files if they remain to account for _numOfRecords getting smaller via json if need be
+                int tempNumOfRecords = _numOfRecords;
+                while (File.Exists(playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
+                {
+                    File.Delete(playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
+                    tempNumOfRecords = tempNumOfRecords + 1;
+                }
+            }
+        }
+    }
 	
 	[Serializable]
     public class PlayerPlaybackModel
@@ -128,8 +159,6 @@ namespace Grappler.DataModel
 		private List<PlayerStateModel> _state;
 		[SerializeField]
 		private float _time;
-		[SerializeField]
-		private bool _playerWon;
 
         public PlayerPlaybackModel(PlayerStateModel startingState)
         {
@@ -140,7 +169,7 @@ namespace Grappler.DataModel
         public void AddPlayerState(PlayerStateModel playerState, bool final = false)
         {
 			_state.Add(playerState);
-			if(final)
+			if (final)
 			{
 				for (int i = 0; i < _state.Count; i++)
 					_time = _time + _state[i].DeltaTime;
