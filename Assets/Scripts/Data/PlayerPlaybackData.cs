@@ -12,28 +12,36 @@ namespace Grappler.DataModel
 	{
 		private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
 		private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
+		private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
 		private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
-		private static int _numOfRecords = 4;
+		private static int _numOfRecords = 6;
+
+		public static void Init()
+        {
+            for (int i = 0; i < _playerDataLocations.Length; i++)
+            {
+                Directory.CreateDirectory(_playerDataLocations[i]);
+
+                // trim any files greater than _numOfRecords
+                int tempNumOfRecords = _numOfRecords;
+                while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
+                {
+                    File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
+                    tempNumOfRecords = tempNumOfRecords + 1;
+                }
+            }
+        }
 
 		public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
 		{
             string playerDataLocation;
+
+            if(playerCompleted)
+				playerDataLocation = _playerCompletedDataLocation;
+			else
+				playerDataLocation = _playerDiedDataLocation;
+
             List<PlayerPlaybackModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
-
-            if (playerCompleted)
-                playerDataLocation = _playerCompletedDataLocation;
-            else
-                playerDataLocation = _playerDiedDataLocation;
-
-            Directory.CreateDirectory(playerDataLocation);
-
-            // trim any files if they remain to account for _numOfRecords getting smaller via json if need be
-            int tempNumOfRecords = _numOfRecords;
-            while (File.Exists(playerDataLocation + _playerDataFileName + tempNumOfRecords + ".json"))
-            {
-                File.Delete(playerDataLocation + _playerDataFileName + tempNumOfRecords + ".json");
-                tempNumOfRecords = tempNumOfRecords + 1;
-            }
 
             for (int i = 0; i < _numOfRecords; i++)
             {
@@ -126,24 +134,6 @@ namespace Grappler.DataModel
 
 			callback(www.text);
 		}
-
-        public static void CleanupLocalPlayerFiles()
-        {
-            string[] playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
-
-            for (int i = 0; i < playerDataLocations.Length; i++)
-            {
-                Directory.CreateDirectory(playerDataLocations[i]);
-
-                // trim any files if they remain to account for _numOfRecords getting smaller via json if need be
-                int tempNumOfRecords = _numOfRecords;
-                while (File.Exists(playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
-                {
-                    File.Delete(playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
-                    tempNumOfRecords = tempNumOfRecords + 1;
-                }
-            }
-        }
     }
 	
 	[Serializable]

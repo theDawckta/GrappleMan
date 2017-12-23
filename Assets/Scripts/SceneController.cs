@@ -30,7 +30,7 @@ public class SceneController : MonoBehaviour
         _mainCamera = Camera.main;
         _mainCameraStartPosition = _mainCamera.transform.position;
 		_playerPlaybacks = PlayerPlaybackController.GetPlayerPlaybackLocal(NumberOfGhosts);
-        PlayerPlaybackController.CleanupLocalPlayerFiles();
+        PlayerPlaybackController.Init();
     }
 
     void Start()

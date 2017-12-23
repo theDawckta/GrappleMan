@@ -13,6 +13,7 @@ public class UIController : MonoBehaviour
     public Text FPSText;
     public Text TimerText;
     public GameObject StartScreen;
+	public GameObject ConfigScreen;
     public int SeedLength;
     public Button StartButton;
 
@@ -83,6 +84,11 @@ public class UIController : MonoBehaviour
     void ToggleStartScreen()
     {
         StartScreen.gameObject.SetActive(!StartScreen.gameObject.activeSelf);
+    }
+
+	public void ToggleConfigScreen()
+    {
+		ConfigScreen.gameObject.SetActive(!ConfigScreen.gameObject.activeSelf);
     }
 
 	void UpdateTimer ()
