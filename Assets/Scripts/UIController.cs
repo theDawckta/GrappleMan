@@ -6,38 +6,51 @@ using System.Collections;
 
 public class UIController : MonoBehaviour
 {
+	public delegate void StartButtonClicked();
+	public event StartButtonClicked OnStartButtonClicked;
+
     public InputField SeedInputField;
-    public Slider Volume;
-    public Text TestText;
     public Text FPSText;
-    public InputField ClimbSpeedText;
-    public GameObject ParentCanvas;
-    public PlayerController _PlayerController;
-    public SceneController _SceneController;
+    public Text TimerText;
+    public GameObject StartScreen;
     public int SeedLength;
+    public Button StartButton;
 
     private String seed;
+    private float _timer;
+    private bool _timeStarted;
 
     void Start()
     {
         StartCoroutine(FPS());
         seed = RandomString(SeedLength);
-        SeedInputField.text = seed;
+        // SeedInputField.text = seed;
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
-        ClimbSpeedText.text = _PlayerController.ClimbSpeed.ToString();
-
     }
 
-    public void NewGame()
+    void Update()
     {
-        _PlayerController.Init();
-        //ToggleUIController();
+    	if (_timeStarted == true)
+    	{
+    		UpdateTimer();
+			_timer += Time.deltaTime;
+		}
+    }
+
+	public void UIStartButtonClicked()
+    {
+		if(OnStartButtonClicked != null)
+			OnStartButtonClicked();
+		ToggleStartScreen();
+        _timer = 0.0f;
+		_timeStarted = true;
     }
 
     public void EndGame()
     {
-        ToggleUIController();
+        ToggleStartScreen();
+        _timeStarted = false;
     }
 
     public void SetSeed()
@@ -49,11 +62,6 @@ public class UIController : MonoBehaviour
             // init levelgenerator here when ready
             // LevelGenerator.Init(seed);
         }
-    }
-
-    public void SetTestText(string newText)
-    {
-        TestText.text = newText;
     }
 
     public void RandomSeed()
@@ -72,19 +80,17 @@ public class UIController : MonoBehaviour
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-    public void OnVolumeChanged()
+    void ToggleStartScreen()
     {
-        _SceneController.SetVolume(Volume.value);
+        StartScreen.gameObject.SetActive(!StartScreen.gameObject.activeSelf);
     }
 
-    public void OnClimbSpeedChanged()
-    {
-        _PlayerController.ClimbSpeed = float.Parse(ClimbSpeedText.text);
-    }
-
-    void ToggleUIController()
-    {
-        ParentCanvas.gameObject.SetActive(!ParentCanvas.gameObject.activeSelf);
+	void UpdateTimer ()
+	{
+		TimerText.text = string.Format("{0:00}:{1:00}.{2:00}",
+						     Mathf.Floor(_timer / 60),
+							 Mathf.Floor(_timer) % 60,
+							 Mathf.Floor((_timer * 100) % 100));
     }
 
     IEnumerator FPS()
@@ -96,7 +102,7 @@ public class UIController : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             float timeSpan = Time.realtimeSinceStartup - lastTime;
             int frameCount = Time.frameCount - lastFrameCount;
-            FPSText.text = Mathf.RoundToInt(frameCount / timeSpan) + " fps";
+			FPSText.text = "FPS: " + Mathf.RoundToInt(frameCount / timeSpan);
         }
     }
 }

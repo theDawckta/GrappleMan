@@ -1,21 +1,16 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Grappler.DataModel;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    public Text TestText;
-
-	public delegate void PlayerStart();
-	public static event PlayerStart OnPlayerStarted;
-	public delegate void PlayerCompleted();
-	public static event PlayerCompleted OnPlayerCompleted;
-	public delegate void OnPlayerDiedEvent();
+	public delegate void OnPlayerCompletedEvent(PlayerPlaybackModel playerPlaybackModel, bool playerWon);
+	public event OnPlayerCompletedEvent OnPlayerCompleted;
+	public delegate void OnPlayerDiedEvent(PlayerPlaybackModel playerPlaybackModel, bool playerWon);
     public event OnPlayerDiedEvent OnPlayerDied;
-    public delegate void OnPlayerWonEvent();
-    public event OnPlayerWonEvent OnPlayerWon;
 
     public GameObject RopeOrigin;
     public GameObject PlayerSprite;
@@ -32,6 +27,7 @@ public class PlayerController : MonoBehaviour
 	public LineRenderer RopeLineRenderer {get {return _ropeLineRenderer;}}
 	public GameObject WallHookSprite {get {return _wallHookSprite;}}
 
+	private PlayerRecorderController _playerRecorderController;
     private float zVelocity = 0.0f;
     private RaycastHit _playerRaycastOut;
     private RaycastHit _nextPlayerRaycastOut;
@@ -74,7 +70,8 @@ public class PlayerController : MonoBehaviour
         _hookFireSoundEffect = Resources.Load("SoundEffects/GunFire") as AudioClip;
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
-        HookPlayerInput.InputActive = true;
+		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
+		HookPlayerInput.InputActive = false;
     }
 
     public void Init()
@@ -91,6 +88,8 @@ public class PlayerController : MonoBehaviour
         _hooked = false;
         _floating = false;
         transform.position = _playerStartPosition;
+        _playerRecorderController.StartRecording();
+		HookPlayerInput.InputActive = true;
     }
 
     void Update()
@@ -378,22 +377,18 @@ public class PlayerController : MonoBehaviour
 			Vector3 newRotation = PlayerSprite.transform.eulerAngles;
 			if(_grounded)
 			{
-				TestText.text = "GROUNDED";
 				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
 			}
 			else if(_hooked && !_floating)	
 			{	
-				TestText.text = "HOOKED";
 				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 3);
 			}
 			else if(_hookActive)
 			{
-				TestText.text = "HOOK ACTIVE";
 				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 3);
 			}
 			else if(_floating || !_grounded)
 			{
-                TestText.text = "FLOATING";
                 if (_playerRigidbody.velocity.y > 0.0f)
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
                 else
@@ -422,27 +417,35 @@ public class PlayerController : MonoBehaviour
         RopeOrigin.transform.rotation = grappleShoulderRotation;
     }
 
-    IEnumerator PlayerDied()
+	IEnumerator PlayerDied()
     {
+    	// handle death animation here
+		_playerRecorderController.DoneRecording();
         if(OnPlayerDied != null)
-            OnPlayerDied();
+			OnPlayerDied(_playerRecorderController.PlayerPlaybackData, false);
         yield return null;
     }
 
-    IEnumerator PlayerWon()
+	IEnumerator PlayerCompleted()
     {
-        if(OnPlayerWon != null)
-            OnPlayerWon();
+    	// handle completed animation here
+		_playerRecorderController.DoneRecording();
+        if(OnPlayerCompleted != null)
+			OnPlayerCompleted(_playerRecorderController.PlayerPlaybackData, true);
         yield return null;
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Lava"))
+		if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") && HookPlayerInput.InputActive)
         {
-            Init();
-            if(OnPlayerCompleted != null)
-            	OnPlayerCompleted();
+        	HookPlayerInput.InputActive = false;
+            StartCoroutine(PlayerDied());
+        }
+		else if (collision.gameObject.layer == LayerMask.NameToLayer("Winning") && HookPlayerInput.InputActive)
+        {
+			HookPlayerInput.InputActive = false;
+			StartCoroutine(PlayerCompleted());
         }
     }
 

@@ -9,8 +9,7 @@ using UnityEngine;
 public class GhostPlaybackController : MonoBehaviour 
 {
 	private GhostController _ghostPlayer;
-	private PlayerPlayback _playerPlayback;
-	private PlayerState _tempPlayerState;
+	private PlayerStateModel _tempPlayerState;
 	private Vector3[] _lerpFromLineRendererPositions;
 	private int _lerpFromLineRendererPositionCount;
 	private Vector3 _lerpFromPosition;
@@ -22,20 +21,19 @@ public class GhostPlaybackController : MonoBehaviour
 
 	void Awake () 
 	{
-		_ghostPlayer = transform.parent.GetComponent<GhostController>();
+		_ghostPlayer = transform.GetComponent<GhostController>();
 		_ghostPlayer.RopeLineRenderer.enabled = false;
-		_playerPlayback = LoadPlayerPlaybackData();
 	}
 
-	public void StartPlayGhostPlayback()
+	public void StartPlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
 	{
-		if(_playerPlayback.HasStates)
+		if(playerPlaybackModel.HasStates)
 		{
 			_ghostPlayer.gameObject.SetActive(true);
-			_ghostPlayer.transform.position = _playerPlayback.StartingState.BodyPosition;
-			_ghostPlayer.GhostPlayerSprite.transform.rotation = _playerPlayback.StartingState.BodyRotation;
+			_ghostPlayer.transform.position = playerPlaybackModel.StartingState.BodyPosition;
+			_ghostPlayer.GhostPlayerSprite.transform.rotation = playerPlaybackModel.StartingState.BodyRotation;
 			_playing = true;
-			StartCoroutine(PlayGhostPlayback());
+			StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
 		}
 		else
 		{
@@ -44,12 +42,12 @@ public class GhostPlaybackController : MonoBehaviour
 		}
 	}
 
-	IEnumerator PlayGhostPlayback()
+	IEnumerator PlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
 	{
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
         bool RemoveLastLineRendererPosition = false;
+        _tempPlayerState = playerPlaybackModel.GetNextState();
 
-        _tempPlayerState = _playerPlayback.GetNextState();
 		_lerpFromPosition = _ghostPlayer.transform.position;
 		_lerpFromRotation = _ghostPlayer.GhostPlayerSprite.transform.rotation;
 		_lerpFromShoulderRotation = _ghostPlayer.RopeOrigin.transform.rotation;
@@ -76,7 +74,7 @@ public class GhostPlaybackController : MonoBehaviour
             _lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2] = _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2];
 			_lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
 		}
-		else if(_tempPlayerState.RopeLineRendererPositions.Length < _lerpFromLineRendererPositionCount)
+		else if (_tempPlayerState.RopeLineRendererPositions.Length < _lerpFromLineRendererPositionCount)
 		{
 			Debug.Log("HIT UNRAVEL");
             if (_lerpFromLineRendererPositionCount > 2)
@@ -93,7 +91,7 @@ public class GhostPlaybackController : MonoBehaviour
                 _tempPlayerState.WallHookPosition = tempLineRendererPositions[0];
                 RemoveLastLineRendererPosition = true;
             }
-            else if(_lerpFromLineRendererPositionCount > 1)
+            else if (_lerpFromLineRendererPositionCount > 1)
             {
                 Debug.Log("LAST LEG OF RETURN");
                 _ghostPlayer.RopeLineRenderer.enabled = false;
@@ -101,7 +99,7 @@ public class GhostPlaybackController : MonoBehaviour
         }
 
         _timePassed = 0.0f;
-		while(_playing && _timePassed < _tempPlayerState.DeltaTime)
+		while (_playing && _timePassed < _tempPlayerState.DeltaTime)
 		{
 			float percentageComplete = _timePassed / _tempPlayerState.DeltaTime;
 			_ghostPlayer.transform.position = Vector3.Lerp(_lerpFromPosition, _tempPlayerState.BodyPosition, percentageComplete);
@@ -122,10 +120,13 @@ public class GhostPlaybackController : MonoBehaviour
                                                                        _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2],
                                                                        percentageComplete));
 
-                Quaternion grappleShoulderRotation = Quaternion.LookRotation(_lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2] - _ghostPlayer.RopeOrigin.transform.position, Vector3.back);
-                grappleShoulderRotation.x = 0.0f;
-                grappleShoulderRotation.y = 0.0f;
-                _tempPlayerState.ShoulderRotation = grappleShoulderRotation;
+				if (_lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2] != _ghostPlayer.RopeOrigin.transform.position)
+				{
+	                Quaternion grappleShoulderRotation = Quaternion.LookRotation(_lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2] - _ghostPlayer.RopeOrigin.transform.position, Vector3.back);
+	                grappleShoulderRotation.x = 0.0f;
+	                grappleShoulderRotation.y = 0.0f;
+	                _tempPlayerState.ShoulderRotation = grappleShoulderRotation;
+                }
 
                 if (_tempPlayerState.RopeLineRendererPositions.Length > 2)
                 {
@@ -147,7 +148,6 @@ public class GhostPlaybackController : MonoBehaviour
                                                       _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1]);
             _ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 2,
                                                       _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2]);
-
             Quaternion grappleShoulderRotation = Quaternion.LookRotation(_ghostPlayer.RopeLineRenderer.GetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 2) - _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 1], Vector3.back);
             grappleShoulderRotation.x = 0.0f;
             grappleShoulderRotation.y = 0.0f;
@@ -165,21 +165,11 @@ public class GhostPlaybackController : MonoBehaviour
             RemoveLastLineRendererPosition = false;
         }
 		
-        if (_playerPlayback.HasStates)
-			yield return StartCoroutine(PlayGhostPlayback());
+        if (playerPlaybackModel.HasStates)
+			yield return StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
 		else
 			_playing = false;
 
 		yield return null;
 	}
-
-	private PlayerPlayback LoadPlayerPlaybackData()
-    {
-		string playerDataFilePath = Path.Combine(Application.persistentDataPath, "PlayerData/playerGhostData.json");
-
-		if(File.Exists(playerDataFilePath))
-			return JsonUtility.FromJson<PlayerPlayback>(File.ReadAllText(playerDataFilePath));
-        else
-            return new PlayerPlayback(new PlayerState());
-    }
 }

@@ -1,17 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Grappler.DataModel;
 using UnityEngine;
 
 public class SceneController : MonoBehaviour
 {
-    public PlayerController PlayerController;
-    public UIController UIController;
+    public PlayerController Player;
+    public UIController GrappleUI;
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
+	public GameObject Ghosts;
+	public int NumberOfGhosts = 6;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
+    private Camera _mainCamera;
+    private Vector3 _mainCameraStartPosition;
+    private List<PlayerPlaybackModel> _playerPlaybacks = new List<PlayerPlaybackModel>();
+    private bool _gameOn = false;
 
     void Awake()
     {
@@ -20,39 +27,71 @@ public class SceneController : MonoBehaviour
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
         _playerAudio.clip = _song;
         _playerAudio.loop = true;
-        SetVolume(UIController.Volume.value);
+        _mainCamera = Camera.main;
+        _mainCameraStartPosition = _mainCamera.transform.position;
+		_playerPlaybacks = PlayerPlaybackController.GetPlayerPlaybackLocal(NumberOfGhosts);
     }
 
     void Start()
     {
-        PlayerRecorder.StartRecording();
-		GhostPlayback.StartPlayGhostPlayback();
+		_playerAudio.Play();
     }
 
-	public void Init()
+	private void StartGame()
     {
-        _playerAudio.Play();
-        PlayerController.Init();
-        Time.timeScale = 1.0f;
+    	List<GameObject> ghosts = new List<GameObject>();
+		_playerPlaybacks = PlayerPlaybackController.GetPlayerPlaybackLocal(NumberOfGhosts);
+        int numOfGhosts = (_playerPlaybacks.Count < NumberOfGhosts) ? _playerPlaybacks.Count : NumberOfGhosts;
+		_mainCamera.transform.position = _mainCameraStartPosition;
+
+		for(int i = Ghosts.transform.childCount - 1; i >= 0 ; i--)
+			Destroy(Ghosts.transform.GetChild(i).gameObject);
+
+        for (int i = 0; i < numOfGhosts; i++)
+		{
+            if (_playerPlaybacks[i] != null)
+            {
+                if (_playerPlaybacks[i].Time > 0.0f)
+                {
+                    GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
+                    ghostPlayback.transform.SetParent(Ghosts.transform);
+                    ghostPlayback.StartPlayGhostPlayback(_playerPlaybacks[i]);
+                }
+            }
+		}
+
+        Player.Init();
+
+        if(!_gameOn)
+			_gameOn = true;
 	}
 
-	void PlayerCompleted ()
-    {
-		PlayerRecorder.DoneRecording();
-    }
-
-    public void SetVolume(float volume)
+	public void SetVolume(float volume)
     {
         AudioListener.volume = volume;
     }
 
-    void OnEnable()
+	void PlayerFinished(PlayerPlaybackModel playerPlayback, bool playerCompleted)
     {
-    	PlayerController.OnPlayerCompleted += PlayerCompleted;
+		if(_gameOn)
+		{
+			GrappleUI.EndGame();
+			PlayerPlaybackController.SavePlayerPlaybackLocal(playerPlayback, playerCompleted);
+			_gameOn = false;
+		}
+    }
+
+    void OnEnable()
+	{
+		GrappleUI.OnStartButtonClicked += StartGame;
+		Player.OnPlayerCompleted += PlayerFinished;
+		Player.OnPlayerDied += PlayerFinished;
     }
 
 	void OnDisable()
-    {
-    	PlayerController.OnPlayerCompleted -= PlayerCompleted;
+	{
+		GrappleUI.OnStartButtonClicked -= StartGame;
+		Player.OnPlayerCompleted -= PlayerFinished;
+		Player.OnPlayerDied -= PlayerFinished;
     }
 }
