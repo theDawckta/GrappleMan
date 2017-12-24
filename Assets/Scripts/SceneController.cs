@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Grappler.DataModel;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SceneController : MonoBehaviour
 {
@@ -35,7 +36,9 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
-		//_playerAudio.Play();
+        GrappleUI.GhostsInput.text = NumberOfGhosts.ToString();
+        GrappleUI.GhostRecordsInput.text = PlayerPlaybackController.MaxNumOfRecords.ToString();
+        //_playerAudio.Play();
     }
 
 	private void StartGame()
@@ -67,9 +70,20 @@ public class SceneController : MonoBehaviour
 			_gameOn = true;
 	}
 
-	public void SetVolume(float volume)
+    void ResetData()
     {
-        AudioListener.volume = volume;
+        PlayerPlaybackController.ClearData();
+    }
+
+    void GhostsValueChanged(int value)
+    {
+        NumberOfGhosts = value;
+    }
+
+    void GhostRecordsValueChanged(int value)
+    {
+        PlayerPlaybackController.SetNumOfRecords(value);
+        PlayerPlaybackController.Init();
     }
 
 	void PlayerFinished(PlayerPlaybackModel playerPlayback, bool playerCompleted)
@@ -82,16 +96,27 @@ public class SceneController : MonoBehaviour
 		}
     }
 
+    public void SetVolume(float volume)
+    {
+        AudioListener.volume = volume;
+    }
+
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
-		Player.OnPlayerCompleted += PlayerFinished;
+        GrappleUI.OnResetButtonClicked += ResetData;
+        GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
+        GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
+        Player.OnPlayerCompleted += PlayerFinished;
 		Player.OnPlayerDied += PlayerFinished;
     }
 
 	void OnDisable()
 	{
-		GrappleUI.OnStartButtonClicked -= StartGame;
+        GrappleUI.OnStartButtonClicked -= StartGame;
+        GrappleUI.OnResetButtonClicked -= ResetData;
+        GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
+        GrappleUI.OnStartButtonClicked -= StartGame;
 		Player.OnPlayerCompleted -= PlayerFinished;
 		Player.OnPlayerDied -= PlayerFinished;
     }

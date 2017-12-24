@@ -9,11 +9,22 @@ public class UIController : MonoBehaviour
 	public delegate void StartButtonClicked();
 	public event StartButtonClicked OnStartButtonClicked;
 
+    public delegate void ResetButtonClicked();
+    public event ResetButtonClicked OnResetButtonClicked;
+
+    public delegate void GhostValueChanged(int value);
+    public event GhostValueChanged OnGhostsValueChanged;
+
+    public delegate void GhostRecordsValueChanged(int value);
+    public event GhostRecordsValueChanged OnGhostRecordsValueChanged;
+
     public InputField SeedInputField;
     public Text FPSText;
     public Text TimerText;
     public GameObject StartScreen;
 	public GameObject ConfigScreen;
+    public InputField GhostsInput;
+    public InputField GhostRecordsInput;
     public int SeedLength;
     public Button StartButton;
 
@@ -46,6 +57,28 @@ public class UIController : MonoBehaviour
 		ToggleStartScreen();
         _timer = 0.0f;
 		_timeStarted = true;
+    }
+
+    public void UIResetButtonClicked()
+    {
+        if (OnResetButtonClicked != null)
+            OnResetButtonClicked();
+    }
+
+    public void UIGhostsValueChanged(string value)
+    {
+        if (OnGhostsValueChanged != null)
+        {
+            OnGhostsValueChanged(Int32.Parse(GhostsInput.text));
+        }
+    }
+
+    public void UIGhostRecordsValueChanged(string value)
+    {
+        if (OnGhostRecordsValueChanged != null)
+        {
+            OnGhostRecordsValueChanged(Int32.Parse(GhostRecordsInput.text));
+        }
     }
 
     public void EndGame()

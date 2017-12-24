@@ -9,7 +9,9 @@ using UnityEngine;
 namespace Grappler.DataModel
 {
 	public class PlayerPlaybackController
-	{
+    {
+        public static int MaxNumOfRecords{get { return _numOfRecords; } private set { }}
+
 		private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
 		private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
 		private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
@@ -32,7 +34,28 @@ namespace Grappler.DataModel
             }
         }
 
-		public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
+        public static void ClearData()
+        {
+            for (int i = 0; i < _playerDataLocations.Length; i++)
+            {
+                Directory.CreateDirectory(_playerDataLocations[i]);
+
+                // trim any files greater than _numOfRecords
+                int tempNumOfRecords = 0;
+                while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
+                {
+                    File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
+                    tempNumOfRecords = tempNumOfRecords + 1;
+                }
+            }
+        }
+
+        public static void SetNumOfRecords(int numOfRecords)
+        {
+            _numOfRecords = numOfRecords;
+        }
+
+        public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
 		{
             string playerDataLocation;
 
