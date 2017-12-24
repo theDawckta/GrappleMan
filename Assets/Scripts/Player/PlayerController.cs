@@ -197,7 +197,7 @@ public class PlayerController : MonoBehaviour
     {
 		_hooked = false;
         _hookActive = true;
-        _playerAudio.PlayOneShot(_hookFireSoundEffect);
+        //_playerAudio.PlayOneShot(_hookFireSoundEffect);
 		_wallHookFixedJoint.connectedBody = null;
         _wallHookSprite.transform.parent = null;
 		var dist = Vector3.Distance(startPosition, destination);
@@ -245,7 +245,7 @@ public class PlayerController : MonoBehaviour
 			_hooked = false;
         }
 
-        _playerAudio.PlayOneShot(_hookHitSoundEffect);
+        //_playerAudio.PlayOneShot(_hookHitSoundEffect);
         _hookActive = false;
     }
 

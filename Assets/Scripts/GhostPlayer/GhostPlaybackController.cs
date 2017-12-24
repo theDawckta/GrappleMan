@@ -69,21 +69,17 @@ public class GhostPlaybackController : MonoBehaviour
         //Handle lerp points for firing, bending around a corner, swinging back from a corner, and coming back to the origin
         if (previousPositionCount == 0 && _tempPlayerState.RopeLineRendererPositions.Length > 1)
         {
-            Debug.Log("HIT FIRING");
             _lerpFromLineRendererPositions = new Vector3[] { _ghostPlayer.RopeOrigin.transform.position, _ghostPlayer.RopeOrigin.transform.position };
         }
         else if(_tempPlayerState.RopeLineRendererPositions.Length > _lerpFromLineRendererPositionCount)
 		{
-            Debug.Log("HIT BEND");
             _lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 2] = _tempPlayerState.RopeLineRendererPositions[_tempPlayerState.RopeLineRendererPositions.Length - 2];
 			_lerpFromLineRendererPositions[_lerpFromLineRendererPositions.Length - 1] = _ghostPlayer.RopeOrigin.transform.position;
 		}
 		else if (_tempPlayerState.RopeLineRendererPositions.Length < _lerpFromLineRendererPositionCount)
 		{
-			Debug.Log("HIT UNRAVEL");
             if (_lerpFromLineRendererPositionCount > 2)
             {
-                Debug.Log("COMING BACK FROM BEND");
                 List<Vector3> tempLineRendererPositions = new List<Vector3>();
 
                 _ghostPlayer.RopeLineRenderer.positionCount = _lerpFromLineRendererPositionCount;
@@ -97,7 +93,6 @@ public class GhostPlaybackController : MonoBehaviour
             }
             else if (_lerpFromLineRendererPositionCount > 1)
             {
-                Debug.Log("LAST LEG OF RETURN");
                 _ghostPlayer.RopeLineRenderer.enabled = false;
             }
         }
@@ -163,7 +158,6 @@ public class GhostPlaybackController : MonoBehaviour
 
         if (RemoveLastLineRendererPosition)
         {
-            Debug.Log("REMOVING LAST POSITION");
             _ghostPlayer.RopeLineRenderer.positionCount = _ghostPlayer.RopeLineRenderer.positionCount - 1;
             _ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 1, _ghostPlayer.RopeOrigin.transform.position);
             RemoveLastLineRendererPosition = false;

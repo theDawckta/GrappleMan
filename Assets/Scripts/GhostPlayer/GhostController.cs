@@ -24,12 +24,16 @@ public class GhostController : MonoBehaviour
 
         for (int i = 0; i < _renderers.Count; i++)
         {
-			_renderers[i].material = new Material (Shader.Find("Standard"));
+			_renderers[i].material = new Material (Shader.Find("Legacy Shaders/Transparent/Diffuse"));
 			_renderers[i].material.SetFloat("_Mode", 2);
 			_renderers[i].material.color = _colors[Random.Range(0, 8)];
+            _renderers[i].material.color = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f); 
         }
+    }
 
-		FadeOut(0.0f);
+    private void Start()
+    {
+        StartCoroutine(StartFadeIn());
     }
 
     IEnumerator StartFadeIn()
@@ -44,7 +48,6 @@ public class GhostController : MonoBehaviour
         {
 			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
 			_renderers[i].material.DOColor(endColor, time);
-			//StartCoroutine(FadeMaterial(_renderers[i].material, _renderers[i].material.color, 0.0f, time));
         }
     }
 
@@ -54,29 +57,16 @@ public class GhostController : MonoBehaviour
         {
 			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 1.0f);
 			_renderers[i].material.DOColor(endColor, time);
-			//StartCoroutine(FadeMaterial(_renderers[i].material, _renderers[i].material.color, 1.0f, time));
         }
     }
-
-//	IEnumerator FadeMaterial(Material material, Color startColor, float alpha, float time)
-//    {  
-//        float timePassed = 0.0f;
-//        Color endColor = new Color(startColor.r, startColor.g, startColor.b, alpha);
-//		while(timePassed < time)
-//        {
-//        	float percentagePassed = timePassed / time;
-//			material.color = Color.Lerp(startColor, endColor, percentagePassed);
-//
-//            yield return null;
-//        }
-//		material.color = endColor;
-//    	yield return null;         
-//     }  
 
 	void OnTriggerEnter(Collider other) 
 	{
 		if(other.name == "Player")
-			FadeOut(0.3f);
+        {
+            StopAllCoroutines();
+            FadeOut(0.3f);
+        }	
     }
 
 	void OnTriggerExit(Collider other) 
