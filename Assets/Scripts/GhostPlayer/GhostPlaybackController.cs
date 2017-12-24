@@ -22,10 +22,14 @@ public class GhostPlaybackController : MonoBehaviour
 	void Awake () 
 	{
 		_ghostPlayer = transform.GetComponent<GhostController>();
-		_ghostPlayer.RopeLineRenderer.enabled = false;
 	}
 
-	public void StartPlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
+    void Start()
+    {
+        _ghostPlayer.RopeLineRenderer.enabled = false;
+    }
+
+    public void StartPlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
 	{
 		if(playerPlaybackModel.HasStates)
 		{
