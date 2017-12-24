@@ -13,6 +13,7 @@ public class GhostController : MonoBehaviour
 	public LineRenderer RopeLineRenderer;
 
     private List<Renderer> _renderers = new List<Renderer>();
+    private Color[] _colors = new Color[] {Color.black, Color.blue, Color.cyan, Color.gray, Color.green, Color.magenta, Color.red, Color.white, Color.yellow};
 
 	void Awake()
 	{
@@ -23,11 +24,12 @@ public class GhostController : MonoBehaviour
 
         for (int i = 0; i < _renderers.Count; i++)
         {
-            _renderers[i].material.color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+			_renderers[i].material = new Material (Shader.Find("Standard"));
+			_renderers[i].material.SetFloat("_Mode", 2);
+			_renderers[i].material.color = _colors[Random.Range(0, 8)];
         }
 
-        FadeOut(0.0f);
-        StartCoroutine(StartFadeIn());
+		FadeOut(0.0f);
     }
 
     IEnumerator StartFadeIn()
@@ -40,7 +42,9 @@ public class GhostController : MonoBehaviour
     {
         for (int i = 0; i < _renderers.Count; i++)
         {
-            _renderers[i].material.DOFade(0.0f, time);
+			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
+			_renderers[i].material.DOColor(endColor, time);
+			//StartCoroutine(FadeMaterial(_renderers[i].material, _renderers[i].material.color, 0.0f, time));
         }
     }
 
@@ -48,7 +52,36 @@ public class GhostController : MonoBehaviour
     {
         for (int i = 0; i < _renderers.Count; i++)
         {
-            _renderers[i].material.DOFade(1.0f, time);
+			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 1.0f);
+			_renderers[i].material.DOColor(endColor, time);
+			//StartCoroutine(FadeMaterial(_renderers[i].material, _renderers[i].material.color, 1.0f, time));
         }
+    }
+
+//	IEnumerator FadeMaterial(Material material, Color startColor, float alpha, float time)
+//    {  
+//        float timePassed = 0.0f;
+//        Color endColor = new Color(startColor.r, startColor.g, startColor.b, alpha);
+//		while(timePassed < time)
+//        {
+//        	float percentagePassed = timePassed / time;
+//			material.color = Color.Lerp(startColor, endColor, percentagePassed);
+//
+//            yield return null;
+//        }
+//		material.color = endColor;
+//    	yield return null;         
+//     }  
+
+	void OnTriggerEnter(Collider other) 
+	{
+		if(other.name == "Player")
+			FadeOut(0.3f);
+    }
+
+	void OnTriggerExit(Collider other) 
+	{
+		if(other.name == "Player")
+			FadeIn(0.3f);
     }
 }

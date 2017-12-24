@@ -443,10 +443,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnCollisionExit(Collision collision)
-    {    
-    }
-
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
     {
         Vector3 axis = new Vector3(0, 0, 1);
