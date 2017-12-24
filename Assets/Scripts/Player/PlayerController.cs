@@ -16,10 +16,9 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
-    public float Speed = 1.0f;
-    public float BoostForce = 8.0f;
-    public float SwingBoostForce = 5.0f;
-    public float MaxVelocity = 18.0f;
+    public float Speed = 1.5f;
+    public float BoostForce =10.0f;
+    public float MaxVelocity = 20.0f;
     public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
     public float MaxClimbVelocity = 27.0f;
@@ -120,11 +119,6 @@ public class PlayerController : MonoBehaviour
             if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
                 ClimbRope();
         }
-//        else if (_hooked && !_floating && !_grounded && _playerRigidbody.velocity.y < -1.5f && _currentRopeLength > _ropeMinLength * 2.0f)
-//        {
-//            Vector3 force = _playerRigidbody.velocity.normalized * SwingBoostForce;
-//            _playerRigidbody.AddForce(force, ForceMode.Acceleration);
-//        }
 
 		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
 			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, RopeOrigin.transform.position);
@@ -354,7 +348,7 @@ public class PlayerController : MonoBehaviour
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
         }
-        else if(_grounded && _hooked)
+        else if(_grounded)
             _wallHookFixedJoint.connectedBody = null;
     }
 
