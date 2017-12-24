@@ -65,10 +65,15 @@ public class SceneController : MonoBehaviour
 		}
 
         Player.Init();
-
-        if(!_gameOn)
-			_gameOn = true;
+		_gameOn = true;
 	}
+
+	void ResetGame()
+    {
+		_gameOn = false;
+		Player.HookPlayerInput.InputActive = false;
+		GrappleUI.ToggleStartScreen();
+    }
 
     void ResetData()
     {
@@ -104,7 +109,8 @@ public class SceneController : MonoBehaviour
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
-        GrappleUI.OnResetButtonClicked += ResetData;
+		GrappleUI.OnResetButtonClicked += ResetGame;
+        GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
         Player.OnPlayerCompleted += PlayerFinished;
@@ -114,7 +120,7 @@ public class SceneController : MonoBehaviour
 	void OnDisable()
 	{
         GrappleUI.OnStartButtonClicked -= StartGame;
-        GrappleUI.OnResetButtonClicked -= ResetData;
+        GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnStartButtonClicked -= StartGame;
 		Player.OnPlayerCompleted -= PlayerFinished;

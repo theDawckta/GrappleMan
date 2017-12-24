@@ -9,7 +9,10 @@ public class UIController : MonoBehaviour
 	public delegate void StartButtonClicked();
 	public event StartButtonClicked OnStartButtonClicked;
 
-    public delegate void ResetButtonClicked();
+    public delegate void ResetDataButtonClicked();
+    public event ResetDataButtonClicked OnResetDataButtonClicked;
+
+	public delegate void ResetButtonClicked();
     public event ResetButtonClicked OnResetButtonClicked;
 
     public delegate void GhostValueChanged(int value);
@@ -59,7 +62,13 @@ public class UIController : MonoBehaviour
 		_timeStarted = true;
     }
 
-    public void UIResetButtonClicked()
+    public void UIResetDataButtonClicked()
+    {
+        if (OnResetDataButtonClicked != null)
+            OnResetDataButtonClicked();
+    }
+
+	public void UIResetButtonClicked()
     {
         if (OnResetButtonClicked != null)
             OnResetButtonClicked();
@@ -114,7 +123,7 @@ public class UIController : MonoBehaviour
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-    void ToggleStartScreen()
+    public void ToggleStartScreen()
     {
         StartScreen.gameObject.SetActive(!StartScreen.gameObject.activeSelf);
     }
