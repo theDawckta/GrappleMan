@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 using UnityEngine;
+using Grappler.Constants;
 
 namespace Grappler.DataModel
 {
@@ -20,6 +21,11 @@ namespace Grappler.DataModel
 
         public static void Init()
         {
+            if (PlayerPrefs.HasKey(Constants.Constants.GHOST_RECORDS))
+                _numOfRecords = PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS);
+            else
+                PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
+
             for (int i = 0; i < _playerDataLocations.Length; i++)
             {
                 Directory.CreateDirectory(_playerDataLocations[i]);
@@ -53,6 +59,7 @@ namespace Grappler.DataModel
         public static void SetNumOfRecords(int numOfRecords)
         {
             _numOfRecords = numOfRecords;
+            PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
         }
 
         public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)

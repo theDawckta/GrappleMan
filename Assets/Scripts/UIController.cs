@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Collections;
+using Grappler.Constants;
 
 public class UIController : MonoBehaviour
 {
@@ -34,6 +35,12 @@ public class UIController : MonoBehaviour
     private String seed;
     private float _timer;
     private bool _timeStarted;
+    private int _ghosts = 6;
+
+    private void Awake()
+    {
+        
+    }
 
     void Start()
     {
@@ -79,6 +86,7 @@ public class UIController : MonoBehaviour
         if (OnGhostsValueChanged != null)
         {
             OnGhostsValueChanged(Int32.Parse(GhostsInput.text));
+            PlayerPrefs.SetInt(Constants.GHOSTS, Int32.Parse(GhostsInput.text));
         }
     }
 
@@ -87,6 +95,7 @@ public class UIController : MonoBehaviour
         if (OnGhostRecordsValueChanged != null)
         {
             OnGhostRecordsValueChanged(Int32.Parse(GhostRecordsInput.text));
+            PlayerPrefs.SetInt(Constants.GHOST_RECORDS, Int32.Parse(GhostRecordsInput.text));
         }
     }
 

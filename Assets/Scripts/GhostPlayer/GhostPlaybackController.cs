@@ -25,7 +25,7 @@ public class GhostPlaybackController : MonoBehaviour
 
 	void Awake () 
 	{
-		_ghostPlayer = transform.GetComponent<GhostController>();
+        _ghostPlayer = transform.GetComponent<GhostController>();
 	}
 
     void Start()
@@ -83,7 +83,7 @@ public class GhostPlaybackController : MonoBehaviour
 		}
 		else if (_tempPlayerState.RopeLineRendererPositions.Length < _lerpFromLineRendererPositionCount)
 		{
-            if (_lerpFromLineRendererPositionCount > 2)
+            if (_lerpFromLineRendererPositionCount > 2 && _tempPlayerState.RopeLineRendererPositions.Length > 2)
             {
                 List<Vector3> tempLineRendererPositions = new List<Vector3>();
 

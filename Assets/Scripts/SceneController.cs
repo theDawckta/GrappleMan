@@ -2,6 +2,7 @@
 using Grappler.DataModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Grappler.Constants;
 
 public class SceneController : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class SceneController : MonoBehaviour
 
     void Awake()
     {
+       // PlayerPrefs.DeleteAll();
         Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
@@ -36,7 +38,14 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
-        GrappleUI.GhostsInput.text = _numberOfGhosts.ToString();
+        if (PlayerPrefs.HasKey(Constants.GHOSTS))
+        {
+            GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
+            _numberOfGhosts = PlayerPrefs.GetInt(Constants.GHOSTS);
+        }  
+        else
+            PlayerPrefs.SetInt(Constants.GHOSTS, _numberOfGhosts);
+
         GrappleUI.GhostRecordsInput.text = PlayerPlaybackController.MaxNumOfRecords.ToString();
         InitGhosts();
         //_playerAudio.Play();
@@ -137,6 +146,7 @@ public class SceneController : MonoBehaviour
     void GhostsValueChanged(int value)
     {
         _numberOfGhosts = value;
+        PlayerPrefs.SetInt(Constants.GHOSTS, _numberOfGhosts);
         InitGhosts();
     }
 
