@@ -8,7 +8,10 @@ using UnityEngine;
 
 public class GhostPlaybackController : MonoBehaviour 
 {
-	private GhostController _ghostPlayer;
+    public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerPlaybackModel playerPlayback);
+    public event OnGhostCompletedEvent OnGhostCompleted;
+
+    private GhostController _ghostPlayer;
 	private PlayerStateModel _tempPlayerState;
 	private Vector3[] _lerpFromLineRendererPositions;
 	private int _lerpFromLineRendererPositionCount;
@@ -18,6 +21,7 @@ public class GhostPlaybackController : MonoBehaviour
 	private Vector3 _lerpFromWallHookPosition;
 	private bool _playing = false;
 	private float _timePassed = 0.0f;
+    private PlayerPlaybackModel _playerPlaybackModel;
 
 	void Awake () 
 	{
@@ -31,23 +35,24 @@ public class GhostPlaybackController : MonoBehaviour
 
     public void StartPlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
 	{
+         _timePassed = 0.0f;
+
 		if(playerPlaybackModel.HasStates)
 		{
-			_ghostPlayer.gameObject.SetActive(true);
-			_ghostPlayer.transform.position = playerPlaybackModel.StartingState.BodyPosition;
-			_ghostPlayer.GhostPlayerSprite.transform.rotation = playerPlaybackModel.StartingState.BodyRotation;
+            transform.position = playerPlaybackModel.StartingPosition;
 			_playing = true;
-			StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
+            _ghostPlayer.FadeIn(0.3f);
+            StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
 		}
 		else
 		{
-			_ghostPlayer.gameObject.SetActive(false);
-			gameObject.SetActive(false);
+            Debug.Log("RECIEVED EMPTY STATE");
 		}
 	}
 
 	IEnumerator PlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
 	{
+        _playerPlaybackModel = playerPlaybackModel;
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
         bool RemoveLastLineRendererPosition = false;
         _tempPlayerState = playerPlaybackModel.GetNextState();
@@ -162,12 +167,22 @@ public class GhostPlaybackController : MonoBehaviour
             _ghostPlayer.RopeLineRenderer.SetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 1, _ghostPlayer.RopeOrigin.transform.position);
             RemoveLastLineRendererPosition = false;
         }
-		
-        if (playerPlaybackModel.HasStates)
-			yield return StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
-		else
-			_playing = false;
 
-		yield return null;
+        if (playerPlaybackModel.HasStates)
+            yield return StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
+        else
+        {
+            _ghostPlayer.FadeOut(1.0f);
+            Invoke("GhostCompleted", 1.0f);
+            _playing = false;
+        }
 	}
+
+    void GhostCompleted()
+    {
+        if (OnGhostCompleted != null)
+        {
+            OnGhostCompleted(this, _playerPlaybackModel);
+        }
+    }
 }

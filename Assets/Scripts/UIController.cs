@@ -92,7 +92,6 @@ public class UIController : MonoBehaviour
 
     public void EndGame()
     {
-        ToggleStartScreen();
         _timeStarted = false;
     }
 

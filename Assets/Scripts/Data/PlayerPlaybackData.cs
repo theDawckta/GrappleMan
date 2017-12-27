@@ -8,17 +8,17 @@ using UnityEngine;
 
 namespace Grappler.DataModel
 {
-	public class PlayerPlaybackController
+    public class PlayerPlaybackController
     {
-        public static int MaxNumOfRecords{get { return _numOfRecords; } private set { }}
+        public static int MaxNumOfRecords { get { return _numOfRecords; } private set { } }
 
-		private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
-		private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
-		private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
-		private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
-		private static int _numOfRecords = 6;
+        private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
+        private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
+        private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
+        private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
+        private static int _numOfRecords = 6;
 
-		public static void Init()
+        public static void Init()
         {
             for (int i = 0; i < _playerDataLocations.Length; i++)
             {
@@ -40,7 +40,7 @@ namespace Grappler.DataModel
             {
                 Directory.CreateDirectory(_playerDataLocations[i]);
 
-                // trim any files greater than _numOfRecords
+                // delete all files
                 int tempNumOfRecords = 0;
                 while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
                 {
@@ -56,13 +56,13 @@ namespace Grappler.DataModel
         }
 
         public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
-		{
+        {
             string playerDataLocation;
 
-            if(playerCompleted)
-				playerDataLocation = _playerCompletedDataLocation;
-			else
-				playerDataLocation = _playerDiedDataLocation;
+            if (playerCompleted)
+                playerDataLocation = _playerCompletedDataLocation;
+            else
+                playerDataLocation = _playerDiedDataLocation;
 
             List<PlayerPlaybackModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
 
@@ -87,7 +87,7 @@ namespace Grappler.DataModel
                     return;
                 }
             }
-	    }
+        }
 
         static void SavePlayerPlayback(PlayerPlaybackModel playerPlayback, int insertIndex, string playerDataLocation)
         {
@@ -122,60 +122,59 @@ namespace Grappler.DataModel
         }
 
         public static List<PlayerPlaybackModel> GetPlayerPlaybackLocal(int numOfRecords)
-	    {
-	    	List<PlayerPlaybackModel> playerPlaybacks = new List<PlayerPlaybackModel>();
+        {
+            List<PlayerPlaybackModel> playerPlaybacks = new List<PlayerPlaybackModel>();
 
-			for (int i = 0; i < numOfRecords; i++)
-			{
-				string playerDataFilePath = _playerCompletedDataLocation + _playerDataFileName + i + ".json";
+            for (int i = 0; i < numOfRecords; i++)
+            {
+                string playerDataFilePath = _playerCompletedDataLocation + _playerDataFileName + i + ".json";
 
-				if (File.Exists(playerDataFilePath))
-					playerPlaybacks.Add(JsonUtility.FromJson<PlayerPlaybackModel>(File.ReadAllText(playerDataFilePath)));
-				else
-					break;
-			}
+                if (File.Exists(playerDataFilePath))
+                    playerPlaybacks.Add(JsonUtility.FromJson<PlayerPlaybackModel>(File.ReadAllText(playerDataFilePath)));
+                else
+                    break;
+            }
 
-			return playerPlaybacks;
-	    }
+            return playerPlaybacks;
+        }
 
-	    // Implement server data, example call below
-		//		string jsonPlayerPlayback;
-		//		StartCoroutine (GetPlayerPlaybackDataServer (_thingName, (value)=>{returnData = value} ));
-		// Function below is just example
-		public IEnumerator GetPlayerPlaybackDataServer (System.Action<string> callback)
-		{
-			string URLString = "http://XXXXX/Services/GetPropertyValues";
-			WWWForm form = new WWWForm ();
-			form.AddBinaryData ("binary", new byte[1]);
-			var headers = form.headers;
-			headers.Remove ("Content-Type");
-			headers.Add ("appKey", "XXX-XXX-XXX");
-			headers.Add ("Content-Type", "application/json");
-			headers.Add ("Accept", "application/json");
-			WWW www = new WWW (URLString, form.data, headers);
-			yield return www;
+        // Implement server data, example call below
+        //		string jsonPlayerPlayback;
+        //		StartCoroutine (GetPlayerPlaybackDataServer (_thingName, (value)=>{returnData = value} ));
+        // Function below is just example
+        public IEnumerator GetPlayerPlaybackDataServer(System.Action<string> callback)
+        {
+            string URLString = "http://XXXXX/Services/GetPropertyValues";
+            WWWForm form = new WWWForm();
+            form.AddBinaryData("binary", new byte[1]);
+            var headers = form.headers;
+            headers.Remove("Content-Type");
+            headers.Add("appKey", "XXX-XXX-XXX");
+            headers.Add("Content-Type", "application/json");
+            headers.Add("Accept", "application/json");
+            WWW www = new WWW(URLString, form.data, headers);
+            yield return www;
 
-			callback(www.text);
-		}
+            callback(www.text);
+        }
     }
-	
-	[Serializable]
-    public class PlayerPlaybackModel
-	{
-		public bool HasStates {get {return _state.Count > 0;} private set{}}
-		public PlayerStateModel StartingState {get {return _startingState;} private set{}}
-		public float Time {get{return _time;} private set{}}
 
-		[SerializeField]
-		private PlayerStateModel _startingState;
+    [Serializable]
+    public class PlayerPlaybackModel
+    {
+        public bool HasStates { get { return _stateIndex < _state.Count; } private set { } }
+        public Vector3 StartingPosition  { get {  return (_state.Count > 0) ? _state[0].BodyPosition : Vector3.zero; } private set{} }
+		public float Time { get { return _time; } private set {} }
+        
 		[SerializeField]
 		private List<PlayerStateModel> _state;
 		[SerializeField]
 		private float _time;
 
-        public PlayerPlaybackModel(PlayerStateModel startingState)
+        private int _stateIndex = 0;
+
+        public PlayerPlaybackModel()
         {
-			_startingState = startingState;
         	_state = new List<PlayerStateModel>();
         }
 
@@ -191,9 +190,16 @@ namespace Grappler.DataModel
 
         public PlayerStateModel GetNextState()
         {
-        	PlayerStateModel tempPlayerState = _state[0];
-			_state.RemoveAt(0);
+        	PlayerStateModel tempPlayerState = _state[_stateIndex];
+            _stateIndex++;
+            if (_stateIndex > _state.Count)
+                _stateIndex = 0;
 			return tempPlayerState;
+        }
+
+        public void SetStateIndex(int stateIndex)
+        {
+            _stateIndex = stateIndex;
         }
     }
 

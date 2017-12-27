@@ -28,8 +28,9 @@ public class PlayerRecorderController : MonoBehaviour
 													  _player.RopeLineRenderer, 
 													  0.0f);
 
-		_playerPlayback = new PlayerPlaybackModel(tempPlayerState);
+		_playerPlayback = new PlayerPlaybackModel();
         _recording = true;
+        AddState(_timePassed);
         StartCoroutine("Record");
     }
 

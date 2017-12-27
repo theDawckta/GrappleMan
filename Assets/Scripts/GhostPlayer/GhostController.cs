@@ -6,7 +6,7 @@ using DG.Tweening;
 
 public class GhostController : MonoBehaviour 
 {
-	public GameObject GhostPlayerSprite;
+    public GameObject GhostPlayerSprite;
 	public GameObject RopeOrigin;
 	public GameObject WallHookSprite;
 	[HideInInspector]
@@ -25,21 +25,11 @@ public class GhostController : MonoBehaviour
         for (int i = 0; i < _renderers.Count; i++)
         {
 			_renderers[i].material = new Material (Shader.Find("Legacy Shaders/Transparent/Diffuse"));
-			_renderers[i].material.SetFloat("_Mode", 2);
 			_renderers[i].material.color = _colors[Random.Range(0, 8)];
             _renderers[i].material.color = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f); 
         }
-    }
 
-    private void Start()
-    {
-        StartCoroutine(StartFadeIn());
-    }
-
-    IEnumerator StartFadeIn()
-    {
-        yield return new WaitForSeconds(0.5f);
-        FadeIn(0.5f);
+        FadeOut(0.0f);
     }
 
     public void FadeOut(float time)
