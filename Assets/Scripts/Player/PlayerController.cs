@@ -16,13 +16,13 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
-    public float Speed = 1.5f;
+    public float Speed = 2.5f;
+	public float MaxGroundVelocity = 20.0f;
     public float BoostForce =10.0f;
-    public float MaxVelocity = 20.0f;
     public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
-    public float MaxClimbVelocity = 27.0f;
-    public float AnimationSmoothTime = 0.3F;
+    public float MaxClimbVelocity = 40.0f;
+    public float AnimationSmoothTime = 0.4F;
 	public LineRenderer RopeLineRenderer {get {return _ropeLineRenderer;}}
 	public GameObject WallHookSprite {get {return _wallHookSprite;}}
 
@@ -308,7 +308,7 @@ public class PlayerController : MonoBehaviour
 	void HandleMove()
     {
         // moves player left and right
-        if (_grounded && _playerRigidbody.velocity.magnitude < MaxVelocity)
+        if (_grounded && _playerRigidbody.velocity.magnitude < MaxGroundVelocity)
             _playerRigidbody.AddForce(new Vector3(HookPlayerInput.Move() * Speed, 0.0f,  0.0f), ForceMode.VelocityChange);
     }
 
@@ -337,7 +337,7 @@ public class PlayerController : MonoBehaviour
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-            if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
+			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
             {
                 _floating = true;
                _wallHookFixedJoint.connectedBody = null;
