@@ -3,19 +3,23 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 
-public class HighScores : MonoBehaviour
+public class GrappleDataController : MonoBehaviour
 {
     ///Fill in your server data here.
     private string privateKey = "SOMESECRETKEY";
     private string TopScoresURL = "http://localhost/TopScores.php";
 
+
     //Don't forget the question marks!
     private string AddScoreURL = "http://localhost/AddScores.php?";
+
+    private string AddUserURL = "http://localhost/AddUser.php?";
+
     private string RankURL = "http://localhost/GetRank.php?";
 
     //The score and username we submit
     private int highscore;
-    private string username;
+    private string _userName;
     private int rank;
 
     ///Our public access functions
@@ -24,16 +28,16 @@ public class HighScores : MonoBehaviour
         highscore = givenscore;
     }
 
-    public void SetName(string givenname)
+    public void SetName(string userName)
     {
-        username = givenname;
+        _userName = userName;
     }
 
     //Our standard Unity functions
     //Called as soon as the class is activated.
     void OnEnable()
     {
-        StartCoroutine(AddScore("Cunty", 10)); // We post our scores.
+        StartCoroutine(AddUser("Cunty")); // We post our scores.
     }
 
     ///Our encryption function: http://wiki.unity3d.com/index.php?title=MD5
@@ -55,12 +59,22 @@ public class HighScores : MonoBehaviour
         return hashString.PadLeft(32, '0');
     }
 
-    ///Our Error function
-    void Error()
+    ///Our IEnumerators
+    IEnumerator AddUser(string _userName)
     {
-        //guiText.enabled = true;
-        //guiText.text = "Connection error.";
-        //guiText.fontSize = (int)(guiText.fontSize * 0.6f);
+        string hash = Md5Sum(_userName + privateKey);
+
+        WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(_userName) + "&hash=" + hash); //Post our new user
+        yield return NewUserPost; // The function halts until the score is posted.
+
+        if (NewUserPost.error == null)
+        {
+            print("Added user " + _userName);
+        }
+        else
+        {
+            print(NewUserPost.error);
+        }
     }
 
     ///Our IEnumerators
@@ -78,7 +92,7 @@ public class HighScores : MonoBehaviour
         }
         else
         {
-            Error(); // Otherwise we use our error protocol
+            //Handle error
         }
     }
 
@@ -103,7 +117,7 @@ public class HighScores : MonoBehaviour
         }
         else
         {
-            Error();
+            //Handle error
         }
     }
 
@@ -114,7 +128,7 @@ public class HighScores : MonoBehaviour
 
         if (GetScoresAttempt.error != null)
         {
-            Error();
+            //Handle error
         }
         else
         {
