@@ -67,13 +67,13 @@ public class GrappleDataController : MonoBehaviour
         WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(_userName) + "&hash=" + hash); //Post our new user
         yield return NewUserPost; // The function halts until the score is posted.
 
-        if (NewUserPost.error == null)
+        if (NewUserPost.error == null && NewUserPost.text == _userName)
         {
-            print("Added user " + _userName);
+            Debug.Log("NEW USER ADDED");
         }
         else
         {
-            print(NewUserPost.error);
+            Debug.Log("USER ALREADY EXISTS");
         }
     }
 
