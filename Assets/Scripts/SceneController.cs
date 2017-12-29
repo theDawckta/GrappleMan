@@ -88,7 +88,7 @@ public class SceneController : MonoBehaviour
         {
             if (_playerPlaybacks[i] != null)
             {
-                if (_playerPlaybacks[i].Time > 0.0f)
+                if (_playerPlaybacks[i].PlaybackTime > 0.0f)
                 {
                     GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
                     ghostPlayback.transform.SetParent(GhostHolder.transform);
@@ -163,7 +163,7 @@ public class SceneController : MonoBehaviour
 		{
 			GrappleUI.EndGame();
             GrappleUI.ToggleStartScreen();
-			PlayerPlaybackController.SavePlayerPlaybackLocal(playerPlayback, playerCompleted);
+			PlayerPlaybackController.ProcessPlayerPlayback(playerPlayback, playerCompleted);
 
             InitGhosts();
 

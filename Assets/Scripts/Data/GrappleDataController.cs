@@ -3,151 +3,115 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 
-public class GrappleDataController : MonoBehaviour
+namespace Grappler.DataModel
 {
-    ///Fill in your server data here.
-    private string privateKey = "SOMESECRETKEY";
-    private string TopScoresURL = "http://localhost/TopScores.php";
-
-
-    //Don't forget the question marks!
-    private string AddScoreURL = "http://localhost/AddScores.php?";
-
-    private string AddUserURL = "http://localhost/AddUser.php?";
-
-    private string RankURL = "http://localhost/GetRank.php?";
-
-    //The score and username we submit
-    private int highscore;
-    private string _userName;
-    private int rank;
-
-    ///Our public access functions
-    public void Setscore(int givenscore)
+    public class GrappleDataController : MonoBehaviour
     {
-        highscore = givenscore;
-    }
+        private string privateKey = "SOMESECRETKEY";
+        private string GetSomethingUrl = "http://localhost/GetSomething.php";
 
-    public void SetName(string userName)
-    {
-        _userName = userName;
-    }
+        private string AddUserURL = "http://localhost/AddUser.php?";
+        private string AddLevelURL = "http://localhost/AddLevel.php?";
+        private string AddReplayURL = "http://localhost/AddReplay.php?";
 
-    //Our standard Unity functions
-    //Called as soon as the class is activated.
-    void OnEnable()
-    {
-        StartCoroutine(AddUser("Cunty")); // We post our scores.
-    }
+       
+        private string _userName;
 
-    ///Our encryption function: http://wiki.unity3d.com/index.php?title=MD5
-    private string Md5Sum(string strToEncrypt)
-    {
-        System.Text.UTF8Encoding ue = new System.Text.UTF8Encoding();
-        byte[] bytes = ue.GetBytes(strToEncrypt);
-
-        System.Security.Cryptography.MD5CryptoServiceProvider md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
-        byte[] hashBytes = md5.ComputeHash(bytes);
-
-        string hashString = "";
-
-        for (int i = 0; i < hashBytes.Length; i++)
+        public void SetName(string userName)
         {
-            hashString += System.Convert.ToString(hashBytes[i], 16).PadLeft(2, '0');
+            _userName = userName;
+        }
+        
+        void Start()
+        {
+            StartAddUser("theDawckta");
+            StartAddLevel("Test");
+            StartAddReplay("theDawckta", "Test", 20.0f, "replay data" );
         }
 
-        return hashString.PadLeft(32, '0');
-    }
-
-    ///Our IEnumerators
-    IEnumerator AddUser(string _userName)
-    {
-        string hash = Md5Sum(_userName + privateKey);
-
-        WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(_userName) + "&hash=" + hash); //Post our new user
-        yield return NewUserPost; // The function halts until the score is posted.
-
-        if (NewUserPost.error == null && NewUserPost.text == _userName)
+        ///Encryption function: http://wiki.unity3d.com/index.php?title=MD5
+        private string Md5Sum(string strToEncrypt)
         {
-            Debug.Log("NEW USER ADDED");
-        }
-        else
-        {
-            Debug.Log("USER ALREADY EXISTS");
-        }
-    }
+            System.Text.UTF8Encoding ue = new System.Text.UTF8Encoding();
+            byte[] bytes = ue.GetBytes(strToEncrypt);
 
-    ///Our IEnumerators
-    IEnumerator AddScore(string name, int score)
-    {
-        string hash = Md5Sum(name + score + privateKey);
+            System.Security.Cryptography.MD5CryptoServiceProvider md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            byte[] hashBytes = md5.ComputeHash(bytes);
 
-        WWW ScorePost = new WWW(AddScoreURL + "name=" + WWW.EscapeURL(name) + "&score=" + score + "&hash=" + hash); //Post our score
-        yield return ScorePost; // The function halts until the score is posted.
+            string hashString = "";
 
-        if (ScorePost.error == null)
-        {
-            print("Added score apaz");
-            StartCoroutine(GrabRank(name)); // If the post is successful, the rank gets grabbed next.
-        }
-        else
-        {
-            //Handle error
-        }
-    }
-
-    IEnumerator GrabRank(string name)
-    {
-        //Try and grab the Rank
-        WWW RankGrabAttempt = new WWW(RankURL + "name=" + WWW.EscapeURL(name));
-
-        yield return RankGrabAttempt;
-
-        if (RankGrabAttempt.error == null)
-        {
-            bool result;
-            int number;
-
-            result = int.TryParse(RankGrabAttempt.text, out number);
-            if (result)
+            for (int i = 0; i < hashBytes.Length; i++)
             {
-                rank = number;
+                hashString += System.Convert.ToString(hashBytes[i], 16).PadLeft(2, '0');
             }
-            StartCoroutine(GetTopScores()); // Get our top scores
-        }
-        else
-        {
-            //Handle error
-        }
-    }
 
-    IEnumerator GetTopScores()
-    {
-        WWW GetScoresAttempt = new WWW(TopScoresURL);
-        yield return GetScoresAttempt;
-
-        if (GetScoresAttempt.error != null)
-        {
-            //Handle error
+            return hashString.PadLeft(32, '0');
         }
-        else
-        {
-            print("Top scores apaz");
-            //Collect up all our data
-            string[] textlist = GetScoresAttempt.text.Split(new string[] { "\n", "\t" }, System.StringSplitOptions.RemoveEmptyEntries);
 
-            //Split it into two smaller arrays
-            string[] Names = new string[Mathf.FloorToInt(textlist.Length / 2)];
-            string[] Scores = new string[Names.Length];
-            for (int i = 0; i < textlist.Length; i++)
+        public void StartAddUser(string userName)
+        {
+            StartCoroutine(AddUser(userName));
+        }
+        
+        IEnumerator AddUser(string userName)
+        {
+            string hash = Md5Sum(userName + privateKey);
+
+            WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(userName) + "&hash=" + hash);
+            yield return NewUserPost;
+
+            if (NewUserPost.error == null && NewUserPost.text == userName)
             {
-                if (i % 2 == 0)
-                {
-                    Names[Mathf.FloorToInt(i / 2)] = textlist[i];
-                }
-                else Scores[Mathf.FloorToInt(i / 2)] = textlist[i];
+                Debug.Log("NEW USER ADDED");
+            }
+            else
+            {
+                Debug.Log("USER ALREADY EXISTS");
+            }
+        }
+
+        public void StartAddLevel(string levelName)
+        {
+            StartCoroutine(AddLevel(levelName));
+        }
+
+        IEnumerator AddLevel(string levelName)
+        {
+            string hash = Md5Sum(levelName + privateKey);
+
+            WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
+            yield return NewLevelPost;
+
+            if (NewLevelPost.error == null && NewLevelPost.text == levelName)
+            {
+                Debug.Log("NEW LEVEL ADDED");
+            }
+            else
+            {
+                Debug.Log("LEVEL ALREADY EXISTS");
+            }
+        }
+
+        public void StartAddReplay(string userName, string levelName, float replayTime, string replayData)
+        {
+            StartCoroutine(AddReplay(userName, levelName, replayTime, replayData));
+        }
+        
+        IEnumerator AddReplay(string userName, string levelName, float replayTime, string replayData)
+        {
+            string hash = Md5Sum(userName + privateKey);
+
+            WWW ReplayPost = new WWW(AddReplayURL + "userName=" + WWW.EscapeURL(userName) + "&hash=" + hash + "&levelName=" + levelName + "&replayTime=" + replayTime + "&replayData=" + replayData);
+            yield return ReplayPost;
+
+            if (ReplayPost.error == null)
+            {
+                Debug.Log(ReplayPost.text);
+            }
+            else
+            {
+                //Handle error
             }
         }
     }
-
 }

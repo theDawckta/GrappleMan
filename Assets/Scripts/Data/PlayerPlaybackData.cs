@@ -62,7 +62,7 @@ namespace Grappler.DataModel
             PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
         }
 
-        public static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, bool playerCompleted)
+        public static void ProcessPlayerPlayback(PlayerPlaybackModel playerPlayback, bool playerCompleted)
         {
             string playerDataLocation;
 
@@ -77,26 +77,26 @@ namespace Grappler.DataModel
             {
                 if (playerPlaybackModels.Count == 0)
                 {
-                    SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                    SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
                     return;
                 }
                 else if (i < playerPlaybackModels.Count)
                 {
-                    if (playerPlayback.Time < playerPlaybackModels[i].Time)
+                    if (playerPlayback.PlaybackTime < playerPlaybackModels[i].PlaybackTime)
                     {
-                        SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                        SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
                         return;
                     }
                 }
                 if (i == playerPlaybackModels.Count)
                 {
-                    SavePlayerPlayback(playerPlayback, i, playerDataLocation);
+                    SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
                     return;
                 }
             }
         }
 
-        static void SavePlayerPlayback(PlayerPlaybackModel playerPlayback, int insertIndex, string playerDataLocation)
+        static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, int insertIndex, string playerDataLocation)
         {
             string lastItemFilePath;
             string nextToLastFilePath;
@@ -126,6 +126,14 @@ namespace Grappler.DataModel
             {
                 Debug.LogException(e);
             }
+        }
+
+        static void SavePlayerPlaybackServer(PlayerPlaybackModel playerPlayback)
+        {
+            // serialize playerPlayback
+            var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerPlayback));
+
+            
         }
 
         public static List<PlayerPlaybackModel> GetPlayerPlaybackLocal(int numOfRecords)
@@ -171,7 +179,7 @@ namespace Grappler.DataModel
     {
         public bool HasStates { get { return _stateIndex < _state.Count; } private set { } }
         public Vector3 StartingPosition  { get {  return (_state.Count > 0) ? _state[0].BodyPosition : Vector3.zero; } private set{} }
-		public float Time { get { return _time; } private set {} }
+		public float PlaybackTime { get { return _time; } private set {} }
         
 		[SerializeField]
 		private List<PlayerStateModel> _state;
