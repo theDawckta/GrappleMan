@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class GhostPlaybackController : MonoBehaviour 
 {
-    public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerPlaybackModel playerPlayback);
+    public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
     public event OnGhostCompletedEvent OnGhostCompleted;
 
     private GhostController _ghostPlayer;
@@ -21,7 +21,7 @@ public class GhostPlaybackController : MonoBehaviour
 	private Vector3 _lerpFromWallHookPosition;
 	private bool _playing = false;
 	private float _timePassed = 0.0f;
-    private PlayerPlaybackModel _playerPlaybackModel;
+    private PlayerReplayModel _playerPlaybackModel;
 
 	void Awake () 
 	{
@@ -33,7 +33,7 @@ public class GhostPlaybackController : MonoBehaviour
         _ghostPlayer.RopeLineRenderer.enabled = false;
     }
 
-    public void StartPlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
+    public void StartPlayGhostPlayback(PlayerReplayModel playerPlaybackModel)
 	{
          _timePassed = 0.0f;
 
@@ -50,7 +50,7 @@ public class GhostPlaybackController : MonoBehaviour
 		}
 	}
 
-	IEnumerator PlayGhostPlayback(PlayerPlaybackModel playerPlaybackModel)
+	IEnumerator PlayGhostPlayback(PlayerReplayModel playerPlaybackModel)
 	{
         _playerPlaybackModel = playerPlaybackModel;
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;

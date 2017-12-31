@@ -1,12 +1,12 @@
-<?php 
-	$db = mysqli_connect("localhost","root","","grappler");
+<?php
+	$db = mysqli_connect("localhost","grappleApp","nnoRMwtSXoHInbKu","grappler");
 
 	// Check connection
 	if (mysqli_connect_errno())
 	{
 		echo "Failed to connect to MySQL: " . mysqli_connect_error();
 	}
-	
+
 	$levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
 
 	$checkLevelNameQuery = "SELECT * FROM Levels WHERE LevelName = '$levelName';";

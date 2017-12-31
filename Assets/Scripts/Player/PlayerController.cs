@@ -7,9 +7,9 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-	public delegate void OnPlayerCompletedEvent(PlayerPlaybackModel playerPlaybackModel, bool playerWon);
+	public delegate void OnPlayerCompletedEvent(PlayerReplayModel playerPlaybackModel, bool playerWon);
 	public event OnPlayerCompletedEvent OnPlayerCompleted;
-	public delegate void OnPlayerDiedEvent(PlayerPlaybackModel playerPlaybackModel, bool playerWon);
+	public delegate void OnPlayerDiedEvent(PlayerReplayModel playerPlaybackModel, bool playerWon);
     public event OnPlayerDiedEvent OnPlayerDied;
 
     public GameObject RopeOrigin;

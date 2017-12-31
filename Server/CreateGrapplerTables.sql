@@ -10,11 +10,11 @@ CREATE TABLE Levels (
 )
 ENGINE=MyISAM;
 
-CREATE TABLE Replay (
+CREATE TABLE Replays (
 	Id INT(10) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     UserId INT(10),
-  	LevelId INT(10), 
-  	ReplayDate TIMESTAMP, 
+  	LevelId INT(10),
+  	ReplayDate TIMESTAMP,
    	ReplayTime FLOAT,
     ReplayData MEDIUMTEXT,
     CONSTRAINT FK_User_Id FOREIGN KEY (UserId) REFERENCES Users (Id),

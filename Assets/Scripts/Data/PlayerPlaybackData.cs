@@ -9,7 +9,7 @@ using Grappler.Constants;
 
 namespace Grappler.DataModel
 {
-    public class PlayerPlaybackController
+    public class PlayerReplayController
     {
         public static int MaxNumOfRecords { get { return _numOfRecords; } private set { } }
 
@@ -62,7 +62,7 @@ namespace Grappler.DataModel
             PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
         }
 
-        public static void ProcessPlayerPlayback(PlayerPlaybackModel playerPlayback, bool playerCompleted)
+        public static void ProcessPlayerPlayback(PlayerReplayModel playerPlayback, bool playerCompleted)
         {
             string playerDataLocation;
 
@@ -71,7 +71,7 @@ namespace Grappler.DataModel
             else
                 playerDataLocation = _playerDiedDataLocation;
 
-            List<PlayerPlaybackModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
+            List<PlayerReplayModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
 
             for (int i = 0; i < _numOfRecords; i++)
             {
@@ -82,7 +82,7 @@ namespace Grappler.DataModel
                 }
                 else if (i < playerPlaybackModels.Count)
                 {
-                    if (playerPlayback.PlaybackTime < playerPlaybackModels[i].PlaybackTime)
+                    if (playerPlayback.ReplayTime < playerPlaybackModels[i].ReplayTime)
                     {
                         SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
                         return;
@@ -96,7 +96,7 @@ namespace Grappler.DataModel
             }
         }
 
-        static void SavePlayerPlaybackLocal(PlayerPlaybackModel playerPlayback, int insertIndex, string playerDataLocation)
+        static void SavePlayerPlaybackLocal(PlayerReplayModel playerPlayback, int insertIndex, string playerDataLocation)
         {
             string lastItemFilePath;
             string nextToLastFilePath;
@@ -128,24 +128,22 @@ namespace Grappler.DataModel
             }
         }
 
-        static void SavePlayerPlaybackServer(PlayerPlaybackModel playerPlayback)
+        static void SavePlayerPlaybackServer(PlayerReplayModel playerPlayback)
         {
             // serialize playerPlayback
             var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerPlayback));
-
-            
         }
 
-        public static List<PlayerPlaybackModel> GetPlayerPlaybackLocal(int numOfRecords)
+        public static List<PlayerReplayModel> GetPlayerPlaybackLocal(int numOfRecords)
         {
-            List<PlayerPlaybackModel> playerPlaybacks = new List<PlayerPlaybackModel>();
+            List<PlayerReplayModel> playerPlaybacks = new List<PlayerReplayModel>();
 
             for (int i = 0; i < numOfRecords; i++)
             {
                 string playerDataFilePath = _playerCompletedDataLocation + _playerDataFileName + i + ".json";
 
                 if (File.Exists(playerDataFilePath))
-                    playerPlaybacks.Add(JsonUtility.FromJson<PlayerPlaybackModel>(File.ReadAllText(playerDataFilePath)));
+                    playerPlaybacks.Add(JsonUtility.FromJson<PlayerReplayModel>(File.ReadAllText(playerDataFilePath)));
                 else
                     break;
             }
@@ -175,20 +173,30 @@ namespace Grappler.DataModel
     }
 
     [Serializable]
-    public class PlayerPlaybackModel
+    public class PlayerReplayModel
     {
         public bool HasStates { get { return _stateIndex < _state.Count; } private set { } }
         public Vector3 StartingPosition  { get {  return (_state.Count > 0) ? _state[0].BodyPosition : Vector3.zero; } private set{} }
-		public float PlaybackTime { get { return _time; } private set {} }
+		public float ReplayTime { get { return _replayTime; } private set {} }
+		public string UserName { get { return _userName; } private set {} }
         
 		[SerializeField]
 		private List<PlayerStateModel> _state;
 		[SerializeField]
-		private float _time;
+		private float _replayTime;
+		[SerializeField]
+		private string _userName;
 
         private int _stateIndex = 0;
 
-        public PlayerPlaybackModel()
+		public PlayerReplayModel(string userName, float replayTime, List<PlayerStateModel> replayData)
+        {
+			_userName = userName;
+			_replayTime = replayTime;
+			_state = replayData;
+        }
+
+        public PlayerReplayModel()
         {
         	_state = new List<PlayerStateModel>();
         }
@@ -199,7 +207,7 @@ namespace Grappler.DataModel
 			if (final)
 			{
 				for (int i = 0; i < _state.Count; i++)
-					_time = _time + _state[i].DeltaTime;
+					_replayTime = _replayTime + _state[i].DeltaTime;
 			}
         }
 

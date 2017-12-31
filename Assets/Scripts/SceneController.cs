@@ -16,7 +16,7 @@ public class SceneController : MonoBehaviour
     private AudioClip _song;
     private Camera _mainCamera;
     private Vector3 _mainCameraStartPosition;
-    private List<PlayerPlaybackModel> _playerPlaybacks = new List<PlayerPlaybackModel>();
+    private List<PlayerReplayModel> _playerPlaybacks = new List<PlayerReplayModel>();
     private List<bool> _playerPlaybackInUse = new List<bool>();
     private List<GhostPlaybackController> _ghostPlaybacks = new List<GhostPlaybackController>();
     private int _numberOfGhosts = 6;
@@ -33,7 +33,7 @@ public class SceneController : MonoBehaviour
         _playerAudio.loop = true;
         _mainCamera = Camera.main;
         _mainCameraStartPosition = _mainCamera.transform.position;
-        PlayerPlaybackController.Init();
+        PlayerReplayController.Init();
     }
 
     void Start()
@@ -46,7 +46,7 @@ public class SceneController : MonoBehaviour
         else
             PlayerPrefs.SetInt(Constants.GHOSTS, _numberOfGhosts);
 
-        GrappleUI.GhostRecordsInput.text = PlayerPlaybackController.MaxNumOfRecords.ToString();
+        GrappleUI.GhostRecordsInput.text = PlayerReplayController.MaxNumOfRecords.ToString();
         InitGhosts();
         //_playerAudio.Play();
     }
@@ -81,14 +81,14 @@ public class SceneController : MonoBehaviour
         }
         _ghostPlaybacks = new List<GhostPlaybackController>();
 
-        _playerPlaybacks = PlayerPlaybackController.GetPlayerPlaybackLocal(_numberOfGhosts);
+        _playerPlaybacks = PlayerReplayController.GetPlayerPlaybackLocal(_numberOfGhosts);
         tempNumOfGhosts = (_playerPlaybacks.Count < _numberOfGhosts) ? _playerPlaybacks.Count : _numberOfGhosts;
 
         for (int i = 0; i < tempNumOfGhosts; i++)
         {
             if (_playerPlaybacks[i] != null)
             {
-                if (_playerPlaybacks[i].PlaybackTime > 0.0f)
+                if (_playerPlaybacks[i].ReplayTime > 0.0f)
                 {
                     GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
                     ghostPlayback.transform.SetParent(GhostHolder.transform);
@@ -111,11 +111,11 @@ public class SceneController : MonoBehaviour
 
     void ResetData()
     {
-        PlayerPlaybackController.ClearData();
+        PlayerReplayController.ClearData();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    void GhostCompleted(GhostPlaybackController ghost, PlayerPlaybackModel playerPlayback)
+    void GhostCompleted(GhostPlaybackController ghost, PlayerReplayModel playerPlayback)
     {
         // find the playerPlaybackModel this ghost was using and release it, add ghost to que to be restarted
         for (int i = 0; i < _playerPlaybacks.Count; i++)
@@ -152,18 +152,18 @@ public class SceneController : MonoBehaviour
 
     void GhostRecordsValueChanged(int value)
     {
-        PlayerPlaybackController.SetNumOfRecords(value);
-        PlayerPlaybackController.Init();
+        PlayerReplayController.SetNumOfRecords(value);
+        PlayerReplayController.Init();
         InitGhosts();
     }
 
-	void PlayerFinished(PlayerPlaybackModel playerPlayback, bool playerCompleted)
+	void PlayerFinished(PlayerReplayModel playerPlayback, bool playerCompleted)
     {
 		if(_gameOn)
 		{
 			GrappleUI.EndGame();
             GrappleUI.ToggleStartScreen();
-			PlayerPlaybackController.ProcessPlayerPlayback(playerPlayback, playerCompleted);
+			PlayerReplayController.ProcessPlayerPlayback(playerPlayback, playerCompleted);
 
             InitGhosts();
 

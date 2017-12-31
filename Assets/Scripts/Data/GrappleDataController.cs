@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+using SimpleJSON;
 using System;
 
 namespace Grappler.DataModel
@@ -8,8 +10,7 @@ namespace Grappler.DataModel
     public class GrappleDataController : MonoBehaviour
     {
         private string privateKey = "SOMESECRETKEY";
-        private string GetSomethingUrl = "http://localhost/GetSomething.php";
-
+        private string GetReplaysUrl = "http://localhost/GetReplays.php?";
         private string AddUserURL = "http://localhost/AddUser.php?";
         private string AddLevelURL = "http://localhost/AddLevel.php?";
         private string AddReplayURL = "http://localhost/AddReplay.php?";
@@ -24,9 +25,19 @@ namespace Grappler.DataModel
         
         void Start()
         {
-            StartAddUser("theDawckta");
-            StartAddLevel("Test");
-            StartAddReplay("theDawckta", "Test", 20.0f, "replay data" );
+//			for(int i = 0; i < 5; i++)
+//            {
+//				StartAddUser("User" + i);
+//            }
+//
+//			for(int j = 0; j < 5; j++)
+//            {
+//				for(int k = 0; k < 20; k++)
+//	            {
+//					StartAddReplay("User" + j, "Test", 20.0f + j + k, "replay data" + j + "_" + k );
+//	            }
+//            }
+			//StartGetReplays("Test");
         }
 
         ///Encryption function: http://wiki.unity3d.com/index.php?title=MD5
@@ -107,6 +118,39 @@ namespace Grappler.DataModel
             if (ReplayPost.error == null)
             {
                 Debug.Log(ReplayPost.text);
+            }
+            else
+            {
+                //Handle error
+            }
+        }
+
+		public void StartGetReplays(string levelName)
+        {
+			StartCoroutine(GetReplays(levelName, 5));
+        }
+        
+        IEnumerator GetReplays(string levelName, int numOfReplays)
+        {
+			string hash = Md5Sum(levelName + privateKey);
+
+			WWW GetReplaysPost = new WWW(GetReplaysUrl + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash + "&numOfReplays=" + numOfReplays);
+			yield return GetReplaysPost;
+
+			if (GetReplaysPost.error == null)
+            {
+            	List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
+				foreach(JSONNode replay in JSON.Parse(GetReplaysPost.text))
+				{
+					string userName = replay["UserName"];
+					float replayTime = (float)replay["ReplayTime"];
+					List<PlayerStateModel> states = new List<PlayerStateModel>();
+					foreach(JSONNode state in JSON.Parse(replay["ReplayData"]))
+						states.Add(JsonUtility.FromJson<PlayerStateModel>(state.ToString()));
+
+					replays.Add(new PlayerReplayModel(userName, replayTime, states));
+				}
+				Debug.Log(replays.Count);
             }
             else
             {

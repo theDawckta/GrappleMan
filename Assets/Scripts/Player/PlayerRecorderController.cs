@@ -6,10 +6,10 @@ using UnityEngine;
 
 public class PlayerRecorderController : MonoBehaviour
 {
-	public PlayerPlaybackModel PlayerPlaybackData {get {return _playerPlayback;} set{}}
+	public PlayerReplayModel PlayerPlaybackData {get {return _playerPlayback;} set{}}
 
     private PlayerController _player;
-    private PlayerPlaybackModel _playerPlayback;
+    private PlayerReplayModel _playerPlayback;
     private float _pollRate = 0.05f; 
     private bool _recording = false;
     private float _timePassed = 0.0f;
@@ -21,14 +21,7 @@ public class PlayerRecorderController : MonoBehaviour
 
     public void StartRecording()
     {
-		PlayerStateModel tempPlayerState = new PlayerStateModel(_player.gameObject.transform.position, 
-													  _player.PlayerSprite.transform.rotation, 
-													  _player.RopeOrigin.transform.rotation,
-													  _player.WallHookSprite.transform.position,
-													  _player.RopeLineRenderer, 
-													  0.0f);
-
-		_playerPlayback = new PlayerPlaybackModel();
+		_playerPlayback = new PlayerReplayModel();
         _recording = true;
         AddState(_timePassed);
         StartCoroutine("Record");
