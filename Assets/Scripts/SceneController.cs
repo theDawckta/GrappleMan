@@ -11,6 +11,7 @@ public class SceneController : MonoBehaviour
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
 	public GameObject GhostHolder;
+	public GrappleDataController GrappleData;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
@@ -22,10 +23,11 @@ public class SceneController : MonoBehaviour
     private int _numberOfGhosts = 6;
     private int _playerPlaybackIndex = 0;
     private bool _gameOn = false;
+	private string _username = "";
 
     void Awake()
     {
-       // PlayerPrefs.DeleteAll();
+       //PlayerPrefs.DeleteAll();
         Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
@@ -34,6 +36,7 @@ public class SceneController : MonoBehaviour
         _mainCamera = Camera.main;
         _mainCameraStartPosition = _mainCamera.transform.position;
         PlayerReplayController.Init();
+		_username = PlayerPrefs.GetString(Constants.USERNAME_KEY);
     }
 
     void Start()
@@ -48,6 +51,14 @@ public class SceneController : MonoBehaviour
 
         GrappleUI.GhostRecordsInput.text = PlayerReplayController.MaxNumOfRecords.ToString();
         InitGhosts();
+
+        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
+			GrappleUI.NoUsernameScreen.SetActive(true);
+        else
+        {
+			GrappleUI.UserName.text = _username;
+        	GrappleUI.StartScreen.SetActive(true);
+        }
         //_playerAudio.Play();
     }
 
@@ -157,6 +168,28 @@ public class SceneController : MonoBehaviour
         InitGhosts();
     }
 
+    void ProcessNewUsername(string newUsername)
+    {
+		GrappleData.StartAddUser(newUsername);
+    }
+
+    void UsernameProcessed(string username)
+    {
+		GrappleUI.NoUsernameScreen.SetActive(false);
+		GrappleUI.StartScreen.SetActive(true);
+		if(username != string.Empty)
+		{
+			_username = username;
+			GrappleUI.UserName.text = _username;
+			PlayerPrefs.SetString(Constants.USERNAME_KEY, _username);
+		}
+
+		GrappleUI.UserEdit.SetActive(true);
+		GrappleUI.UserInput.gameObject.SetActive(false);
+		GrappleUI.UserSave.SetActive(false);
+		GrappleUI.UserCancel.SetActive(false);
+    }
+
 	void PlayerFinished(PlayerReplayModel playerPlayback, bool playerCompleted)
     {
 		if(_gameOn)
@@ -183,6 +216,8 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
+		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
+		GrappleData.OnUsernameProcessed += UsernameProcessed;
         Player.OnPlayerCompleted += PlayerFinished;
 		Player.OnPlayerDied += PlayerFinished;
     }
@@ -194,6 +229,8 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
+		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
+		GrappleData.OnUsernameProcessed -= UsernameProcessed;
         Player.OnPlayerCompleted -= PlayerFinished;
 		Player.OnPlayerDied -= PlayerFinished;
     }
