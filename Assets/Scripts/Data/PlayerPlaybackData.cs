@@ -11,33 +11,29 @@ namespace Grappler.DataModel
 {
     public class PlayerReplayController
     {
-        public static int MaxNumOfRecords { get { return _numOfRecords; } private set { } }
+        public static int NumOfCompletedRecords { get; private set;}
 
         private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
         private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
         private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
         private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
-        private static int _numOfRecords = 6;
 
         public static void Init()
         {
-            if (PlayerPrefs.HasKey(Constants.Constants.GHOST_RECORDS))
-                _numOfRecords = PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS);
-            else
-                PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
-
             for (int i = 0; i < _playerDataLocations.Length; i++)
             {
                 Directory.CreateDirectory(_playerDataLocations[i]);
 
-                // trim any files greater than _numOfRecords
-                int tempNumOfRecords = _numOfRecords;
+				// trim any files greater than PlayerPrefs Ghost_RECORDS
+				int tempNumOfRecords = PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS);
                 while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
                 {
                     File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
                     tempNumOfRecords = tempNumOfRecords + 1;
                 }
             }
+
+			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
         }
 
         public static void ClearData()
@@ -56,12 +52,6 @@ namespace Grappler.DataModel
             }
         }
 
-        public static void SetNumOfRecords(int numOfRecords)
-        {
-            _numOfRecords = numOfRecords;
-            PlayerPrefs.SetInt(Constants.Constants.GHOST_RECORDS, _numOfRecords);
-        }
-
         public static void ProcessPlayerPlayback(PlayerReplayModel playerPlayback, bool playerCompleted)
         {
             string playerDataLocation;
@@ -71,16 +61,17 @@ namespace Grappler.DataModel
             else
                 playerDataLocation = _playerDiedDataLocation;
 
-            List<PlayerReplayModel> playerPlaybackModels = GetPlayerPlaybackLocal(_numOfRecords);
+			List<PlayerReplayModel> playerPlaybackModels = GetPlayerPlaybackLocal(PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS));
 
-            for (int i = 0; i < _numOfRecords; i++)
+            if (playerPlaybackModels.Count == 0)
             {
-                if (playerPlaybackModels.Count == 0)
-                {
-                    SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
-                    return;
-                }
-                else if (i < playerPlaybackModels.Count)
+				SavePlayerPlaybackLocal(playerPlayback, playerPlaybackModels.Count, playerDataLocation);
+                return;
+            }
+
+			for (int i = 0; i < playerPlaybackModels.Count; i++)
+			{
+                if (i < playerPlaybackModels.Count)
                 {
                     if (playerPlayback.ReplayTime < playerPlaybackModels[i].ReplayTime)
                     {
@@ -88,11 +79,12 @@ namespace Grappler.DataModel
                         return;
                     }
                 }
-                if (i == playerPlaybackModels.Count)
-                {
-                    SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
-                    return;
-                }
+            }
+
+			if (playerPlaybackModels.Count < PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS))
+            {
+				SavePlayerPlaybackLocal(playerPlayback, playerPlaybackModels.Count, playerDataLocation);
+                return;
             }
         }
 
@@ -126,6 +118,9 @@ namespace Grappler.DataModel
             {
                 Debug.LogException(e);
             }
+
+            // set NumOfCompletedRecords
+			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
         }
 
         static void SavePlayerPlaybackServer(PlayerReplayModel playerPlayback)

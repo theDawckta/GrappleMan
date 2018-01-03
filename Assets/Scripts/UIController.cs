@@ -43,6 +43,7 @@ public class UIController : MonoBehaviour
     public GameObject UserSave;
 	public Text UserName;
 	public Text ErrorText;
+	public Text TotalNumOfGhostRecords;
 
     private String seed;
     private float _timer;
@@ -53,7 +54,7 @@ public class UIController : MonoBehaviour
     {
         StartCoroutine(FPS());
         seed = RandomString(SeedLength);
-		UserEdit.SetActive(true);
+		//UserEdit.SetActive(true);
         UserInput.gameObject.SetActive(false);
 		UserSave.SetActive(false);
 		UserCancel.SetActive(false);

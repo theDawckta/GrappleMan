@@ -20,10 +20,9 @@ public class SceneController : MonoBehaviour
     private List<PlayerReplayModel> _playerPlaybacks = new List<PlayerReplayModel>();
     private List<bool> _playerPlaybackInUse = new List<bool>();
     private List<GhostPlaybackController> _ghostPlaybacks = new List<GhostPlaybackController>();
-    private int _numberOfGhosts = 6;
     private int _playerPlaybackIndex = 0;
     private bool _gameOn = false;
-	private string _username = "";
+	private string _username = "User";
 
     void Awake()
     {
@@ -41,24 +40,24 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
-        if (PlayerPrefs.HasKey(Constants.GHOSTS))
+    	// first run init
+		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.GHOST_RECORDS))
         {
-            GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
-            _numberOfGhosts = PlayerPrefs.GetInt(Constants.GHOSTS);
-        }  
-        else
-            PlayerPrefs.SetInt(Constants.GHOSTS, _numberOfGhosts);
-
-        GrappleUI.GhostRecordsInput.text = PlayerReplayController.MaxNumOfRecords.ToString();
+			PlayerPrefs.SetInt(Constants.GHOSTS, Constants.DEFAULT_GHOSTS_VALUE);
+			PlayerPrefs.SetInt(Constants.GHOST_RECORDS, Constants.DEFAULT_GHOSTS_VALUE);
+        }
+       	
+		GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
+		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
         InitGhosts();
 
-        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
-			GrappleUI.NoUsernameScreen.SetActive(true);
-        else
-        {
+//        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
+//			GrappleUI.NoUsernameScreen.SetActive(true);
+//        else
+//        {
 			GrappleUI.UserName.text = _username;
         	GrappleUI.StartScreen.SetActive(true);
-        }
+        //}
         //_playerAudio.Play();
     }
 
@@ -81,9 +80,12 @@ public class SceneController : MonoBehaviour
 
     void InitGhosts()
     {
+    	int tempNumOfGhosts = 0;
         _playerPlaybackIndex = 0;
-        int tempNumOfGhosts = _numberOfGhosts;
 
+		GrappleUI.TotalNumOfGhostRecords.text = PlayerReplayController.NumOfCompletedRecords.ToString();
+
+		// destroy current ghostPlaybacks
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
         {
             _ghostPlaybacks[i].OnGhostCompleted -= GhostCompleted;
@@ -92,10 +94,10 @@ public class SceneController : MonoBehaviour
         }
         _ghostPlaybacks = new List<GhostPlaybackController>();
 
-        _playerPlaybacks = PlayerReplayController.GetPlayerPlaybackLocal(_numberOfGhosts);
-        tempNumOfGhosts = (_playerPlaybacks.Count < _numberOfGhosts) ? _playerPlaybacks.Count : _numberOfGhosts;
+		_playerPlaybacks = PlayerReplayController.GetPlayerPlaybackLocal(PlayerPrefs.GetInt(Constants.GHOSTS));
+		tempNumOfGhosts = (_playerPlaybacks.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? _playerPlaybacks.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
 
-        for (int i = 0; i < tempNumOfGhosts; i++)
+		for (int i = 0; i < tempNumOfGhosts; i++)
         {
             if (_playerPlaybacks[i] != null)
             {
@@ -156,14 +158,13 @@ public class SceneController : MonoBehaviour
 
     void GhostsValueChanged(int value)
     {
-        _numberOfGhosts = value;
-        PlayerPrefs.SetInt(Constants.GHOSTS, _numberOfGhosts);
+		PlayerPrefs.SetInt(Constants.GHOSTS, value);
         InitGhosts();
     }
 
     void GhostRecordsValueChanged(int value)
     {
-        PlayerReplayController.SetNumOfRecords(value);
+		PlayerPrefs.SetInt(Constants.GHOST_RECORDS, value);
         PlayerReplayController.Init();
         InitGhosts();
     }
