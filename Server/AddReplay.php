@@ -1,5 +1,5 @@
 <?php
-	$db = mysqli_connect("localhost","grappleApp","nnoRMwtSXoHInbKu","grappler");
+	$db = mysqli_connect("localhost","grappleApp","vSMZ3I3NmZ5lH2e0","grappler");
 
 	// Check connection
 	if (mysqli_connect_errno()){
@@ -10,8 +10,7 @@
 	$hash = $_GET['hash'] ?? '';
 	$levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
 	$replayTime =$_GET['replayTime'] ?? '';
-	$replayData = mysqli_real_escape_string($db, $_GET['replayData'] ?? '');
-
+	$replayData = file_get_contents('php://input' ?? '');
 	$politestring = sanitize($userName);
 	$secretKey="SOMESECRETKEY";
 	$expected_hash = md5($userName . $secretKey);
@@ -27,7 +26,7 @@
 			$userId = mysqli_fetch_assoc($getUserIdResult)['Id'];
 			$levelId = mysqli_fetch_assoc($getLevelIdResult)['Id'];
 
-			$query = "INSERT INTO Replay (UserId, LevelId, ReplayTime, ReplayData)VALUES ($userId[0], $levelId[0], $replayTime, '$replayData');";
+			$query = "INSERT INTO Replays (UserId, LevelId, ReplayTime, ReplayData)VALUES ($userId[0], $levelId[0], $replayTime, '$replayData');";
 			echo($query);
 			$result = mysqli_query($db, $query) or die(mysqli_error($db));
 		}

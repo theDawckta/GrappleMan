@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Grappler.DataModel;
+using Grappler.Data;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Grappler.Constants;
@@ -51,13 +51,13 @@ public class SceneController : MonoBehaviour
 		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
         InitGhosts();
 
-//        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
-//			GrappleUI.NoUsernameScreen.SetActive(true);
-//        else
-//        {
+        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
+			GrappleUI.NoUsernameScreen.SetActive(true);
+        else
+        {
 			GrappleUI.UserName.text = _username;
         	GrappleUI.StartScreen.SetActive(true);
-        //}
+        }
         //_playerAudio.Play();
     }
 
@@ -73,7 +73,9 @@ public class SceneController : MonoBehaviour
                 _playerPlaybackIndex = 0;
         }
 
-        Player.Init();
+		GrappleDataController.Instance.StartAddLevel (SceneManager.GetActiveScene().name);
+
+		Player.Init(_username, SceneManager.GetActiveScene().name);
         _mainCamera.transform.position = _mainCameraStartPosition;
 		_gameOn = true;
 	}
@@ -198,7 +200,6 @@ public class SceneController : MonoBehaviour
 			GrappleUI.EndGame();
             GrappleUI.ToggleStartScreen();
 			PlayerReplayController.ProcessPlayerPlayback(playerPlayback, playerCompleted);
-
             InitGhosts();
 
             _gameOn = false;

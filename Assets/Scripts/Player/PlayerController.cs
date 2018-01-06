@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Grappler.DataModel;
+using Grappler.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour
 		HookPlayerInput.InputActive = false;
     }
 
-    public void Init()
+	public void Init(string userName, string levelName)
     {
         StopAllCoroutines();
         _ropeLineRenderer.enabled = false;
@@ -87,7 +87,7 @@ public class PlayerController : MonoBehaviour
         _hooked = false;
         _floating = false;
         transform.position = _playerStartPosition;
-        _playerRecorderController.StartRecording();
+		_playerRecorderController.StartRecording(userName, levelName);
 		HookPlayerInput.InputActive = true;
     }
 

@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using Grappler.Constants;
 
-namespace Grappler.DataModel
+namespace Grappler.Data
 {
     public class PlayerReplayController
     {
@@ -56,6 +56,10 @@ namespace Grappler.DataModel
         {
             string playerDataLocation;
 
+			// Save to run to server
+			if(playerCompleted)
+				GrappleDataController.Instance.StartAddReplay (playerPlayback);
+
             if (playerCompleted)
                 playerDataLocation = _playerCompletedDataLocation;
             else
@@ -88,7 +92,7 @@ namespace Grappler.DataModel
             }
         }
 
-        static void SavePlayerPlaybackLocal(PlayerReplayModel playerPlayback, int insertIndex, string playerDataLocation)
+		static void SavePlayerPlaybackLocal(PlayerReplayModel playerReplay, int insertIndex, string playerDataLocation)
         {
             string lastItemFilePath;
             string nextToLastFilePath;
@@ -96,7 +100,7 @@ namespace Grappler.DataModel
             int numOfExistingModels;
 
             // serialize playerPlayback
-            var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerPlayback));
+            var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerReplay));
 
             // find out how many files we currently have
             tempFiles = Directory.GetFiles(playerDataLocation, "*.json", SearchOption.TopDirectoryOnly);
@@ -121,12 +125,6 @@ namespace Grappler.DataModel
 
             // set NumOfCompletedRecords
 			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
-        }
-
-        static void SavePlayerPlaybackServer(PlayerReplayModel playerPlayback)
-        {
-            // serialize playerPlayback
-            var bytes = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(playerPlayback));
         }
 
         public static List<PlayerReplayModel> GetPlayerPlaybackLocal(int numOfRecords)
@@ -170,47 +168,53 @@ namespace Grappler.DataModel
     [Serializable]
     public class PlayerReplayModel
     {
-        public bool HasStates { get { return _stateIndex < _state.Count; } private set { } }
-        public Vector3 StartingPosition  { get {  return (_state.Count > 0) ? _state[0].BodyPosition : Vector3.zero; } private set{} }
+        public bool HasStates { get { return _stateIndex < _states.Count; } private set { } }
+        public Vector3 StartingPosition  { get {  return (_states.Count > 0) ? _states[0].BodyPosition : Vector3.zero; } private set{} }
 		public float ReplayTime { get { return _replayTime; } private set {} }
 		public string UserName { get { return _userName; } private set {} }
-        
+		public string LevelName { get { return _levelName; } private set {} }
+		public List<PlayerStateModel> States { get { return _states; } private set {} }
+
 		[SerializeField]
-		private List<PlayerStateModel> _state;
+		private List<PlayerStateModel> _states = new List<PlayerStateModel>();
 		[SerializeField]
 		private float _replayTime;
 		[SerializeField]
 		private string _userName;
+		[SerializeField]
+		private string _levelName;
 
         private int _stateIndex = 0;
 
-		public PlayerReplayModel(string userName, float replayTime, List<PlayerStateModel> replayData)
+		public PlayerReplayModel(string userName, string levelName, float replayTime, List<PlayerStateModel> replayData)
         {
 			_userName = userName;
+			_levelName = levelName;
 			_replayTime = replayTime;
-			_state = replayData;
+			_states = replayData;
         }
 
-        public PlayerReplayModel()
-        {
-        	_state = new List<PlayerStateModel>();
-        }
+		public PlayerReplayModel(string userName, string levelName)
+		{
+			_userName = userName;
+			_levelName = levelName;
+		}
 
         public void AddPlayerState(PlayerStateModel playerState, bool final = false)
         {
-			_state.Add(playerState);
+			_states.Add(playerState);
 			if (final)
 			{
-				for (int i = 0; i < _state.Count; i++)
-					_replayTime = _replayTime + _state[i].DeltaTime;
+				for (int i = 0; i < _states.Count; i++)
+					_replayTime = _replayTime + _states[i].DeltaTime;
 			}
         }
 
         public PlayerStateModel GetNextState()
         {
-        	PlayerStateModel tempPlayerState = _state[_stateIndex];
+        	PlayerStateModel tempPlayerState = _states[_stateIndex];
             _stateIndex++;
-            if (_stateIndex > _state.Count)
+            if (_stateIndex > _states.Count)
                 _stateIndex = 0;
 			return tempPlayerState;
         }

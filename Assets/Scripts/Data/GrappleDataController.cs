@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System;	
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using SimpleJSON;
-using Grappler.DataModel;
-using System;
+using Grappler.Data;
 
-public class GrappleDataController : MonoBehaviour
+public class GrappleDataController : Singleton<GrappleDataController>
 {
 	public delegate void UsernameProcessed(string userName);
 	public event UsernameProcessed OnUsernameProcessed;
@@ -63,28 +65,23 @@ public class GrappleDataController : MonoBehaviour
 
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
-
-        if (NewLevelPost.error == null && NewLevelPost.text == levelName)
-        {
-            Debug.Log("NEW LEVEL ADDED");
-        }
-        else
-        {
-            Debug.Log("LEVEL ALREADY EXISTS");
-        }
-
     }
 
-    public void StartAddReplay(string userName, string levelName, float replayTime, string replayData)
+    public void StartAddReplay(PlayerReplayModel playerReplay)
     {
-        StartCoroutine(AddReplay(userName, levelName, replayTime, replayData));
+		StartCoroutine(AddReplay(playerReplay));
     }
     
-    IEnumerator AddReplay(string userName, string levelName, float replayTime, string replayData)
+	IEnumerator AddReplay(PlayerReplayModel playerReplay)
     {
-        string hash = Md5Sum(userName + privateKey);
+		string hash = Md5Sum(playerReplay.UserName + privateKey);
+		var encoding = new System.Text.UTF8Encoding();
+		string playerReplayJson = JsonUtility.ToJson (playerReplay);
 
-        WWW ReplayPost = new WWW(AddReplayURL + "userName=" + WWW.EscapeURL(userName) + "&hash=" + hash + "&levelName=" + levelName + "&replayTime=" + replayTime + "&replayData=" + replayData);
+		byte[] postData = encoding.GetBytes (playerReplayJson);
+		//byte[] postData = encoding.GetBytes ("{\"_states\"}");
+
+		WWW ReplayPost = new WWW(AddReplayURL + "userName=" + WWW.EscapeURL(playerReplay.UserName) + "&hash=" + hash + "&levelName=" + playerReplay.LevelName + "&replayTime=" + playerReplay.ReplayTime, postData);
         yield return ReplayPost;
 
         if (ReplayPost.error == null)
@@ -120,7 +117,7 @@ public class GrappleDataController : MonoBehaviour
 				foreach(JSONNode state in JSON.Parse(replay["ReplayData"]))
 					states.Add(JsonUtility.FromJson<PlayerStateModel>(state.ToString()));
 
-				replays.Add(new PlayerReplayModel(userName, replayTime, states));
+				replays.Add(new PlayerReplayModel(userName, SceneManager.GetActiveScene().name, replayTime, states));
 			}
 			Debug.Log(replays.Count);
         }
@@ -153,4 +150,11 @@ public class GrappleDataController : MonoBehaviour
 
         return hashString.PadLeft(32, '0');
     }
+
+	public static Dictionary<K,V> HashtableToDictionary<K,V> (Hashtable table)
+	{
+		return table
+			.Cast<DictionaryEntry> ()
+			.ToDictionary (kvp => (K)kvp.Key, kvp => (V)kvp.Value);
+	}
 }

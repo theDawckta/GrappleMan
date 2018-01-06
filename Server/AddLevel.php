@@ -1,5 +1,5 @@
 <?php
-	$db = mysqli_connect("localhost","grappleApp","nnoRMwtSXoHInbKu","grappler");
+	$db = mysqli_connect("localhost","grappleApp","vSMZ3I3NmZ5lH2e0","grappler");
 
 	// Check connection
 	if (mysqli_connect_errno())
@@ -19,6 +19,6 @@
 	{
 		$query = "INSERT INTO Levels (LevelName) VALUES ('$levelName');";
 		$result = mysqli_query($db, $query) or die(mysqli_error($db));
-		echo ($userName);
+		echo ($levelName);
 	}
 ?>

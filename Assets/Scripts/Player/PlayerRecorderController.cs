@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Grappler.DataModel;
+using Grappler.Data;
 using UnityEngine;
 
 public class PlayerRecorderController : MonoBehaviour
@@ -19,9 +19,9 @@ public class PlayerRecorderController : MonoBehaviour
     	_player = transform.parent.GetComponent<PlayerController>();
     }
 
-    public void StartRecording()
+	public void StartRecording(string userName, string levelName)
     {
-		_playerPlayback = new PlayerReplayModel();
+		_playerPlayback = new PlayerReplayModel(userName, levelName);
         _recording = true;
         AddState(_timePassed);
         StartCoroutine("Record");
