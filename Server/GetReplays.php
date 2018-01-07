@@ -16,15 +16,16 @@
 
   if($expected_hash == $hash)
   {
-    $query = "SELECT Users.UserName, ReplayTime, ReplayData FROM Replay
-    INNER JOIN Users ON Users.Id = Replay.UserId
+    $query = "SELECT Users.UserName, Levels.LevelName, ReplayTime, ReplayData FROM Replays
+    INNER JOIN Users ON Users.Id = Replays.UserId
+    INNER JOIN Levels ON Levels.Id = Replays.LevelId
     ORDER BY ReplayTime ASC LIMIT $numOfReplays;";
     $result = mysqli_query($db, $query) or die(mysqli_error($db));
     $rows = array();
     while($resultRow = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
       $rows[] = $resultRow;
     }
-      echo(json_encode($rows)) ;
+      echo(json_encode($rows, JSON_UNESCAPED_SLASHES)) ;
   }
   else {
     echo("HASH CHECK HAS FAILED");

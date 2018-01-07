@@ -1,15 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Grappler;
 using Grappler.Data;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerRecorderController : MonoBehaviour
 {
 	public PlayerReplayModel PlayerPlaybackData {get {return _playerPlayback;} set{}}
 
     private PlayerController _player;
-    private PlayerReplayModel _playerPlayback;
+	private PlayerReplayModel _playerPlayback;
     private float _pollRate = 0.05f; 
     private bool _recording = false;
     private float _timePassed = 0.0f;
@@ -17,11 +19,11 @@ public class PlayerRecorderController : MonoBehaviour
     void Awake()
     {
     	_player = transform.parent.GetComponent<PlayerController>();
+		_playerPlayback = new PlayerReplayModel ();
     }
 
-	public void StartRecording(string userName, string levelName)
+	public void StartRecording()
     {
-		_playerPlayback = new PlayerReplayModel(userName, levelName);
         _recording = true;
         AddState(_timePassed);
         StartCoroutine("Record");
@@ -60,6 +62,7 @@ public class PlayerRecorderController : MonoBehaviour
 	{
 		AddState(_timePassed, true);
 		_recording = false;
+		_playerPlayback = new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), SceneManager.GetActiveScene().name, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
 		StopCoroutine("Record");
     }
 

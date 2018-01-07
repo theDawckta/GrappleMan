@@ -6,10 +6,10 @@
 		echo "Failed to connect to MySQL: " . mysqli_connect_error();
 	}
 
-	$userName = mysqli_real_escape_string ($db, $_GET['userName'] ?? '');
 	$hash = $_GET['hash'] ?? '';
+	$userName = mysqli_real_escape_string ($db, $_GET['userName'] ?? '');
 	$levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
-	$replayTime =$_GET['replayTime'] ?? '';
+	$replayTime = mysqli_real_escape_string ($db, $_GET['replayTime'] ?? '');
 	$replayData = file_get_contents('php://input' ?? '');
 	$politestring = sanitize($userName);
 	$secretKey="SOMESECRETKEY";

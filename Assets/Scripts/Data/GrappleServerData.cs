@@ -8,7 +8,7 @@ using System.Linq;
 using SimpleJSON;
 using Grappler.Data;
 
-public class GrappleDataController : Singleton<GrappleDataController>
+public class GrappleServerData : Singleton<GrappleServerData>
 {
 	public delegate void UsernameProcessed(string userName);
 	public event UsernameProcessed OnUsernameProcessed;
@@ -76,30 +76,25 @@ public class GrappleDataController : Singleton<GrappleDataController>
     {
 		string hash = Md5Sum(playerReplay.UserName + privateKey);
 		var encoding = new System.Text.UTF8Encoding();
-		string playerReplayJson = JsonUtility.ToJson (playerReplay);
+		string playerReplayJson = JsonUtility.ToJson(playerReplay);
+		JSONNode replayJsonNode = JSON.Parse(playerReplayJson);
 
-		byte[] postData = encoding.GetBytes (playerReplayJson);
-		//byte[] postData = encoding.GetBytes ("{\"_states\"}");
+		byte[] postData = encoding.GetBytes(replayJsonNode["ReplayData"].ToString());
 
 		WWW ReplayPost = new WWW(AddReplayURL + "userName=" + WWW.EscapeURL(playerReplay.UserName) + "&hash=" + hash + "&levelName=" + playerReplay.LevelName + "&replayTime=" + playerReplay.ReplayTime, postData);
         yield return ReplayPost;
 
         if (ReplayPost.error == null)
         {
-            Debug.Log(ReplayPost.text);
+            // Success
         }
         else
         {
-            //Handle error
+            // Handle error
         }
     }
 
-	public void StartGetReplays(string levelName)
-    {
-		StartCoroutine(GetReplays(levelName, 5));
-    }
-    
-    IEnumerator GetReplays(string levelName, int numOfReplays)
+	public IEnumerator GetPlayerReplaysServer(string levelName, int numOfReplays, Action<List<PlayerReplayModel>> action)
     {
 		string hash = Md5Sum(levelName + privateKey);
 
@@ -107,24 +102,24 @@ public class GrappleDataController : Singleton<GrappleDataController>
 		yield return GetReplaysPost;
 
 		if (GetReplaysPost.error == null)
-        {
-        	List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
+		{
+			List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
 			foreach(JSONNode replay in JSON.Parse(GetReplaysPost.text))
 			{
-				string userName = replay["UserName"];
-				float replayTime = (float)replay["ReplayTime"];
-				List<PlayerStateModel> states = new List<PlayerStateModel>();
-				foreach(JSONNode state in JSON.Parse(replay["ReplayData"]))
-					states.Add(JsonUtility.FromJson<PlayerStateModel>(state.ToString()));
-
-				replays.Add(new PlayerReplayModel(userName, SceneManager.GetActiveScene().name, replayTime, states));
+				string playerReplayJson = replay.ToString().Replace("\\", String.Empty);
+				playerReplayJson = playerReplayJson.ToString().Replace("\"[{", "[{");
+				playerReplayJson = playerReplayJson.ToString().Replace("}]\"", "}]");
+				Debug.Log(playerReplayJson);
+				PlayerReplayModel newPlayerReplayModel = JsonUtility.FromJson<PlayerReplayModel> (playerReplayJson);
+				replays.Add(newPlayerReplayModel);
 			}
-			Debug.Log(replays.Count);
-        }
-        else
-        {
-            //Handle error
-        }
+
+			action (replays);
+		}
+		else
+		{
+			//Handle error
+		}
     }
 
 	public void SetName(string userName)

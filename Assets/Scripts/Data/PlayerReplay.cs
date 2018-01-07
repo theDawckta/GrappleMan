@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 using UnityEngine;
-using Grappler.Constants;
+using UnityEngine.SceneManagement;
+using Grappler;
+using Grappler.Util;
 
 namespace Grappler.Data
 {
-    public class PlayerReplayController
+	public class PlayerReplay : Singleton<PlayerReplay>
     {
         public static int NumOfCompletedRecords { get; private set;}
 
@@ -17,6 +19,12 @@ namespace Grappler.Data
         private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
         private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
         private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
+		private static GrappleServerData _dataController;
+
+		void Awake()
+		{
+			_dataController = GrappleServerData.Instance;
+		}
 
         public static void Init()
         {
@@ -25,7 +33,7 @@ namespace Grappler.Data
                 Directory.CreateDirectory(_playerDataLocations[i]);
 
 				// trim any files greater than PlayerPrefs Ghost_RECORDS
-				int tempNumOfRecords = PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS);
+				int tempNumOfRecords = PlayerPrefs.GetInt(Constants.GHOST_RECORDS);
                 while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
                 {
                     File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
@@ -52,47 +60,52 @@ namespace Grappler.Data
             }
         }
 
-        public static void ProcessPlayerPlayback(PlayerReplayModel playerPlayback, bool playerCompleted)
+        public static void SavePlayerPlayback(PlayerReplayModel playerPlayback, bool playerCompleted)
         {
             string playerDataLocation;
 
 			// Save to run to server
-			if(playerCompleted)
-				GrappleDataController.Instance.StartAddReplay (playerPlayback);
+			if (playerCompleted)
+			{
+				CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
+					_dataController.StartAddReplay (playerPlayback);
+				}));
+			}
 
             if (playerCompleted)
                 playerDataLocation = _playerCompletedDataLocation;
             else
                 playerDataLocation = _playerDiedDataLocation;
 
-			List<PlayerReplayModel> playerPlaybackModels = GetPlayerPlaybackLocal(PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS));
+			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(PlayerPrefs.GetInt(Constants.GHOST_RECORDS));
 
-            if (playerPlaybackModels.Count == 0)
+            if (playerReplayModels.Count == 0)
             {
-				SavePlayerPlaybackLocal(playerPlayback, playerPlaybackModels.Count, playerDataLocation);
+				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, playerDataLocation);
                 return;
             }
 
-			for (int i = 0; i < playerPlaybackModels.Count; i++)
+			for (int i = 0; i < playerReplayModels.Count; i++)
 			{
-                if (i < playerPlaybackModels.Count)
+                if (i < playerReplayModels.Count)
                 {
-                    if (playerPlayback.ReplayTime < playerPlaybackModels[i].ReplayTime)
+                    if (playerPlayback.ReplayTime < playerReplayModels[i].ReplayTime)
                     {
-                        SavePlayerPlaybackLocal(playerPlayback, i, playerDataLocation);
+                        SavePlayerReplayLocal(playerPlayback, i, playerDataLocation);
                         return;
                     }
                 }
             }
 
-			if (playerPlaybackModels.Count < PlayerPrefs.GetInt(Constants.Constants.GHOST_RECORDS))
+			if (playerReplayModels.Count < PlayerPrefs.GetInt(Constants.GHOST_RECORDS))
             {
-				SavePlayerPlaybackLocal(playerPlayback, playerPlaybackModels.Count, playerDataLocation);
+				// recursive call
+				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, playerDataLocation);
                 return;
             }
         }
 
-		static void SavePlayerPlaybackLocal(PlayerReplayModel playerReplay, int insertIndex, string playerDataLocation)
+		static void SavePlayerReplayLocal(PlayerReplayModel playerReplay, int insertIndex, string playerDataLocation)
         {
             string lastItemFilePath;
             string nextToLastFilePath;
@@ -127,7 +140,23 @@ namespace Grappler.Data
 			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
         }
 
-        public static List<PlayerReplayModel> GetPlayerPlaybackLocal(int numOfRecords)
+		public IEnumerator GetPlayerReplays(Action<List<PlayerReplayModel>> action)
+		{
+			CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
+				if(isConnected)
+				{
+					_dataController.StartCoroutine(_dataController.GetPlayerReplaysServer(SceneManager.GetActiveScene().name, Constants.GHOST_COMPETITORS, (replays) =>{
+						action(replays);
+					}));
+				}
+				else
+					action(GetPlayerReplaysLocal(Constants.GHOST_COMPETITORS));
+			}));
+
+			yield return null;
+		}
+
+        private static List<PlayerReplayModel> GetPlayerReplaysLocal(int numOfRecords)
         {
             List<PlayerReplayModel> playerPlaybacks = new List<PlayerReplayModel>();
 
@@ -143,78 +172,55 @@ namespace Grappler.Data
 
             return playerPlaybacks;
         }
-
-        // Implement server data, example call below
-        //		string jsonPlayerPlayback;
-        //		StartCoroutine (GetPlayerPlaybackDataServer (_thingName, (value)=>{returnData = value} ));
-        // Function below is just example
-        public IEnumerator GetPlayerPlaybackDataServer(System.Action<string> callback)
-        {
-            string URLString = "http://XXXXX/Services/GetPropertyValues";
-            WWWForm form = new WWWForm();
-            form.AddBinaryData("binary", new byte[1]);
-            var headers = form.headers;
-            headers.Remove("Content-Type");
-            headers.Add("appKey", "XXX-XXX-XXX");
-            headers.Add("Content-Type", "application/json");
-            headers.Add("Accept", "application/json");
-            WWW www = new WWW(URLString, form.data, headers);
-            yield return www;
-
-            callback(www.text);
-        }
     }
 
     [Serializable]
     public class PlayerReplayModel
     {
-        public bool HasStates { get { return _stateIndex < _states.Count; } private set { } }
-        public Vector3 StartingPosition  { get {  return (_states.Count > 0) ? _states[0].BodyPosition : Vector3.zero; } private set{} }
-		public float ReplayTime { get { return _replayTime; } private set {} }
-		public string UserName { get { return _userName; } private set {} }
-		public string LevelName { get { return _levelName; } private set {} }
-		public List<PlayerStateModel> States { get { return _states; } private set {} }
-
-		[SerializeField]
-		private List<PlayerStateModel> _states = new List<PlayerStateModel>();
-		[SerializeField]
-		private float _replayTime;
-		[SerializeField]
-		private string _userName;
-		[SerializeField]
-		private string _levelName;
+		public bool HasStates { get { return _stateIndex < ReplayData.Count; } private set { } }
+		public Vector3 StartingPosition  { get {  return (ReplayData.Count > 0) ? ReplayData[0].BodyPosition : Vector3.zero; } private set{} }
+		public string UserName;
+		public string LevelName;	
+		public float ReplayTime;
+		public List<PlayerStateModel> ReplayData;
 
         private int _stateIndex = 0;
 
+		public PlayerReplayModel()
+		{
+			ReplayData = new List<PlayerStateModel>();
+		}
+
 		public PlayerReplayModel(string userName, string levelName, float replayTime, List<PlayerStateModel> replayData)
         {
-			_userName = userName;
-			_levelName = levelName;
-			_replayTime = replayTime;
-			_states = replayData;
+			UserName = userName;
+			LevelName = levelName;
+			ReplayTime = replayTime;
+			ReplayData = replayData;
         }
 
-		public PlayerReplayModel(string userName, string levelName)
-		{
-			_userName = userName;
-			_levelName = levelName;
-		}
+//		public PlayerReplayModel(string userName, string levelName)
+//		{
+//			_userName = userName;
+//			_levelName = levelName;
+//		}
 
         public void AddPlayerState(PlayerStateModel playerState, bool final = false)
         {
-			_states.Add(playerState);
+			ReplayData.Add(playerState);
 			if (final)
 			{
-				for (int i = 0; i < _states.Count; i++)
-					_replayTime = _replayTime + _states[i].DeltaTime;
+				for (int i = 0; i < ReplayData.Count; i++)
+					ReplayTime = ReplayTime + ReplayData[i].DeltaTime;
+				Debug.Log (ReplayTime);
 			}
         }
 
         public PlayerStateModel GetNextState()
         {
-        	PlayerStateModel tempPlayerState = _states[_stateIndex];
+			PlayerStateModel tempPlayerState = ReplayData[_stateIndex];
             _stateIndex++;
-            if (_stateIndex > _states.Count)
+			if (_stateIndex > ReplayData.Count)
                 _stateIndex = 0;
 			return tempPlayerState;
         }

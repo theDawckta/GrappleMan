@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Collections;
-using Grappler.Constants;
+using Grappler;
 using DG.Tweening;
 
 public class UIController : MonoBehaviour

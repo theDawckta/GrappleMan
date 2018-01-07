@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Grappler.Data;
+using Grappler.Util;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,7 +88,7 @@ public class PlayerController : MonoBehaviour
         _hooked = false;
         _floating = false;
         transform.position = _playerStartPosition;
-		_playerRecorderController.StartRecording(userName, levelName);
+		_playerRecorderController.StartRecording();
 		HookPlayerInput.InputActive = true;
     }
 
