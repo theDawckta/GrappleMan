@@ -43,7 +43,8 @@ public class UIController : MonoBehaviour
     public GameObject UserSave;
 	public Text UserName;
 	public Text ErrorText;
-	public Text TotalNumOfGhostRecords;
+	public Text TotalGhostRecordsLocal;
+	public Text TotalGhostRecordsServer;
 
     private String seed;
     private float _timer;

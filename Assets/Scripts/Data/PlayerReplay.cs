@@ -16,8 +16,6 @@ namespace Grappler.Data
         public static int NumOfCompletedRecords { get; private set;}
 
         private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
-        private static string _playerDiedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataDied");
-        private static string[] _playerDataLocations = new string[] { _playerCompletedDataLocation, _playerDiedDataLocation };
         private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
 		private static GrappleServerData _dataController;
 
@@ -28,81 +26,68 @@ namespace Grappler.Data
 
         public static void Init()
         {
-            for (int i = 0; i < _playerDataLocations.Length; i++)
-            {
-                Directory.CreateDirectory(_playerDataLocations[i]);
+			Directory.CreateDirectory(_playerCompletedDataLocation);
 
-				// trim any files greater than PlayerPrefs Ghost_RECORDS
-				int tempNumOfRecords = PlayerPrefs.GetInt(Constants.GHOST_RECORDS);
-                while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
-                {
-                    File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
-                    tempNumOfRecords = tempNumOfRecords + 1;
-                }
+			// trim any files greater than PlayerPrefs Ghost_RECORDS
+			int tempNumOfRecords = PlayerPrefs.GetInt(Constants.GHOST_RECORDS);
+			while (File.Exists(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json"))
+            {
+				File.Delete(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json");
+                tempNumOfRecords = tempNumOfRecords + 1;
             }
 
-			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
+			NumOfCompletedRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
         }
 
         public static void ClearData()
         {
-            for (int i = 0; i < _playerDataLocations.Length; i++)
-            {
-                Directory.CreateDirectory(_playerDataLocations[i]);
+			Directory.CreateDirectory(_playerCompletedDataLocation);
 
-                // delete all files
-                int tempNumOfRecords = 0;
-                while (File.Exists(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json"))
-                {
-                    File.Delete(_playerDataLocations[i] + _playerDataFileName + tempNumOfRecords + ".json");
-                    tempNumOfRecords = tempNumOfRecords + 1;
-                }
+            // delete all files
+            int tempNumOfRecords = 0;
+			while (File.Exists(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json"))
+            {
+				File.Delete(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json");
+                tempNumOfRecords = tempNumOfRecords + 1;
             }
         }
 
-        public static void SavePlayerPlayback(PlayerReplayModel playerPlayback, bool playerCompleted)
+		public static IEnumerator SavePlayerPlayback(PlayerReplayModel playerPlayback, Action<bool> action)
         {
-            string playerDataLocation;
-
-			// Save to run to server
-			if (playerCompleted)
-			{
-				CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
-					_dataController.StartAddReplay (playerPlayback);
-				}));
-			}
-
-            if (playerCompleted)
-                playerDataLocation = _playerCompletedDataLocation;
-            else
-                playerDataLocation = _playerDiedDataLocation;
+			CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
+				if(isConnected)
+				{
+					_dataController.StartCoroutine(_dataController.AddReplay (playerPlayback, (success) =>{
+						if(success)
+							action(success);
+					}));
+				}
+			}));
 
 			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(PlayerPrefs.GetInt(Constants.GHOST_RECORDS));
 
-            if (playerReplayModels.Count == 0)
-            {
-				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, playerDataLocation);
-                return;
-            }
+			if (playerReplayModels.Count == 0)
+			{
+				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, _playerCompletedDataLocation);
+				yield break;
+			}
 
 			for (int i = 0; i < playerReplayModels.Count; i++)
 			{
-                if (i < playerReplayModels.Count)
-                {
-                    if (playerPlayback.ReplayTime < playerReplayModels[i].ReplayTime)
-                    {
-                        SavePlayerReplayLocal(playerPlayback, i, playerDataLocation);
-                        return;
-                    }
-                }
-            }
+				if (i < playerReplayModels.Count)
+				{
+					if (playerPlayback.ReplayTime < playerReplayModels[i].ReplayTime)
+					{
+						SavePlayerReplayLocal(playerPlayback, i, _playerCompletedDataLocation);
+						yield break;
+					}
+				}
+			}
 
 			if (playerReplayModels.Count < PlayerPrefs.GetInt(Constants.GHOST_RECORDS))
-            {
-				// recursive call
-				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, playerDataLocation);
-                return;
-            }
+				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, _playerCompletedDataLocation);
+			
+			action (true);
         }
 
 		static void SavePlayerReplayLocal(PlayerReplayModel playerReplay, int insertIndex, string playerDataLocation)
@@ -137,7 +122,7 @@ namespace Grappler.Data
             }
 
             // set NumOfCompletedRecords
-			NumOfCompletedRecords = Directory.GetFiles(_playerDataLocations[0], "*.json").Length;
+			NumOfCompletedRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
         }
 
 		public IEnumerator GetPlayerReplays(Action<List<PlayerReplayModel>> action)
@@ -179,6 +164,7 @@ namespace Grappler.Data
     {
 		public bool HasStates { get { return _stateIndex < ReplayData.Count; } private set { } }
 		public Vector3 StartingPosition  { get {  return (ReplayData.Count > 0) ? ReplayData[0].BodyPosition : Vector3.zero; } private set{} }
+		public bool InUse  { get; set; }
 		public string UserName;
 		public string LevelName;	
 		public float ReplayTime;
@@ -189,6 +175,7 @@ namespace Grappler.Data
 		public PlayerReplayModel()
 		{
 			ReplayData = new List<PlayerStateModel>();
+			InUse = false;
 		}
 
 		public PlayerReplayModel(string userName, string levelName, float replayTime, List<PlayerStateModel> replayData)
@@ -197,13 +184,8 @@ namespace Grappler.Data
 			LevelName = levelName;
 			ReplayTime = replayTime;
 			ReplayData = replayData;
+			InUse = false;
         }
-
-//		public PlayerReplayModel(string userName, string levelName)
-//		{
-//			_userName = userName;
-//			_levelName = levelName;
-//		}
 
         public void AddPlayerState(PlayerStateModel playerState, bool final = false)
         {

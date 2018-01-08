@@ -19,7 +19,6 @@ public class GhostPlaybackController : MonoBehaviour
 	private Quaternion _lerpFromRotation;
 	private Quaternion _lerpFromShoulderRotation;
 	private Vector3 _lerpFromWallHookPosition;
-	private bool _playing = false;
 	private float _timePassed = 0.0f;
     private PlayerReplayModel _playerPlaybackModel;
 
@@ -40,7 +39,6 @@ public class GhostPlaybackController : MonoBehaviour
 		if(playerPlaybackModel.HasStates)
 		{
             transform.position = playerPlaybackModel.StartingPosition;
-			_playing = true;
             _ghostPlayer.FadeIn(0.3f);
             StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
 		}
@@ -51,8 +49,7 @@ public class GhostPlaybackController : MonoBehaviour
 	}
 
 	IEnumerator PlayGhostPlayback(PlayerReplayModel playerPlaybackModel)
-	{
-        _playerPlaybackModel = playerPlaybackModel;
+	{																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												        _playerPlaybackModel = playerPlaybackModel;
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
         bool RemoveLastLineRendererPosition = false;
         _tempPlayerState = playerPlaybackModel.GetNextState();
@@ -103,7 +100,7 @@ public class GhostPlaybackController : MonoBehaviour
         }
 
         _timePassed = 0.0f;
-		while (_playing && _timePassed < _tempPlayerState.DeltaTime)
+		while (_timePassed < _tempPlayerState.DeltaTime)
 		{
 			float percentageComplete = _timePassed / _tempPlayerState.DeltaTime;
 			_ghostPlayer.transform.position = Vector3.Lerp(_lerpFromPosition, _tempPlayerState.BodyPosition, percentageComplete);
@@ -174,7 +171,6 @@ public class GhostPlaybackController : MonoBehaviour
         {
             _ghostPlayer.FadeOut(1.0f);
             Invoke("GhostCompleted", 1.0f);
-            _playing = false;
         }
 	}
 

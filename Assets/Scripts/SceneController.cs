@@ -19,7 +19,6 @@ public class SceneController : MonoBehaviour
     private Camera _mainCamera;
     private Vector3 _mainCameraStartPosition;
     private List<PlayerReplayModel> _playerPlaybacks = new List<PlayerReplayModel>();
-    private List<bool> _playerPlaybackInUse = new List<bool>();
     private List<GhostPlaybackController> _ghostPlaybacks = new List<GhostPlaybackController>();
     private int _playerPlaybackIndex = 0;
     private bool _gameOn = false;
@@ -50,7 +49,8 @@ public class SceneController : MonoBehaviour
        	
 		GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
 		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
-        InitGhosts();
+
+	  	InitGhosts();
 
         if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
 			GrappleUI.NoUsernameScreen.SetActive(true);
@@ -64,17 +64,30 @@ public class SceneController : MonoBehaviour
 
     private void StartGame()
     {
+		GrappleServerData.Instance.StartAddLevel (SceneManager.GetActiveScene().name);
+
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
         {
             _playerPlaybacks[i].SetStateIndex(0);
-            _ghostPlaybacks[i].StartPlayGhostPlayback(_playerPlaybacks[_playerPlaybackIndex]);
-            _playerPlaybackInUse[i] = true;
+			_playerPlaybacks[i].InUse = true;
+			_ghostPlaybacks[i].OnGhostCompleted += GhostCompleted;
+
+
+			Debug.Log(_playerPlaybacks[_playerPlaybackIndex].ReplayTime);
+
             _playerPlaybackIndex++;
             if (_playerPlaybackIndex >= _playerPlaybacks.Count)
                 _playerPlaybackIndex = 0;
         }
 
-		GrappleServerData.Instance.StartAddLevel (SceneManager.GetActiveScene().name);
+		if (_ghostPlaybacks [0] == _ghostPlaybacks [1])
+			Debug.Log ("ghosts equal");
+
+		if (_playerPlaybacks [0] == _playerPlaybacks [1])
+			Debug.Log ("playback equal");
+
+		_ghostPlaybacks[0].StartPlayGhostPlayback(_playerPlaybacks[0]);
+		_ghostPlaybacks[1].StartPlayGhostPlayback(_playerPlaybacks[1]);
 
 		Player.Init(_username, SceneManager.GetActiveScene().name);
         _mainCamera.transform.position = _mainCameraStartPosition;
@@ -84,7 +97,8 @@ public class SceneController : MonoBehaviour
     void InitGhosts()
     {
         _playerPlaybackIndex = 0;
-		GrappleUI.TotalNumOfGhostRecords.text = PlayerReplay.NumOfCompletedRecords.ToString();
+		GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfCompletedRecords.ToString();
+		GrappleUI.TotalGhostRecordsServer.text = PlayerReplay.NumOfCompletedRecords.ToString();
 
 		// destroy current ghostPlaybacks
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
@@ -98,29 +112,6 @@ public class SceneController : MonoBehaviour
 		PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays((replays)=>{
 			ReplaysRecieved(replays);
 		}));
-
-//		PlayerReplay.Instance.StartCoroutine( PlayerReplay.Instance.GetPlayerReplays();
-//
-//		tempNumOfGhosts = (_playerPlaybacks.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? _playerPlaybacks.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
-//
-//		for (int i = 0; i < tempNumOfGhosts; i++)
-//        {
-//            if (_playerPlaybacks[i] != null)
-//            {
-//                if (_playerPlaybacks[i].ReplayTime > 0.0f)
-//                {
-//                    GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
-//                    ghostPlayback.transform.SetParent(GhostHolder.transform);
-//                    ghostPlayback.OnGhostCompleted += GhostCompleted;
-//                    _ghostPlaybacks.Add(ghostPlayback);
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < _playerPlaybacks.Count; i++)
-//        {
-//            _playerPlaybackInUse.Add(false);
-//        }
     }
 
 	void ReplaysRecieved(List<PlayerReplayModel> replays)
@@ -136,15 +127,9 @@ public class SceneController : MonoBehaviour
 				{
 					GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
 					ghostPlayback.transform.SetParent(GhostHolder.transform);
-					ghostPlayback.OnGhostCompleted += GhostCompleted;
 					_ghostPlaybacks.Add(ghostPlayback);
 				}
 			}
-		}
-
-		for (int i = 0; i < _playerPlaybacks.Count; i++)
-		{
-			_playerPlaybackInUse.Add(false);
 		}
 	}
 
@@ -166,14 +151,14 @@ public class SceneController : MonoBehaviour
         {
             if (playerPlayback == _playerPlaybacks[i])
             {
-                _playerPlaybackInUse[i] = false;
+				_playerPlaybacks[i].InUse = false;
                 _playerPlaybacks[i].SetStateIndex(0);
                 break;
             }
         }
         GetNextPlayerPlaybackIndex();
         ghost.StartPlayGhostPlayback(_playerPlaybacks[_playerPlaybackIndex]);
-        _playerPlaybackInUse[_playerPlaybackIndex] = true;
+		_playerPlaybacks[_playerPlaybackIndex].InUse = true;
     }
 
     public void GetNextPlayerPlaybackIndex()
@@ -183,7 +168,7 @@ public class SceneController : MonoBehaviour
         if (_playerPlaybackIndex >= _playerPlaybacks.Count)
             _playerPlaybackIndex = 0;
 
-        if (_playerPlaybackInUse[_playerPlaybackIndex])
+		if (_playerPlaybacks[_playerPlaybackIndex].InUse)
             GetNextPlayerPlaybackIndex();
     }
 
@@ -228,10 +213,10 @@ public class SceneController : MonoBehaviour
 		{
 			GrappleUI.EndGame();
             GrappleUI.ToggleStartScreen();
-			PlayerReplay.SavePlayerPlayback(playerPlayback, playerCompleted);
-            InitGhosts();
-
-            _gameOn = false;
+			_gameOn = false;
+			PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerPlayback,(Success)=>{
+            	InitGhosts();
+			}));
 		}
     }
 

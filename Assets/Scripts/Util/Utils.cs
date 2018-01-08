@@ -50,7 +50,6 @@ namespace Grappler.Util
 	    //increase or decrease the length of vector by size
 	    public static Vector3 AddVectorLength(Vector3 vector, float size)
 	    {
-
 	        //get the vector length
 	        float magnitude = Vector3.Magnitude(vector);
 
@@ -75,11 +74,9 @@ namespace Grappler.Util
 	        return vectorNormalized *= size;
 	    }
 
-
 	    //caclulate the rotational difference from A to B
 	    public static Quaternion SubtractRotation(Quaternion B, Quaternion A)
 	    {
-
 	        Quaternion C = Quaternion.Inverse(A) * B;
 	        return C;
 	    }
@@ -87,7 +84,6 @@ namespace Grappler.Util
 	    //Add rotation B to rotation A.
 	    public static Quaternion AddRotation(Quaternion A, Quaternion B)
 	    {
-
 	        Quaternion C = A * B;
 	        return C;
 	    }
@@ -95,7 +91,6 @@ namespace Grappler.Util
 	    //Same as the build in TransformDirection(), but using a rotation instead of a transform.
 	    public static Vector3 TransformDirectionMath(Quaternion rotation, Vector3 vector)
 	    {
-
 	        Vector3 output = rotation * vector;
 	        return output;
 	    }
@@ -103,7 +98,6 @@ namespace Grappler.Util
 	    //Same as the build in InverseTransformDirection(), but using a rotation instead of a transform.
 	    public static Vector3 InverseTransformDirectionMath(Quaternion rotation, Vector3 vector)
 	    {
-
 	        Vector3 output = Quaternion.Inverse(rotation) * vector;
 	        return output;
 	    }
@@ -125,7 +119,6 @@ namespace Grappler.Util
 	    //the function outputs true, otherwise false.
 	    public static bool PlanePlaneIntersection(out Vector3 linePoint, out Vector3 lineVec, Vector3 plane1Normal, Vector3 plane1Position, Vector3 plane2Normal, Vector3 plane2Position)
 	    {
-
 	        linePoint = Vector3.zero;
 	        lineVec = Vector3.zero;
 
@@ -201,7 +194,6 @@ namespace Grappler.Util
 	    //same plane, use ClosestPointsOnTwoLines() instead.
 	    public static bool LineLineIntersection(out Vector3 intersection, Vector3 linePoint1, Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
 	    {
-
 	        intersection = Vector3.zero;
 
 	        Vector3 lineVec3 = linePoint2 - linePoint1;
@@ -236,7 +228,6 @@ namespace Grappler.Util
 	    //outputs true, otherwise false.
 	    public static bool ClosestPointsOnTwoLines(out Vector3 closestPointLine1, out Vector3 closestPointLine2, Vector3 linePoint1, Vector3 lineVec1, Vector3 linePoint2, Vector3 lineVec2)
 	    {
-
 	        closestPointLine1 = Vector3.zero;
 	        closestPointLine2 = Vector3.zero;
 
@@ -273,7 +264,6 @@ namespace Grappler.Util
 	    //The line is regarded infinite. If the line is finite, use ProjectPointOnLineSegment() instead.
 	    public static Vector3 ProjectPointOnLine(Vector3 linePoint, Vector3 lineVec, Vector3 point)
 	    {
-
 	        //get vector from point on line to point in space
 	        Vector3 linePointToPoint = point - linePoint;
 
@@ -288,7 +278,6 @@ namespace Grappler.Util
 	    //If the line is infinite instead of a segment, use ProjectPointOnLine() instead.
 	    public static Vector3 ProjectPointOnLineSegment(Vector3 linePoint1, Vector3 linePoint2, Vector3 point)
 	    {
-
 	        Vector3 vector = linePoint2 - linePoint1;
 
 	        Vector3 projectedPoint = ProjectPointOnLine(linePoint1, vector.normalized, point);
@@ -321,7 +310,6 @@ namespace Grappler.Util
 	    //This function returns a point which is a projection from a point to a plane.
 	    public static Vector3 ProjectPointOnPlane(Vector3 planeNormal, Vector3 planePoint, Vector3 point)
 	    {
-
 	        float distance;
 	        Vector3 translationVector;
 
@@ -341,7 +329,6 @@ namespace Grappler.Util
 	    //Projects a vector onto a plane. The output is not normalized.
 	    public static Vector3 ProjectVectorOnPlane(Vector3 planeNormal, Vector3 vector)
 	    {
-
 	        return vector - (Vector3.Dot(vector, planeNormal) * planeNormal);
 	    }
 
@@ -349,7 +336,6 @@ namespace Grappler.Util
 	    //as to which side of the plane normal the point is.
 	    public static float SignedDistancePlanePoint(Vector3 planeNormal, Vector3 planePoint, Vector3 point)
 	    {
-
 	        return Vector3.Dot(planeNormal, (point - planePoint));
 	    }
 
@@ -360,7 +346,6 @@ namespace Grappler.Util
 	    //than 90 degrees.
 	    public static float SignedDotProduct(Vector3 vectorA, Vector3 vectorB, Vector3 normal)
 	    {
-
 	        Vector3 perpVector;
 	        float dot;
 
@@ -392,7 +377,6 @@ namespace Grappler.Util
 	    //Output is in radians.
 	    public static float AngleVectorPlane(Vector3 vector, Vector3 normal)
 	    {
-
 	        float dot;
 	        float angle;
 
@@ -408,7 +392,6 @@ namespace Grappler.Util
 	    //Calculate the dot product as an angle
 	    public static float DotProductAngle(Vector3 vec1, Vector3 vec2)
 	    {
-
 	        double dot;
 	        double angle;
 
@@ -436,7 +419,6 @@ namespace Grappler.Util
 	    //The plane point is the middle of the triangle defined by the 3 points.
 	    public static void PlaneFrom3Points(out Vector3 planeNormal, out Vector3 planePoint, Vector3 pointA, Vector3 pointB, Vector3 pointC)
 	    {
-
 	        planeNormal = Vector3.zero;
 	        planePoint = Vector3.zero;
 
@@ -466,35 +448,30 @@ namespace Grappler.Util
 	    //Returns the forward vector of a quaternion
 	    public static Vector3 GetForwardVector(Quaternion q)
 	    {
-
 	        return q * Vector3.forward;
 	    }
 
 	    //Returns the up vector of a quaternion
 	    public static Vector3 GetUpVector(Quaternion q)
 	    {
-
 	        return q * Vector3.up;
 	    }
 
 	    //Returns the right vector of a quaternion
 	    public static Vector3 GetRightVector(Quaternion q)
 	    {
-
 	        return q * Vector3.right;
 	    }
 
 	    //Gets a quaternion from a matrix
 	    public static Quaternion QuaternionFromMatrix(Matrix4x4 m)
 	    {
-
 	        return Quaternion.LookRotation(m.GetColumn(2), m.GetColumn(1));
 	    }
 
 	    //Gets a position from a matrix
 	    public static Vector3 PositionFromMatrix(Matrix4x4 m)
 	    {
-
 	        Vector4 vector4Position = m.GetColumn(3);
 	        return new Vector3(vector4Position.x, vector4Position.y, vector4Position.z);
 	    }
@@ -507,7 +484,6 @@ namespace Grappler.Util
 	    //Set customForward and customUp to the vectors you wish to use instead of the default forward and up vectors.
 	    public static void LookRotationExtended(ref GameObject gameObjectInOut, Vector3 alignWithVector, Vector3 alignWithNormal, Vector3 customForward, Vector3 customUp)
 	    {
-
 	        //Set the rotation of the destination
 	        Quaternion rotationA = Quaternion.LookRotation(alignWithVector, alignWithNormal);
 
@@ -528,7 +504,6 @@ namespace Grappler.Util
 	    //All transforms are in world space.
 	    public static void TransformWithParent(out Quaternion childRotation, out Vector3 childPosition, Quaternion parentRotation, Vector3 parentPosition, Quaternion startParentRotation, Vector3 startParentPosition, Quaternion startChildRotation, Vector3 startChildPosition)
 	    {
-
 	        childRotation = Quaternion.identity;
 	        childPosition = Vector3.zero;
 
@@ -561,7 +536,6 @@ namespace Grappler.Util
 	    //trianglePosition can be set at any position, it does not have to be at a vertex or in the middle of the triangle.
 	    public static void PreciseAlign(ref GameObject gameObjectInOut, Vector3 alignWithVector, Vector3 alignWithNormal, Vector3 alignWithPosition, Vector3 triangleForward, Vector3 triangleNormal, Vector3 trianglePosition)
 	    {
-
 	        //Set the rotation.
 	        LookRotationExtended(ref gameObjectInOut, alignWithVector, alignWithNormal, triangleForward, triangleNormal);
 
@@ -579,7 +553,6 @@ namespace Grappler.Util
 	    //Convert a position, direction, and normal vector to a transform
 	    public static void VectorsToTransform(ref GameObject gameObjectInOut, Vector3 positionVector, Vector3 directionVector, Vector3 normalVector)
 	    {
-
 	        gameObjectInOut.transform.position = positionVector;
 	        gameObjectInOut.transform.rotation = Quaternion.LookRotation(directionVector, normalVector);
 	    }
@@ -592,7 +565,6 @@ namespace Grappler.Util
 	    //Returns 2 if point is outside of the line segment and located on the side of linePoint2.
 	    public static int PointOnWhichSideOfLineSegment(Vector3 linePoint1, Vector3 linePoint2, Vector3 point)
 	    {
-
 	        Vector3 lineVec = linePoint2 - linePoint1;
 	        Vector3 pointVec = point - linePoint1;
 
@@ -632,7 +604,6 @@ namespace Grappler.Util
 	    //Do not call this function from OnGUI() as the mouse position will be wrong.
 	    public static float MouseDistanceToLine(Vector3 linePoint1, Vector3 linePoint2)
 	    {
-
 	        Camera currentCamera;
 	        Vector3 mousePosition;
 
@@ -675,7 +646,6 @@ namespace Grappler.Util
 	    //If you want the distance to a point instead of a circle, set the radius to 0.
 	    public static float MouseDistanceToCircle(Vector3 point, float radius)
 	    {
-
 	        Camera currentCamera;
 	        Vector3 mousePosition;
 
@@ -716,7 +686,6 @@ namespace Grappler.Util
 	    //not on the plane, use ProjectPointOnPlane() on linePoint1 and linePoint2 first.
 	    public static bool IsLineInRectangle(Vector3 linePoint1, Vector3 linePoint2, Vector3 rectA, Vector3 rectB, Vector3 rectC, Vector3 rectD)
 	    {
-
 	        bool pointAInside = false;
 	        bool pointBInside = false;
 
@@ -761,7 +730,6 @@ namespace Grappler.Util
 	    //plane as the rectangle. If the point is not on the plane, use ProjectPointOnPlane() first.
 	    public static bool IsPointInRectangle(Vector3 point, Vector3 rectA, Vector3 rectC, Vector3 rectB, Vector3 rectD)
 	    {
-
 	        Vector3 vector;
 	        Vector3 linePoint;
 
@@ -802,7 +770,6 @@ namespace Grappler.Util
 	    //pointB1 and pointB2. The two lines are assumed to be in the same plane.
 	    public static bool AreLineSegmentsCrossing(Vector3 pointA1, Vector3 pointA2, Vector3 pointB1, Vector3 pointB2)
 	    {
-
 	        Vector3 closestPointA;
 	        Vector3 closestPointB;
 	        int sideA;
@@ -850,7 +817,6 @@ namespace Grappler.Util
 	    //If more samples are used, the output is more smooth but has a higher latency.
 	    public static bool LinearAcceleration(out Vector3 vector, Vector3 position, int samples)
 	    {
-
 	        Vector3 averageSpeedChange = Vector3.zero;
 	        vector = Vector3.zero;
 	        Vector3 deltaDistance;
@@ -968,7 +934,6 @@ namespace Grappler.Util
 	    Debug.DrawRay(gameObject.transform.position, dir, Color.blue);	*/
 	    public static bool AngularAcceleration(out Vector3 vector, Quaternion rotation, int samples)
 	    {
-
 	        Vector3 averageSpeedChange = Vector3.zero;
 	        vector = Vector3.zero;
 	        Quaternion deltaRotation;
@@ -1063,7 +1028,6 @@ namespace Grappler.Util
 	    //0,0 on the left ,and Qxy on the right.
 	    public static float LinearFunction2DBasic(float x, float Qx, float Qy)
 	    {
-
 	        float y = x * (Qy / Qx);
 
 	        return y;
@@ -1073,7 +1037,6 @@ namespace Grappler.Util
 	    //Pxy on the left ,and Qxy on the right.
 	    public static float LinearFunction2DFull(float x, float Px, float Py, float Qx, float Qy)
 	    {
-
 	        float y = 0f;
 
 	        float A = Qy - Py;
@@ -1089,7 +1052,6 @@ namespace Grappler.Util
 	    //For internal use only.
 	    private static Vector3 RotDiffToSpeedVec(Quaternion rotation, float deltaTime)
 	    {
-
 	        float x;
 	        float y;
 	        float z;

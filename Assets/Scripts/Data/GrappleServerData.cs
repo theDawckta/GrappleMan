@@ -66,13 +66,8 @@ public class GrappleServerData : Singleton<GrappleServerData>
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
     }
-
-    public void StartAddReplay(PlayerReplayModel playerReplay)
-    {
-		StartCoroutine(AddReplay(playerReplay));
-    }
     
-	IEnumerator AddReplay(PlayerReplayModel playerReplay)
+	public IEnumerator AddReplay(PlayerReplayModel playerReplay, Action<bool> action)
     {
 		string hash = Md5Sum(playerReplay.UserName + privateKey);
 		var encoding = new System.Text.UTF8Encoding();
@@ -86,11 +81,11 @@ public class GrappleServerData : Singleton<GrappleServerData>
 
         if (ReplayPost.error == null)
         {
-            // Success
+			action (true);
         }
         else
         {
-            // Handle error
+			action (false);
         }
     }
 
@@ -109,7 +104,6 @@ public class GrappleServerData : Singleton<GrappleServerData>
 				string playerReplayJson = replay.ToString().Replace("\\", String.Empty);
 				playerReplayJson = playerReplayJson.ToString().Replace("\"[{", "[{");
 				playerReplayJson = playerReplayJson.ToString().Replace("}]\"", "}]");
-				Debug.Log(playerReplayJson);
 				PlayerReplayModel newPlayerReplayModel = JsonUtility.FromJson<PlayerReplayModel> (playerReplayJson);
 				replays.Add(newPlayerReplayModel);
 			}
