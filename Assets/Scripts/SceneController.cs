@@ -66,9 +66,6 @@ public class SceneController : MonoBehaviour
     {
 		_levelName = levelName;
 
-		foreach (Transform child in LevelHolder.transform) 
-			GameObject.Destroy(child.gameObject);
-
 		GrappleServerData.Instance.StartAddLevel(_levelName);
 
 		PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
@@ -81,6 +78,10 @@ public class SceneController : MonoBehaviour
 		int tempNumOfGhosts = (replays.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? replays.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
 		_playerReplays = replays;
 		_currentLevel = (GameObject)Instantiate(Resources.Load ("Levels/" + _levelName));
+
+		foreach (Transform child in LevelHolder.transform) 
+			GameObject.Destroy(child.gameObject);
+		
 		_currentLevel.transform.SetParent (LevelHolder.transform, false);
 
 		_playerReplays = replays;
@@ -89,33 +90,18 @@ public class SceneController : MonoBehaviour
 
 		for (int i = 0; i < tempNumOfGhosts; i++)
 		{
-			if (replays[i] != null)
-			{
-				if (replays[i].ReplayTime > 0.0f)
-				{
-					GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
-					ghostPlayback.transform.SetParent(GhostHolder.transform);
-					_ghostPlaybacks.Add(ghostPlayback);
-				}
-			}
-		}
-
-		for (int i = 0; i < _ghostPlaybacks.Count; i++)
-		{
-			_playerReplays[i].SetStateIndex(0);
-			_playerReplays[i].InUse = true;
-			_ghostPlaybacks[i].OnGhostCompleted += GhostCompleted;
-			_ghostPlaybacks [i].SetPlayerReplayModel(_playerReplays[_playerReplayIndex]);
-			_playerReplayIndex++;
-			if (_playerReplayIndex >= _playerReplays.Count)
-				_playerReplayIndex = 0;
+			GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
+			ghostPlayback.transform.SetParent(GhostHolder.transform);
+			ghostPlayback.OnGhostCompleted += GhostCompleted;
+			ghostPlayback.SetPlayerReplayModel(_playerReplays[_playerReplayIndex]);
+			_ghostPlaybacks.Add(ghostPlayback);
+			if(i < tempNumOfGhosts - 1)
+				SetNextPlayerPlaybackIndex();
 		}
 
 		for (int j = 0; j < _ghostPlaybacks.Count; j++) 
-		{
-			_ghostPlaybacks[j].StartPlayGhostPlayback();
-		}
-
+			_ghostPlaybacks [j].StartPlayGhostPlayback ();
+		
 		Player.Init(_username);
 		_mainCamera.transform.position = _mainCameraStartPosition;
 		_gameOn = true;

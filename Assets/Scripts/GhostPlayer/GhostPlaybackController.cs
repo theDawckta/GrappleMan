@@ -20,7 +20,7 @@ public class GhostPlaybackController : MonoBehaviour
 	private Quaternion _lerpFromShoulderRotation;
 	private Vector3 _lerpFromWallHookPosition;
 	private float _timePassed = 0.0f;
-	private PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
+	public PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
 
 	void Awake () 
 	{
