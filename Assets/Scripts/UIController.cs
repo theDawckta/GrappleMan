@@ -8,7 +8,7 @@ using DG.Tweening;
 
 public class UIController : MonoBehaviour
 {
-	public delegate void StartButtonClicked();
+	public delegate void StartButtonClicked(string levelName);
 	public event StartButtonClicked OnStartButtonClicked;
 
     public delegate void ResetDataButtonClicked();
@@ -49,7 +49,6 @@ public class UIController : MonoBehaviour
     private String seed;
     private float _timer;
     private bool _timeStarted;
-    private int _ghosts = 6;
 
     void Start()
     {
@@ -74,10 +73,10 @@ public class UIController : MonoBehaviour
 		}
     }
 
-	public void UIStartButtonClicked()
+	public void UIStartButtonClicked(string levelName)
     {
 		if(OnStartButtonClicked != null)
-			OnStartButtonClicked();
+			OnStartButtonClicked(levelName);
 		ToggleStartScreen();
         _timer = 0.0f;
 		_timeStarted = true;

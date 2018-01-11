@@ -19,6 +19,7 @@
     $query = "SELECT Users.UserName, Levels.LevelName, ReplayTime, ReplayData FROM Replays
     INNER JOIN Users ON Users.Id = Replays.UserId
     INNER JOIN Levels ON Levels.Id = Replays.LevelId
+    WHERE Levels.LevelName = '$levelName'
     ORDER BY ReplayTime ASC LIMIT $numOfReplays;";
     $result = mysqli_query($db, $query) or die(mysqli_error($db));
     $rows = array();

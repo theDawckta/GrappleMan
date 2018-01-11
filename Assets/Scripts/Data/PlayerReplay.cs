@@ -64,7 +64,7 @@ namespace Grappler.Data
 				}
 			}));
 
-			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(PlayerPrefs.GetInt(Constants.GHOST_RECORDS));
+			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(playerPlayback.LevelName, PlayerPrefs.GetInt(Constants.GHOST_RECORDS));
 
 			if (playerReplayModels.Count == 0)
 			{
@@ -125,23 +125,23 @@ namespace Grappler.Data
 			NumOfCompletedRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
         }
 
-		public IEnumerator GetPlayerReplays(Action<List<PlayerReplayModel>> action)
+		public IEnumerator GetPlayerReplays(string levelName, Action<List<PlayerReplayModel>> action)
 		{
 			CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
 				if(isConnected)
 				{
-					_dataController.StartCoroutine(_dataController.GetPlayerReplaysServer(SceneManager.GetActiveScene().name, Constants.GHOST_COMPETITORS, (replays) =>{
+					_dataController.StartCoroutine(_dataController.GetPlayerReplaysServer(levelName, Constants.GHOST_COMPETITORS, (replays) =>{
 						action(replays);
 					}));
 				}
 				else
-					action(GetPlayerReplaysLocal(Constants.GHOST_COMPETITORS));
+					action(GetPlayerReplaysLocal(levelName, Constants.GHOST_COMPETITORS));
 			}));
 
 			yield return null;
 		}
 
-        private static List<PlayerReplayModel> GetPlayerReplaysLocal(int numOfRecords)
+        private static List<PlayerReplayModel> GetPlayerReplaysLocal(string levelName, int numOfRecords)
         {
             List<PlayerReplayModel> playerPlaybacks = new List<PlayerReplayModel>();
 
@@ -149,8 +149,13 @@ namespace Grappler.Data
             {
                 string playerDataFilePath = _playerCompletedDataLocation + _playerDataFileName + i + ".json";
 
-                if (File.Exists(playerDataFilePath))
-                    playerPlaybacks.Add(JsonUtility.FromJson<PlayerReplayModel>(File.ReadAllText(playerDataFilePath)));
+				if (File.Exists (playerDataFilePath)) 
+				{
+					PlayerReplayModel playerReplayModel = JsonUtility.FromJson<PlayerReplayModel> (File.ReadAllText (playerDataFilePath));
+
+					if(playerReplayModel.LevelName == levelName)
+						playerPlaybacks.Add (JsonUtility.FromJson<PlayerReplayModel> (File.ReadAllText (playerDataFilePath)));
+				}
                 else
                     break;
             }

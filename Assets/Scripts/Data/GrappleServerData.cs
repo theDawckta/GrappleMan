@@ -18,24 +18,6 @@ public class GrappleServerData : Singleton<GrappleServerData>
     private string AddUserURL = "http://localhost/AddUser.php?";
     private string AddLevelURL = "http://localhost/AddLevel.php?";
     private string AddReplayURL = "http://localhost/AddReplay.php?";
-    private string _userName;
-
-    void Start()
-    {
-//			for(int i = 0; i < 5; i++)
-//            {
-//				StartAddUser("User" + i);
-//            }
-//
-//			for(int j = 0; j < 5; j++)
-//            {
-//				for(int k = 0; k < 20; k++)
-//	            {
-//					StartAddReplay("User" + j, "Test", 20.0f + j + k, "replay data" + j + "_" + k );
-//	            }
-//            }
-		//StartGetReplays("Test");
-    }
 
     public void StartAddUser(string username)
     {
@@ -72,6 +54,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
 		string hash = Md5Sum(playerReplay.UserName + privateKey);
 		var encoding = new System.Text.UTF8Encoding();
 		string playerReplayJson = JsonUtility.ToJson(playerReplay);
+		Debug.Log (playerReplayJson);
 		JSONNode replayJsonNode = JSON.Parse(playerReplayJson);
 
 		byte[] postData = encoding.GetBytes(replayJsonNode["ReplayData"].ToString());
@@ -114,11 +97,6 @@ public class GrappleServerData : Singleton<GrappleServerData>
 		{
 			//Handle error
 		}
-    }
-
-	public void SetName(string userName)
-    {
-        _userName = userName;
     }
 
 	///Encryption function: http://wiki.unity3d.com/index.php?title=MD5

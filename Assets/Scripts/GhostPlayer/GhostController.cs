@@ -63,16 +63,11 @@ public class GhostController : MonoBehaviour
 
 	void OnTriggerEnter(Collider other) 
 	{
-		if(other.name == "Player")
-        {
-            StopAllCoroutines();
-            FadeOut(0.3f);
-        }	
+		// place holder
     }
 
 	void OnTriggerExit(Collider other) 
 	{
-		if(other.name == "Player")
-			FadeIn(0.3f);
+		// place holder
     }
 }

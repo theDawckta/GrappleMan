@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
 		HookPlayerInput.InputActive = false;
     }
 
-	public void Init(string userName, string levelName)
+	public void Init(string userName)
     {
         StopAllCoroutines();
         _ropeLineRenderer.enabled = false;

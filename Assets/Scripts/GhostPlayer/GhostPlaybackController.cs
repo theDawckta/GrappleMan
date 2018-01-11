@@ -20,7 +20,7 @@ public class GhostPlaybackController : MonoBehaviour
 	private Quaternion _lerpFromShoulderRotation;
 	private Vector3 _lerpFromWallHookPosition;
 	private float _timePassed = 0.0f;
-    private PlayerReplayModel _playerPlaybackModel;
+	private PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
 
 	void Awake () 
 	{
@@ -32,15 +32,20 @@ public class GhostPlaybackController : MonoBehaviour
         _ghostPlayer.RopeLineRenderer.enabled = false;
     }
 
-    public void StartPlayGhostPlayback(PlayerReplayModel playerPlaybackModel)
+	public void SetPlayerReplayModel(PlayerReplayModel playerReplayModel)
+	{
+		_playerReplayModel = playerReplayModel;
+	}
+
+    public void StartPlayGhostPlayback()
 	{
          _timePassed = 0.0f;
 
-		if(playerPlaybackModel.HasStates)
+		if(_playerReplayModel.HasStates)
 		{
-            transform.position = playerPlaybackModel.StartingPosition;
+			transform.position = _playerReplayModel.StartingPosition;
             _ghostPlayer.FadeIn(0.3f);
-            StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
+            StartCoroutine(PlayGhostPlayback());
 		}
 		else
 		{
@@ -48,11 +53,11 @@ public class GhostPlaybackController : MonoBehaviour
 		}
 	}
 
-	IEnumerator PlayGhostPlayback(PlayerReplayModel playerPlaybackModel)
-	{																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												        _playerPlaybackModel = playerPlaybackModel;
+	IEnumerator PlayGhostPlayback()
+	{
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
         bool RemoveLastLineRendererPosition = false;
-        _tempPlayerState = playerPlaybackModel.GetNextState();
+		_tempPlayerState = _playerReplayModel.GetNextState();
 
 		_lerpFromPosition = _ghostPlayer.transform.position;
 		_lerpFromRotation = _ghostPlayer.GhostPlayerSprite.transform.rotation;
@@ -165,8 +170,8 @@ public class GhostPlaybackController : MonoBehaviour
             RemoveLastLineRendererPosition = false;
         }
 
-        if (playerPlaybackModel.HasStates)
-            yield return StartCoroutine(PlayGhostPlayback(playerPlaybackModel));
+		if (_playerReplayModel.HasStates)
+            yield return StartCoroutine(PlayGhostPlayback());
         else
         {
             _ghostPlayer.FadeOut(1.0f);
@@ -178,7 +183,7 @@ public class GhostPlaybackController : MonoBehaviour
     {
         if (OnGhostCompleted != null)
         {
-            OnGhostCompleted(this, _playerPlaybackModel);
+            OnGhostCompleted(this, _playerReplayModel);
         }
     }
 }
