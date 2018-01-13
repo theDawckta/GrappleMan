@@ -62,12 +62,10 @@ public class SceneController : MonoBehaviour
         //_playerAudio.Play();
     }
 
-	private void InitGame(string levelName)
-    {
+	private void InitPlayerRankScreen(string levelName)
+	{
 		_levelName = levelName;
-
-		GrappleServerData.Instance.StartAddLevel(_levelName);
-
+		
 		PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
 			ReplaysRecieved(replays);
 		}));
@@ -99,12 +97,19 @@ public class SceneController : MonoBehaviour
 				SetNextPlayerPlaybackIndex();
 		}
 
+		GrappleUI.InitPlayerRanksScreen (replays);
+		GrappleUI.StartButton.gameObject.SetActive (true);
+	}
+
+	private void StartGame()
+	{
 		for (int j = 0; j < _ghostPlaybacks.Count; j++) 
 			_ghostPlaybacks [j].StartPlayGhostPlayback ();
-		
+
 		Player.Init(_username);
 		_mainCamera.transform.position = _mainCameraStartPosition;
 		_gameOn = true;
+		GrappleServerData.Instance.StartAddLevel(_levelName);
 	}
 
 	void InitGhosts()
@@ -209,7 +214,7 @@ public class SceneController : MonoBehaviour
 		if(_gameOn)
 		{
 			GrappleUI.EndGame();
-            GrappleUI.ToggleStartScreen();
+
 			_gameOn = false;
 			playerPlayback.LevelName = _levelName;
 			PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerPlayback,(Success)=>{
@@ -225,7 +230,8 @@ public class SceneController : MonoBehaviour
 
     void OnEnable()
 	{
-		GrappleUI.OnStartButtonClicked += InitGame;
+		GrappleUI.OnStartButtonClicked += StartGame;
+		GrappleUI.OnLevelSelectButtonClicked += InitPlayerRankScreen;
 		GrappleUI.OnResetButtonClicked += ResetGame;
         GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
@@ -238,7 +244,8 @@ public class SceneController : MonoBehaviour
 
 	void OnDisable()
 	{
-        GrappleUI.OnStartButtonClicked -= InitGame;
+        GrappleUI.OnStartButtonClicked -= StartGame;
+		GrappleUI.OnLevelSelectButtonClicked -= InitPlayerRankScreen;
         GrappleUI.OnResetButtonClicked -= ResetGame;
         GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;

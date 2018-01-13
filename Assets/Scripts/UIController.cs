@@ -3,13 +3,18 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using Grappler;
+using Grappler.Data;
 using DG.Tweening;
 
 public class UIController : MonoBehaviour
 {
-	public delegate void StartButtonClicked(string levelName);
+	public delegate void StartButtonClicked();
 	public event StartButtonClicked OnStartButtonClicked;
+
+	public delegate void LevelSelectButtonClicked(string levelName);
+	public event LevelSelectButtonClicked OnLevelSelectButtonClicked;
 
     public delegate void ResetDataButtonClicked();
     public event ResetDataButtonClicked OnResetDataButtonClicked;
@@ -45,6 +50,8 @@ public class UIController : MonoBehaviour
 	public Text ErrorText;
 	public Text TotalGhostRecordsLocal;
 	public Text TotalGhostRecordsServer;
+	public GameObject PlayerRanksScreen;
+	public PlayerRowController PlayerRow;
 
     private String seed;
     private float _timer;
@@ -73,11 +80,38 @@ public class UIController : MonoBehaviour
 		}
     }
 
-	public void UIStartButtonClicked(string levelName)
+	public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays)
+	{
+		for (int i = 0; i < playerReplays.Count; i++)
+		{
+			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
+			playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, playerReplays[i].ReplayTime.ToString());
+
+			playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
+		}
+
+		if (playerReplays.Count == 0)
+			UIStartButtonClicked ();
+		else
+		{
+			StartScreen.SetActive(false);
+			StartButton.gameObject.SetActive(true);
+			PlayerRanksScreen.SetActive(true);
+		}
+	}
+
+	public void UILevelButtonClicked(string levelName)
+	{
+		OnLevelSelectButtonClicked(levelName);
+	}
+
+	public void UIStartButtonClicked()
     {
+		StartScreen.SetActive (false);
+		StartButton.gameObject.SetActive(false);
+		PlayerRanksScreen.SetActive(false);
 		if(OnStartButtonClicked != null)
-			OnStartButtonClicked(levelName);
-		ToggleStartScreen();
+			OnStartButtonClicked();
         _timer = 0.0f;
 		_timeStarted = true;
     }
@@ -170,6 +204,11 @@ public class UIController : MonoBehaviour
 
     public void EndGame()
     {
+		StartScreen.SetActive (true);
+		foreach(Transform playerRow in PlayerRanksScreen.transform.Find("Players")) 
+		{
+			Destroy(playerRow.gameObject);
+		}
         _timeStarted = false;
     }
 
@@ -198,11 +237,6 @@ public class UIController : MonoBehaviour
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         var random = new System.Random();
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
-    }
-
-    public void ToggleStartScreen()
-    {
-        StartScreen.gameObject.SetActive(!StartScreen.gameObject.activeSelf);
     }
 
 	public void ToggleConfigScreen()

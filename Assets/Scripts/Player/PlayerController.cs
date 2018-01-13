@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
 {
 	public delegate void OnPlayerCompletedEvent(PlayerReplayModel playerPlaybackModel, bool playerWon);
 	public event OnPlayerCompletedEvent OnPlayerCompleted;
-	public delegate void OnPlayerDiedEvent(PlayerReplayModel playerPlaybackModel, bool playerWon);
+	public delegate void OnPlayerDiedEvent(PlayerReplayModel playerPlaybackModel, bool playerDied);
     public event OnPlayerDiedEvent OnPlayerDied;
 
     public GameObject RopeOrigin;
@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     public PlayerInput HookPlayerInput;
     public float Speed = 2.5f;
 	public float MaxGroundVelocity = 20.0f;
-    public float BoostForce =10.0f;
+    public float BoostForce = 10.0f;
     public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
     public float MaxClimbVelocity = 40.0f;
