@@ -130,12 +130,12 @@ namespace Grappler.Data
 			CheckConnection.Instance.StartCoroutine(CheckConnection.Instance.CheckInternetConnection((isConnected)=>{
 				if(isConnected)
 				{
-					_dataController.StartCoroutine(_dataController.GetPlayerReplaysServer(levelName, Constants.GHOST_COMPETITORS, (replays) =>{
+					_dataController.StartCoroutine(_dataController.GetPlayerReplaysServer(levelName, PlayerPrefs.GetInt(Constants.GHOSTS), (replays) =>{
 						action(replays);
 					}));
 				}
 				else
-					action(GetPlayerReplaysLocal(levelName, Constants.GHOST_COMPETITORS));
+					action(GetPlayerReplaysLocal(levelName, PlayerPrefs.GetInt(Constants.GHOSTS)));
 			}));
 
 			yield return null;
@@ -207,8 +207,6 @@ namespace Grappler.Data
         {
 			PlayerStateModel tempPlayerState = ReplayData[_stateIndex];
             _stateIndex++;
-			if (_stateIndex > ReplayData.Count)
-                _stateIndex = 0;
 			return tempPlayerState;
         }
 

@@ -91,10 +91,9 @@ public class SceneController : MonoBehaviour
 			GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
 			ghostPlayback.transform.SetParent(GhostHolder.transform);
 			ghostPlayback.OnGhostCompleted += GhostCompleted;
-			ghostPlayback.SetPlayerReplayModel(_playerReplays[_playerReplayIndex]);
+			ghostPlayback.SetPlayerReplayModel(_playerReplays[i]);
+            ghostPlayback.GhostIndex = i;
 			_ghostPlaybacks.Add(ghostPlayback);
-			if(i < tempNumOfGhosts - 1)
-				SetNextPlayerPlaybackIndex();
 		}
 
 		GrappleUI.InitPlayerRanksScreen (replays);
@@ -103,8 +102,8 @@ public class SceneController : MonoBehaviour
 
 	private void StartGame()
 	{
-		for (int j = 0; j < _ghostPlaybacks.Count; j++) 
-			_ghostPlaybacks [j].StartPlayGhostPlayback ();
+		for (int i = 0; i < _ghostPlaybacks.Count; i++) 
+			_ghostPlaybacks [i].StartPlayGhostPlayback ();
 
 		Player.Init(_username);
 		_mainCamera.transform.position = _mainCameraStartPosition;
@@ -141,6 +140,7 @@ public class SceneController : MonoBehaviour
 
     void GhostCompleted(GhostPlaybackController ghost, PlayerReplayModel playerPlayback)
     {
+        //Debug.Log("GHOST " + ghost.GhostIndex + " RECIEVED IN SCENE CONTROLLER");
         // find the playerPlaybackModel this ghost was using and release it, add ghost to que to be restarted
         for (int i = 0; i < _playerReplays.Count; i++)
         {
@@ -153,20 +153,35 @@ public class SceneController : MonoBehaviour
         }
         SetNextPlayerPlaybackIndex();
 		ghost.SetPlayerReplayModel(_playerReplays [_playerReplayIndex]);
+        _playerReplays[_playerReplayIndex].InUse = true;
         ghost.StartPlayGhostPlayback();
+    }
+
+    void PlayerFinished(PlayerReplayModel playerPlayback, bool playerCompleted)
+    {
+        if (_gameOn)
+        {
+            GrappleUI.EndGame();
+
+            _gameOn = false;
+            playerPlayback.LevelName = _levelName;
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerPlayback, (Success) => {
+                // placeholder if needed
+            }));
+        }
     }
 
     public void SetNextPlayerPlaybackIndex()
     {
-        // recursive, keeps incrementing _playerPlaybackIndex until it finds one that isn't being used
-        _playerReplayIndex++;
-        if (_playerReplayIndex >= _playerReplays.Count)
-            _playerReplayIndex = 0;
+        if (!_playerReplays[_playerReplayIndex].InUse)
+            return;
 
-		if (_playerReplays [_playerReplayIndex].InUse)
-			SetNextPlayerPlaybackIndex ();
-		else
-			_playerReplays [_playerReplayIndex].InUse = true;
+        while(_playerReplays[_playerReplayIndex].InUse)
+        {
+            _playerReplayIndex++;
+            if (_playerReplayIndex >= _playerReplays.Count)
+             _playerReplayIndex = 0;
+        }
     }
 
 	public void SetPlayerReplayModel(List<PlayerReplayModel> playerReplayModel)
@@ -207,20 +222,6 @@ public class SceneController : MonoBehaviour
 		GrappleUI.UserInput.gameObject.SetActive(false);
 		GrappleUI.UserSave.SetActive(false);
 		GrappleUI.UserCancel.SetActive(false);
-    }
-
-	void PlayerFinished(PlayerReplayModel playerPlayback, bool playerCompleted)
-    {
-		if(_gameOn)
-		{
-			GrappleUI.EndGame();
-
-			_gameOn = false;
-			playerPlayback.LevelName = _levelName;
-			PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerPlayback,(Success)=>{
-            	// placeholder if needed
-			}));
-		}
     }
 
     public void SetVolume(float volume)

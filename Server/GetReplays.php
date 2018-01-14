@@ -1,5 +1,5 @@
 <?php
-  $db = mysqli_connect("localhost","grappleApp","vSMZ3I3NmZ5lH2e0","grappler");
+  $db = mysqli_connect("localhost","root","","grappler");
 
   // Check connection
   if (mysqli_connect_errno())

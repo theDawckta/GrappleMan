@@ -11,6 +11,8 @@ public class GhostPlaybackController : MonoBehaviour
     public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
     public event OnGhostCompletedEvent OnGhostCompleted;
 
+    public int GhostIndex;
+
     private GhostController _ghostPlayer;
 	private PlayerStateModel _tempPlayerState;
 	private Vector3[] _lerpFromLineRendererPositions;
@@ -45,6 +47,7 @@ public class GhostPlaybackController : MonoBehaviour
 		{
 			transform.position = _playerReplayModel.StartingPosition;
             _ghostPlayer.FadeIn(0.3f);
+            Debug.Log("GHOST " + GhostIndex + " STARTED PLAYBACK");
             StartCoroutine(PlayGhostPlayback());
 		}
 		else
@@ -170,19 +173,21 @@ public class GhostPlaybackController : MonoBehaviour
             RemoveLastLineRendererPosition = false;
         }
 
-		if (_playerReplayModel.HasStates)
-            yield return StartCoroutine(PlayGhostPlayback());
+        if (_playerReplayModel.HasStates)
+            yield return PlayGhostPlayback();
         else
         {
+            Debug.Log("GHOST " + GhostIndex + " PLAYBACK FINISHED STARTING FADE");
             _ghostPlayer.FadeOut(1.0f);
-            Invoke("GhostCompleted", 1.0f);
+            Invoke("GhostCompleted", 1.1f);
         }
-	}
+    }
 
     void GhostCompleted()
     {
         if (OnGhostCompleted != null)
         {
+            Debug.Log("GHOST " + GhostIndex + " PLAYBACK COMPLETED");
             OnGhostCompleted(this, _playerReplayModel);
         }
     }
