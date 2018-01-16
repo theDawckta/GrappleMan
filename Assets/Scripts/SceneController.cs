@@ -92,7 +92,6 @@ public class SceneController : MonoBehaviour
 			ghostPlayback.transform.SetParent(GhostHolder.transform);
 			ghostPlayback.OnGhostCompleted += GhostCompleted;
 			ghostPlayback.SetPlayerReplayModel(_playerReplays[i]);
-            ghostPlayback.GhostIndex = i;
 			_ghostPlaybacks.Add(ghostPlayback);
 		}
 

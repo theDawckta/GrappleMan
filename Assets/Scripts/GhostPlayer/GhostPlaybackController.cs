@@ -11,8 +11,6 @@ public class GhostPlaybackController : MonoBehaviour
     public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
     public event OnGhostCompletedEvent OnGhostCompleted;
 
-    public int GhostIndex;
-
     private GhostController _ghostPlayer;
 	private PlayerStateModel _tempPlayerState;
 	private Vector3[] _lerpFromLineRendererPositions;
@@ -22,7 +20,7 @@ public class GhostPlaybackController : MonoBehaviour
 	private Quaternion _lerpFromShoulderRotation;
 	private Vector3 _lerpFromWallHookPosition;
 	private float _timePassed = 0.0f;
-	public PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
+	private PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
 
 	void Awake () 
 	{
@@ -47,7 +45,6 @@ public class GhostPlaybackController : MonoBehaviour
 		{
 			transform.position = _playerReplayModel.StartingPosition;
             _ghostPlayer.FadeIn(0.3f);
-            Debug.Log("GHOST " + GhostIndex + " STARTED PLAYBACK");
             StartCoroutine(PlayGhostPlayback());
 		}
 		else
@@ -177,7 +174,6 @@ public class GhostPlaybackController : MonoBehaviour
             yield return PlayGhostPlayback();
         else
         {
-            Debug.Log("GHOST " + GhostIndex + " PLAYBACK FINISHED STARTING FADE");
             _ghostPlayer.FadeOut(1.0f);
             Invoke("GhostCompleted", 1.1f);
         }
@@ -186,9 +182,6 @@ public class GhostPlaybackController : MonoBehaviour
     void GhostCompleted()
     {
         if (OnGhostCompleted != null)
-        {
-            Debug.Log("GHOST " + GhostIndex + " PLAYBACK COMPLETED");
             OnGhostCompleted(this, _playerReplayModel);
-        }
     }
 }

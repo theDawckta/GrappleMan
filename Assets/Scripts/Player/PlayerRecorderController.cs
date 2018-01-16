@@ -24,6 +24,7 @@ public class PlayerRecorderController : MonoBehaviour
 
 	public void StartRecording()
     {
+        _playerPlayback = new PlayerReplayModel();
         _recording = true;
         AddState(_timePassed);
         StartCoroutine("Record");
@@ -58,12 +59,12 @@ public class PlayerRecorderController : MonoBehaviour
         yield return null;
     }
 
-    public void DoneRecording()
+    public PlayerReplayModel DoneRecording()
 	{
 		AddState(_timePassed, true);
+        StopCoroutine("Record");
 		_recording = false;
-		_playerPlayback = new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), SceneManager.GetActiveScene().name, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
-		StopCoroutine("Record");
+		return new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), SceneManager.GetActiveScene().name, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
     }
 
     void AddState(float deltaTime, bool lastState = false)

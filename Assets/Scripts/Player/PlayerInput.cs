@@ -88,8 +88,8 @@ public class PlayerInput : MonoBehaviour
     {
         if (InputActive)
         {
-            #if (UNITY_STANDALONE || UNITY_EDITOR)
-                        return (Input.GetKey(KeyCode.Q));
+#if (UNITY_STANDALONE || UNITY_EDITOR)
+            return (Input.GetKey(KeyCode.Q));
             #elif (UNITY_IOS || UNITY_ANDROID)
             if (Mathf.Abs(_leftSwipe.y) > _minDPadDistance)
             {

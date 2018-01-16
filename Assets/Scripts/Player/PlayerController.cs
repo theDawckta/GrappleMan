@@ -424,9 +424,9 @@ public class PlayerController : MonoBehaviour
 	IEnumerator PlayerCompleted()
     {
     	// handle completed animation here
-		_playerRecorderController.DoneRecording();
+		PlayerReplayModel playerReplay = _playerRecorderController.DoneRecording();
         if(OnPlayerCompleted != null)
-			OnPlayerCompleted(_playerRecorderController.PlayerPlaybackData, true);
+			OnPlayerCompleted(playerReplay, true);
         yield return null;
     }
 
