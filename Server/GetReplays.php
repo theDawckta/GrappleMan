@@ -1,7 +1,6 @@
 <?php
     $db = mysqli_connect("localhost","root","grapplepass","grappler");
 
-    // Check connection
     if (mysqli_connect_errno())
     {
         echo "Failed to connect to MySQL: " . mysqli_connect_error();
@@ -10,7 +9,6 @@
     $levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
     $hash = $_GET['hash'] ?? '';
     $numOfReplays = $_GET['numOfReplays'] ?? '';
-
     $politestring = sanitize($levelName);
     $secretKey="SOMESECRETKEY";
     $expected_hash = md5($levelName . $secretKey);

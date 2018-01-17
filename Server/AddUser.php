@@ -1,27 +1,17 @@
 <?php
 	$db = mysqli_connect("localhost","root","grapplepass","grappler");
 
-	// Check connection
 	if (mysqli_connect_errno())
 	{
 		echo "Failed to connect to MySQL: " . mysqli_connect_error();
 	}
 
-    //These are our variables.
-    //We use real escape string to stop people from injecting. We handle this in Unity too, but it's important we do it here as well in case people extract our url.
     $userName = mysqli_real_escape_string ($db, $_GET['userName'] ?? '');
     $hash = $_GET['hash'] ?? '';
-
-    //This is the polite version of our name
     $politestring = sanitize($userName);
-
-    //This is your key. You have to fill this in! Go and generate a strong one.
     $secretKey="SOMESECRETKEY";
-
-    //We md5 hash our results.
     $expected_hash = md5($userName . $secretKey);
 
-    //If what we expect is what we have:
     if($expected_hash == $hash)
 	{
 		$checkUserNameQuery = "SELECT * FROM USERS WHERE UserName = '$politestring';";
@@ -37,6 +27,10 @@
 			echo ($userName);
 		}
     }
+    else
+	{
+		echo('Hash Failed');
+	}
 				
 	/////////////////////////////////////////////////
 	// string sanitize functionality to avoid
