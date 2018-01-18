@@ -1,5 +1,5 @@
 <?php
-	$db = mysqli_connect("localhost","root","grapplepass","grappler");
+	$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
 
 	if (mysqli_connect_errno())
 	{
@@ -9,12 +9,12 @@
     $userName = mysqli_real_escape_string ($db, $_GET['userName'] ?? '');
     $hash = $_GET['hash'] ?? '';
     $politestring = sanitize($userName);
-    $secretKey="SOMESECRETKEY";
+    $secretKey="d41d8cd98f00b204e9800998ecf8427e";
     $expected_hash = md5($userName . $secretKey);
 
     if($expected_hash == $hash)
 	{
-		$checkUserNameQuery = "SELECT * FROM USERS WHERE UserName = '$politestring';";
+		$checkUserNameQuery = "SELECT * FROM Users WHERE UserName = '$politestring';";
 		$checkUserNameResult = mysqli_query($db, $checkUserNameQuery) or die(mysqli_error($db));
 		if(mysqli_num_rows($checkUserNameResult)>=1)
 		{

@@ -1,5 +1,5 @@
 <?php
-	$db = mysqli_connect("localhost","root","grapplepass","grappler");
+	$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
 
 	// Check connection
 	if (mysqli_connect_errno())
@@ -13,7 +13,7 @@
 	$replayTime = mysqli_real_escape_string ($db, $_GET['replayTime'] ?? '');
 	$replayData = file_get_contents('php://input' ?? '');
 	$politestring = sanitize($userName);
-	$secretKey="SOMESECRETKEY";
+	$secretKey="d41d8cd98f00b204e9800998ecf8427e";
 	$expected_hash = md5($userName . $secretKey);
 
 	if($expected_hash == $hash) 
@@ -30,7 +30,7 @@
 			$levelId = mysqli_fetch_assoc($getLevelIdResult)['Id'];
 
 			$query = "INSERT INTO Replays (UserId, LevelId, ReplayTime, ReplayData)VALUES ($userId[0], $levelId[0], $replayTime, '$replayData');";
-			echo($query);
+			echo("ReplayData: " . $replayData);
 			$result = mysqli_query($db, $query) or die(mysqli_error($db));
 		}
 		else
@@ -50,7 +50,7 @@
 		echo('Hash Failed');
 	}
 
-/////////////////////////////////////////////////
+	/////////////////////////////////////////////////
 	// string sanitize functionality to avoid
 	// sql or html injection abuse and bad words
 	/////////////////////////////////////////////////

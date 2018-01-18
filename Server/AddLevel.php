@@ -1,5 +1,5 @@
 <?php
-	$db = mysqli_connect("localhost","root","grapplepass","grappler");
+	$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
 
 	if (mysqli_connect_errno())
 	{
@@ -8,7 +8,7 @@
 
 	$levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
 	$hash = $_GET['hash'] ?? '';
-	$secretKey="SOMESECRETKEY";
+	$secretKey="d41d8cd98f00b204e9800998ecf8427e";
     $expected_hash = md5($levelName . $secretKey);
 
     if($expected_hash == $hash)

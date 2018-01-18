@@ -13,11 +13,11 @@ public class GrappleServerData : Singleton<GrappleServerData>
 	public delegate void UsernameProcessed(string userName);
 	public event UsernameProcessed OnUsernameProcessed;
 
-    private string privateKey = "SOMESECRETKEY";
-    private string GetReplaysUrl = "http://localhost/GetReplays.php?";
-    private string AddUserURL = "http://localhost/AddUser.php?";
-    private string AddLevelURL = "http://localhost/AddLevel.php?";
-    private string AddReplayURL = "http://localhost/AddReplay.php?";
+    private string privateKey = "d41d8cd98f00b204e9800998ecf8427e";
+    private string GetReplaysUrl = "http://www.thedawckta.com/grappler/GetReplays.php?";
+    private string AddUserURL = "http://www.thedawckta.com/grappler/AddUser.php?";
+    private string AddLevelURL = "http://www.thedawckta.com/grappler/AddLevel.php?";
+    private string AddReplayURL = "http://www.thedawckta.com/grappler/AddReplay.php?";
 
     public void StartAddUser(string username)
     {
@@ -54,9 +54,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
 		string hash = Md5Sum(playerReplay.UserName + privateKey);
 		var encoding = new System.Text.UTF8Encoding();
 		string playerReplayJson = JsonUtility.ToJson(playerReplay);
-		Debug.Log (playerReplayJson);
 		JSONNode replayJsonNode = JSON.Parse(playerReplayJson);
-
 		byte[] postData = encoding.GetBytes(replayJsonNode["ReplayData"].ToString());
 
 		WWW ReplayPost = new WWW(AddReplayURL + "userName=" + WWW.EscapeURL(playerReplay.UserName) + "&hash=" + hash + "&levelName=" + playerReplay.LevelName + "&replayTime=" + playerReplay.ReplayTime, postData);
@@ -84,10 +82,10 @@ public class GrappleServerData : Singleton<GrappleServerData>
 			List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
 			foreach(JSONNode replay in JSON.Parse(GetReplaysPost.text))
 			{
-				string playerReplayJson = replay.ToString().Replace("\\", String.Empty);
-				playerReplayJson = playerReplayJson.ToString().Replace("\"[{", "[{");
-				playerReplayJson = playerReplayJson.ToString().Replace("}]\"", "}]");
-				PlayerReplayModel newPlayerReplayModel = JsonUtility.FromJson<PlayerReplayModel> (playerReplayJson);
+                string playerReplayJson = replay.ToString().Replace("\\", String.Empty);
+                playerReplayJson = playerReplayJson.ToString().Replace("\"[{", "[{");
+                playerReplayJson = playerReplayJson.ToString().Replace("}]\"", "}]");
+                PlayerReplayModel newPlayerReplayModel = JsonUtility.FromJson<PlayerReplayModel> (playerReplayJson);
 				replays.Add(newPlayerReplayModel);
 			}
 
