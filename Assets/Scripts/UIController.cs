@@ -134,11 +134,7 @@ public class UIController : MonoBehaviour
 
 	public void UINewUserSaveButtonClicked()
     {
-		if(NewUserInput.text.Length > 0)
-		{
-			if (OnUserSaveButtonClicked != null)
-				OnUserSaveButtonClicked(NewUserInput.text);
-		}
+		OnUserSaveButtonClicked(NewUserInput.text);
     }
 
 	public void UIUserSaveButtonClicked()
@@ -268,7 +264,9 @@ public class UIController : MonoBehaviour
     public void SetErrorText(string errorText)
     {
 		ErrorText.text = errorText;
-		ErrorText.DOFade(1.0f, 0.3f);
-		ErrorText.DOFade(0.0f, 0.3f).SetDelay(5.0f);
+		ErrorText.DOFade(1.0f, 0.5f);
+		ErrorText.DOFade(0.0f, 0.5f).SetDelay(3.0f).OnComplete(() => {
+            ErrorText.text = "";
+         });
     }
 }

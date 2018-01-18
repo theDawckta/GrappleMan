@@ -10,21 +10,13 @@ using Grappler.Data;
 
 public class GrappleServerData : Singleton<GrappleServerData>
 {
-	public delegate void UsernameProcessed(string userName);
-	public event UsernameProcessed OnUsernameProcessed;
-
     private string privateKey = "d41d8cd98f00b204e9800998ecf8427e";
     private string GetReplaysUrl = "http://www.thedawckta.com/grappler/GetReplays.php?";
     private string AddUserURL = "http://www.thedawckta.com/grappler/AddUser.php?";
     private string AddLevelURL = "http://www.thedawckta.com/grappler/AddLevel.php?";
     private string AddReplayURL = "http://www.thedawckta.com/grappler/AddReplay.php?";
-
-    public void StartAddUser(string username)
-    {
-        StartCoroutine(AddUser(username));
-    }
     
-    IEnumerator AddUser(string username)
+    public IEnumerator AddUser(string username, Action<bool> action)
     {
     	username = username.ToUpper();
         string hash = Md5Sum(username + privateKey);
@@ -32,21 +24,23 @@ public class GrappleServerData : Singleton<GrappleServerData>
         WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(username) + "&hash=" + hash);
         yield return NewUserPost;
 
-		if(OnUsernameProcessed != null)
-			OnUsernameProcessed(NewUserPost.text);
+        if (NewUserPost.text == "")
+            action(false);
+		else
+            action(true);
     }
 
-    public void StartAddLevel(string levelName)
-    {
-        StartCoroutine(AddLevel(levelName));
-    }
-
-    IEnumerator AddLevel(string levelName)
+    public IEnumerator AddLevel(string levelName, Action<bool> action)
     {
         string hash = Md5Sum(levelName + privateKey);
 
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
+
+        if (NewLevelPost.text == "")
+            action(false);
+        else
+            action(true);
     }
     
 	public IEnumerator AddReplay(PlayerReplayModel playerReplay, Action<bool> action)

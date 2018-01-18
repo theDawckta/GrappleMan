@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 public class GhostController : MonoBehaviour 
@@ -12,6 +13,7 @@ public class GhostController : MonoBehaviour
     public GameObject Body;
     public GameObject GrappleArm;
     public GameObject WallHookSprite;
+    public Text Username;
 
     public Material GhostHook;
     public Material GhostHookArm;

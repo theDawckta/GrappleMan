@@ -12,7 +12,6 @@ public class SceneController : MonoBehaviour
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
 	public GameObject GhostHolder;
-	public GrappleServerData GrappleData;
 	public GameObject LevelHolder;
 
     private AudioSource _playerAudio;
@@ -64,11 +63,18 @@ public class SceneController : MonoBehaviour
 
 	private void InitPlayerRankScreen(string levelName)
 	{
-		_levelName = levelName;
-		
-		PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
-			ReplaysRecieved(replays);
-		}));
+        _levelName = levelName;
+
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
+            if (NewLevel)
+                StartGame();
+            else
+            {
+                PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
+			        ReplaysRecieved(replays);
+		        }));
+            }
+        }));
 	}
 
 	void ReplaysRecieved(List<PlayerReplayModel> replays)
@@ -101,14 +107,13 @@ public class SceneController : MonoBehaviour
 
 	private void StartGame()
 	{
-		for (int i = 0; i < _ghostPlaybacks.Count; i++) 
-			_ghostPlaybacks [i].StartPlayGhostPlayback ();
+        for (int i = 0; i < _ghostPlaybacks.Count; i++)
+            _ghostPlaybacks[i].StartPlayGhostPlayback();
 
-		Player.Init(_username);
-		_mainCamera.transform.position = _mainCameraStartPosition;
-		_gameOn = true;
-		GrappleServerData.Instance.StartAddLevel(_levelName);
-	}
+        Player.Init(_username);
+        _mainCamera.transform.position = _mainCameraStartPosition;
+        _gameOn = true;
+    }
 
 	void InitGhosts()
 	{
@@ -201,9 +206,32 @@ public class SceneController : MonoBehaviour
         InitGhosts();
     }
 
-    void ProcessNewUsername(string newUsername)
+    void ProcessNewUsername(string username)
     {
-		GrappleData.StartAddUser(newUsername);
+        if(username == string.Empty || username == "")
+        {
+            GrappleUI.SetErrorText("ENTER SOMETHING PLEASE...");
+            return;
+        }
+            
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddUser(username, (Success) => {
+            if(Success)
+            {
+                _username = username;
+                GrappleUI.NoUsernameScreen.SetActive(false);
+                GrappleUI.StartScreen.SetActive(true);
+                GrappleUI.UserEdit.SetActive(true);
+                GrappleUI.UserInput.gameObject.SetActive(false);
+                GrappleUI.UserSave.SetActive(false);
+                GrappleUI.UserCancel.SetActive(false);
+                GrappleUI.SetErrorText("");
+                PlayerPrefs.SetString(Constants.USERNAME_KEY, _username);
+            }
+            else
+            {
+                GrappleUI.SetErrorText("USERNAME HAS ALREADY BEEN SELECTED, PLEASE CHOOSE AGAIN...");
+            }
+        }));
     }
 
     void UsernameProcessed(string username)
@@ -237,7 +265,6 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
-		GrappleData.OnUsernameProcessed += UsernameProcessed;
         Player.OnPlayerCompleted += PlayerFinished;
 		Player.OnPlayerDied += PlayerFinished;
     }
@@ -251,7 +278,6 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
-		GrappleData.OnUsernameProcessed -= UsernameProcessed;
         Player.OnPlayerCompleted -= PlayerFinished;
 		Player.OnPlayerDied -= PlayerFinished;
     }

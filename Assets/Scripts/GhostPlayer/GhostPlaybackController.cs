@@ -35,7 +35,8 @@ public class GhostPlaybackController : MonoBehaviour
 	public void SetPlayerReplayModel(PlayerReplayModel playerReplayModel)
 	{
 		_playerReplayModel = playerReplayModel;
-	}
+        _ghostPlayer.Username.text = _playerReplayModel.UserName;
+    }
 
     public void StartPlayGhostPlayback()
 	{
