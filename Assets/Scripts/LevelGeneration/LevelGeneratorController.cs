@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class SideScrollerGenerator : MonoBehaviour 
+public class LevelGeneratorController : MonoBehaviour 
 {
 
     public Material MeshMaterial;
@@ -15,7 +15,7 @@ public class SideScrollerGenerator : MonoBehaviour
 	public int levelSectionsCount {get{return levelSections.Count;}}
     
     private List<GameObject> levelSections = new List<GameObject>();
-    private List<GameObject> enemySections = new List<GameObject>();
+    //private List<GameObject> enemySections = new List<GameObject>();
     private int VertexCountIndex = 24;
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -31,13 +31,13 @@ public class SideScrollerGenerator : MonoBehaviour
 			Destroy(levelSections[i]);
 		}
 
-        for (int i = 0; i < enemySections.Count; i++)
-        {
-            Destroy(enemySections[i]);
-        }
+        //for (int i = 0; i < enemySections.Count; i++)
+        //{
+        //    Destroy(enemySections[i]);
+        //}
     }
 
-	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, int minEnemyCount, int maxEnemyCount, Vector3 geoLocation) 
+	public void MakeLevel (int lengthMin, int lengthMax, int widthMin, int widthMax, int heightMin, int heightMax, Vector3 geoLocation) 
     {
     	GameObject levelSection = new GameObject();
         
@@ -91,8 +91,7 @@ public class SideScrollerGenerator : MonoBehaviour
         ;
         collider.sharedMesh = mesh;
 
-        levelSection.layer = LayerMask.NameToLayer("Ground");
-        levelSection.tag = "Ground";
+        levelSection.layer = LayerMask.NameToLayer("Wall");
         levelSection.name = "LevelSection";
 		levelSections.Add(levelSection);
         levelSection.transform.position = geoLocation;
@@ -102,11 +101,6 @@ public class SideScrollerGenerator : MonoBehaviour
         triangles.Clear();
         normals.Clear();
         uvs.Clear();
-	}
-	
-	// This is for runtime generation excitement, HOLLAH!
-	void Update () {
-	
 	}
 
     void GenerateMesh(float length, float width, float height, int meshCount, Vector3 location)

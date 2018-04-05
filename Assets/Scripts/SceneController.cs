@@ -11,6 +11,7 @@ public class SceneController : MonoBehaviour
     public UIController GrappleUI;
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
+    public LevelGeneratorController LevelGenerator;
 	public GameObject GhostHolder;
 	public GameObject LevelHolder;
 
@@ -41,24 +42,30 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
-    	// first run init
+    	// first run init for PlayerPrefs
 		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.GHOST_RECORDS))
         {
 			PlayerPrefs.SetInt(Constants.GHOSTS, Constants.GHOST_COMPETITORS);
 			PlayerPrefs.SetInt(Constants.GHOST_RECORDS, Constants.GHOST_COMPETITORS);
         }
-       	
-		GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
-		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
 
-        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
-			GrappleUI.NoUsernameScreen.SetActive(true);
-        else
-        {
-			GrappleUI.UserName.text = _username;
-        	GrappleUI.StartScreen.SetActive(true);
-        }
+        //GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
+        //GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
+
+        //     if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
+        //GrappleUI.NoUsernameScreen.SetActive(true);
+        //     else
+        //     {
+        //GrappleUI.UserName.text = _username;
+        //	GrappleUI.StartScreen.SetActive(true);
+        //}
         //_playerAudio.Play();
+
+        // level generation
+        LevelGenerator.Init("poop");
+        Vector3 levelLocation = new Vector3(Player.transform.position.x - LevelGenerator.TotalLength / 2, Player.transform.position.y + 20.0f, Player.transform.position.z);
+        LevelGenerator.MakeLevel(10, 20, 30, 60, 20, 40, levelLocation);
+        Player.Init();
     }
 
 	private void InitPlayerRankScreen(string levelName)
@@ -110,7 +117,7 @@ public class SceneController : MonoBehaviour
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
-        Player.Init(_username);
+        Player.Init();
         _mainCamera.transform.position = _mainCameraStartPosition;
         _gameOn = true;
     }
