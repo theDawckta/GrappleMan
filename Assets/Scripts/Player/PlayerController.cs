@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
 		HookPlayerInput.InputActive = false;
     }
 
-	public void Init(string userName)
+	public void Init()
     {
         StopAllCoroutines();
         _ropeLineRenderer.enabled = false;
@@ -322,7 +322,7 @@ public class PlayerController : MonoBehaviour
 	        _wallHookFixedJoint.connectedBody = null;
 			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
 			direction = direction * ClimbSpeed / Time.deltaTime;
-			_playerRigidbody.AddForce(direction, ForceMode.Acceleration);
+            _playerRigidbody.AddForce(direction, ForceMode.Force);
 		}
     }
 

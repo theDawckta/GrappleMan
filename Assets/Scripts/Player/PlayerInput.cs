@@ -89,7 +89,8 @@ public class PlayerInput : MonoBehaviour
         if (InputActive)
         {
 #if (UNITY_STANDALONE || UNITY_EDITOR)
-            return (Input.GetKey(KeyCode.Q));
+            Debug.Log(Input.GetKey(KeyCode.Q) ? true : false);
+            return Input.GetKey(KeyCode.Q) ? true : false;
             #elif (UNITY_IOS || UNITY_ANDROID)
             if (Mathf.Abs(_leftSwipe.y) > _minDPadDistance)
             {
@@ -114,7 +115,7 @@ public class PlayerInput : MonoBehaviour
         if (InputActive)
         {
             #if (UNITY_STANDALONE || UNITY_EDITOR)
-                        return Input.GetKey(KeyCode.E) ? true : false;
+            return Input.GetKey(KeyCode.E) ? true : false;
             #elif (UNITY_IOS || UNITY_ANDROID)
             if (Mathf.Abs(_leftSwipe.y) > _minDPadDistance)
             {
