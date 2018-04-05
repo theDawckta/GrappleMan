@@ -64,7 +64,7 @@ public class SceneController : MonoBehaviour
         // level generation
         LevelGenerator.Init("poop");
         Vector3 levelLocation = new Vector3(Player.transform.position.x - LevelGenerator.TotalLength / 2, Player.transform.position.y + 20.0f, Player.transform.position.z);
-        LevelGenerator.MakeLevel(10, 20, 30, 60, 20, 40, levelLocation);
+        LevelGenerator.MakeLevel(2, 6, 30, 60, 5, 10, levelLocation);
         Player.Init();
     }
 
