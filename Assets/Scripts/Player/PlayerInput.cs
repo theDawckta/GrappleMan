@@ -68,9 +68,9 @@ public class PlayerInput : MonoBehaviour
     {
         if (InputActive)
         {
-#if (UNITY_STANDALONE || UNITY_EDITOR)
+            #if (UNITY_STANDALONE || UNITY_EDITOR)
             return (Input.GetButtonDown("Fire1"));
-#elif (UNITY_IOS || UNITY_ANDROID)
+            #elif (UNITY_IOS || UNITY_ANDROID)
             if (_rightTouchDone)
             {
                 _rightTouchDone = false;
@@ -78,7 +78,7 @@ public class PlayerInput : MonoBehaviour
             }
             else
                 return false;
-#endif
+            #endif
         }
         else
             return false;
@@ -88,8 +88,7 @@ public class PlayerInput : MonoBehaviour
     {
         if (InputActive)
         {
-#if (UNITY_STANDALONE || UNITY_EDITOR)
-            Debug.Log(Input.GetKey(KeyCode.Q) ? true : false);
+            #if (UNITY_STANDALONE || UNITY_EDITOR)
             return Input.GetKey(KeyCode.Q) ? true : false;
             #elif (UNITY_IOS || UNITY_ANDROID)
             if (Mathf.Abs(_leftSwipe.y) > _minDPadDistance)
@@ -104,7 +103,7 @@ public class PlayerInput : MonoBehaviour
             }
             else
                 return false;
-#endif
+            #endif
         }
         else
             return false;
@@ -137,8 +136,8 @@ public class PlayerInput : MonoBehaviour
     public bool RopeReleaseUp()
     {
         if (InputActive)
-        {
-#if (UNITY_IOS || UNITY_ANDROID)
+        {   
+            #if (UNITY_IOS || UNITY_ANDROID)
             if (_leftTouchDone)
             {
                 _leftTouchDone = false;
@@ -146,7 +145,7 @@ public class PlayerInput : MonoBehaviour
             }
             else
                 return false;
-#endif
+            #endif
             return false;
         }
         else
@@ -157,19 +156,19 @@ public class PlayerInput : MonoBehaviour
 	{
         if (InputActive)
         {
-#if (UNITY_STANDALONE || UNITY_EDITOR)
+            #if (UNITY_STANDALONE || UNITY_EDITOR)
             Vector3 wallHookPosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,
                                                                                   Input.mousePosition.y,
                                                                                   -(Camera.main.transform.position.z + transform.position.z)));
             Vector3 direction = wallHookPosition - transform.position;
             return direction;
 
-#elif (UNITY_IOS || UNITY_ANDROID)
+            #elif (UNITY_IOS || UNITY_ANDROID)
             if(Mathf.Abs(_rightSwipe.x) > _minSwipeDistance || Mathf.Abs(_rightSwipe.y) > _minSwipeDistance)
                 return _rightSwipe;
             else
             return Vector3.zero;
-#endif
+            #endif
         }
         else
             return Vector3.zero;
@@ -179,12 +178,12 @@ public class PlayerInput : MonoBehaviour
     {
         if (InputActive)
         {
-#if (UNITY_STANDALONE || UNITY_EDITOR)
+            #if (UNITY_STANDALONE || UNITY_EDITOR)
             {
                 return Input.GetAxis("Horizontal");
             }
 
-#elif (UNITY_IOS || UNITY_ANDROID)
+            #elif (UNITY_IOS || UNITY_ANDROID)
             if (Mathf.Abs(_leftSwipe.x) > _minDPadDistance)
             {   
                 if (_leftSwipe.x > 0.0f)
@@ -196,7 +195,7 @@ public class PlayerInput : MonoBehaviour
             }
             else
                 return 0.0f;
-#endif
+            #endif
         }
         else
             return 0.0f;

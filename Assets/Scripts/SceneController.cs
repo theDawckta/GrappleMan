@@ -110,7 +110,7 @@ public class SceneController : MonoBehaviour
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
-        Player.Init(_username);
+        Player.Init();
         _mainCamera.transform.position = _mainCameraStartPosition;
         _gameOn = true;
     }
