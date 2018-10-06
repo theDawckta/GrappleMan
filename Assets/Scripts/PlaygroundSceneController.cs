@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 public class PlaygroundSceneController : MonoBehaviour
 {
     public PlayerController Player;
+    public WaypointController Waypoint;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
@@ -28,13 +29,42 @@ public class PlaygroundSceneController : MonoBehaviour
     void Start()
     {
         Player.Init();
+        Waypoint.Init(Player.transform.position);
+        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+    }
+
+    void Waypoint_OnGatesPassed()
+    {
+        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+    }
+
+    void Waypoint_OnWaypointHidden()
+    {
+        Player.PlayerArrow.SetActive(true);
+    }
+
+    void Waypoint_OnWaypointVisible()
+    {
+        Player.PlayerArrow.SetActive(false);
+    }
+
+    void Waypoint_OnGatesFinished()
+    {
+        Player.Init();
+        Waypoint.Init(Player.transform.position);
     }
 
     void OnEnable()
 	{
+        Waypoint.OnGatesPassed += Waypoint_OnGatesPassed;
+        Waypoint.OnWaypointVisible += Waypoint_OnWaypointVisible;
+        Waypoint.OnWaypointHidden += Waypoint_OnWaypointHidden;
+        Waypoint.OnGatesFinished += Waypoint_OnGatesFinished;
     }
 
 	void OnDisable()
 	{
+        Waypoint.OnGatesPassed -= Waypoint_OnGatesPassed;
+        Waypoint.OnGatesFinished -= Waypoint_OnGatesFinished;
     }
 }

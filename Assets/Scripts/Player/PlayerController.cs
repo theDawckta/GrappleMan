@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
+    public GameObject PlayerArrow;
     public float Speed = 2.5f;
 	public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 10.0f;
@@ -50,6 +51,8 @@ public class PlayerController : MonoBehaviour
     private bool _hooked = false;
     private bool _hookShooting = false;
     private bool _floating = false;
+    private Vector3 _waypointLocation = new Vector3();
+    
 
     void Awake()
     {
@@ -72,6 +75,7 @@ public class PlayerController : MonoBehaviour
         _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
 		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
 		HookPlayerInput.InputActive = false;
+        PlayerArrow.SetActive(false);
     }
 
 	public void Init()
@@ -90,6 +94,12 @@ public class PlayerController : MonoBehaviour
         transform.position = _playerStartPosition;
 		_playerRecorderController.StartRecording();
 		HookPlayerInput.InputActive = true;
+        PlayerArrow.SetActive(false);
+    }
+
+    public void SetWaypointLocation(Vector3 newPosition)
+    {
+        _waypointLocation = newPosition;
     }
 
     void Update()
@@ -100,6 +110,7 @@ public class PlayerController : MonoBehaviour
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
         HandleBodyRotation();
+        HandleArrow();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -393,6 +404,11 @@ public class PlayerController : MonoBehaviour
 			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
 			PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, zAngle);
 		}
+    }
+
+    void HandleArrow()
+    {
+        PlayerArrow.transform.LookAt(_waypointLocation, Vector3.right );
     }
 
     void HandleShoulderRotation()
