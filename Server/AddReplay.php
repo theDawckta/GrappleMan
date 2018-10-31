@@ -1,4 +1,6 @@
 <?php
+    ini_set('display_errors', 1);
+
 	$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
 
 	// Check connection
@@ -20,7 +22,6 @@
 	{
 		$getUserIdQuery = "SELECT Id FROM Users WHERE UserName = '$politestring';";
 		$getUserIdResult = mysqli_query($db, $getUserIdQuery) or die(mysqli_error($db));
-
 		$getLevelIdQuery = "SELECT Id FROM Levels WHERE LevelName = '$levelName';";
 		$getLevelIdResult = mysqli_query($db, $getLevelIdQuery) or die(mysqli_error($db));
 
@@ -29,7 +30,7 @@
 			$userId = mysqli_fetch_assoc($getUserIdResult)['Id'];
 			$levelId = mysqli_fetch_assoc($getLevelIdResult)['Id'];
 
-			$query = "INSERT INTO Replays (UserId, LevelId, ReplayTime, ReplayData)VALUES ($userId[0], $levelId[0], $replayTime, '$replayData');";
+			$query = "INSERT INTO Replays (UserId, LevelId, ReplayTime, ReplayData)VALUES ($userId, $levelId, $replayTime, '$replayData');";
 			echo("ReplayData: " . $replayData);
 			$result = mysqli_query($db, $query) or die(mysqli_error($db));
 		}

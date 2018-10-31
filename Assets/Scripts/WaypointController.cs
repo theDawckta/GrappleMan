@@ -18,6 +18,7 @@ public class WaypointController : MonoBehaviour
 
     public GameObject GateCollider;
     public int NumberOfGates = 5;
+    public ParticleSystem GateParticles;
     [HideInInspector]
     public Vector3 CurrentWaypointPosition;
 
@@ -55,12 +56,14 @@ public class WaypointController : MonoBehaviour
         }
     }
 
-    public void Init(Vector3 startPosition)
+    public void Init(Vector3 startPosition, int numOfGates)
     {
+        NumberOfGates = numOfGates;
         _remainingGates = NumberOfGates;
         transform.position = startPosition;
         _gateLineRenderer.SetPositions(new Vector3[0]);
         MakeWaypoint();
+        GateParticles.Play();
     }
 
     private void MakeWaypoint()
@@ -76,7 +79,7 @@ public class WaypointController : MonoBehaviour
         //CreatePrimitive(transform.position, Color.red);
         if(_remainingGates == NumberOfGates)
         {
-            for (int i = 0; i < 360.0f; i = i + 30)
+            for (int i = 1; i < 360.0f; i = i + 30)
             {
                 direction = Quaternion.AngleAxis(i, Vector3.back) * Vector3.right;
                 //Debug.DrawRay(transform.position, direction * 1000.0f, Color.red, 60.0f);
@@ -88,7 +91,7 @@ public class WaypointController : MonoBehaviour
         }
         else
         {
-            for (int i = 0; i < 180.0f; i = i + 30)
+            for (int i = 1; i < 180.0f; i = i + 30)
             {
                 direction = Quaternion.AngleAxis(i, Vector3.back) * _gateNormal;
                 direction = Quaternion.AngleAxis(105, Vector3.back) * direction;
@@ -155,7 +158,10 @@ public class WaypointController : MonoBehaviour
             else
             {
                 if(OnGatesFinished != null)
+                {
+                    GateParticles.Stop();
                     OnGatesFinished();
+                }
                 _remainingGates = NumberOfGates;
             }     
         }

@@ -29,7 +29,7 @@ public class PlaygroundSceneController : MonoBehaviour
     void Start()
     {
         Player.Init();
-        Waypoint.Init(Player.transform.position);
+        Waypoint.Init(Player.transform.position, 5);
         Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
     }
 
@@ -51,7 +51,7 @@ public class PlaygroundSceneController : MonoBehaviour
     void Waypoint_OnGatesFinished()
     {
         Player.Init();
-        Waypoint.Init(Player.transform.position);
+        Waypoint.Init(Player.transform.position, 5);
     }
 
     void OnEnable()
@@ -65,6 +65,8 @@ public class PlaygroundSceneController : MonoBehaviour
 	void OnDisable()
 	{
         Waypoint.OnGatesPassed -= Waypoint_OnGatesPassed;
+        Waypoint.OnGatesFinished -= Waypoint_OnGatesFinished;
+        Waypoint.OnWaypointHidden -= Waypoint_OnWaypointHidden;
         Waypoint.OnGatesFinished -= Waypoint_OnGatesFinished;
     }
 }

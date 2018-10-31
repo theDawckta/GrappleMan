@@ -11,6 +11,7 @@ public class SceneController : MonoBehaviour
     public UIController GrappleUI;
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
+    public WaypointController Waypoint;
 	public GameObject GhostHolder;
 	public GameObject LevelHolder;
 
@@ -66,14 +67,9 @@ public class SceneController : MonoBehaviour
         _levelName = levelName;
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
-            if (NewLevel)
-                StartGame();
-            else
-            {
-                PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
-			        ReplaysRecieved(replays);
-		        }));
-            }
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
+		        ReplaysRecieved(replays);
+	        }));
         }));
 	}
 
@@ -112,6 +108,8 @@ public class SceneController : MonoBehaviour
 
         Player.Init();
         _mainCamera.transform.position = _mainCameraStartPosition;
+        Waypoint.Init(Player.transform.position, 5);
+        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
         _gameOn = true;
     }
 
@@ -161,15 +159,15 @@ public class SceneController : MonoBehaviour
         ghost.StartPlayGhostPlayback();
     }
 
-    void PlayerFinished(PlayerReplayModel playerPlayback, bool playerCompleted)
+    void PlayerFinished()
     {
         if (_gameOn)
         {
+            PlayerReplayModel playerReplay = Player.PlayerCompleted();
             GrappleUI.EndGame();
-
             _gameOn = false;
-            playerPlayback.LevelName = _levelName;
-            PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerPlayback, (Success) => {
+            playerReplay.LevelName = _levelName;
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerReplay, (Success) => {
                 // placeholder if needed
             }));
         }
@@ -256,6 +254,21 @@ public class SceneController : MonoBehaviour
         AudioListener.volume = volume;
     }
 
+    void OnGatesPassed()
+    {
+        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+    }
+
+    void OnWaypointHidden()
+    {
+        Player.PlayerArrow.SetActive(true);
+    }
+
+    void OnWaypointVisible()
+    {
+        Player.PlayerArrow.SetActive(false);
+    }
+
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
@@ -265,8 +278,10 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
-        Player.OnPlayerCompleted += PlayerFinished;
-		Player.OnPlayerDied += PlayerFinished;
+        Waypoint.OnGatesPassed += OnGatesPassed;
+        Waypoint.OnWaypointVisible += OnWaypointVisible;
+        Waypoint.OnWaypointHidden += OnWaypointHidden;
+        Waypoint.OnGatesFinished += PlayerFinished;
     }
 
 	void OnDisable()
@@ -278,7 +293,9 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
-        Player.OnPlayerCompleted -= PlayerFinished;
-		Player.OnPlayerDied -= PlayerFinished;
+        Waypoint.OnGatesPassed -= OnGatesPassed;
+        Waypoint.OnWaypointVisible -= OnWaypointVisible;
+        Waypoint.OnWaypointHidden -= OnWaypointHidden;
+        Waypoint.OnGatesFinished -= PlayerFinished;
     }
 }

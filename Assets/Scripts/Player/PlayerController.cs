@@ -8,11 +8,6 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-	public delegate void OnPlayerCompletedEvent(PlayerReplayModel playerPlaybackModel, bool playerWon);
-	public event OnPlayerCompletedEvent OnPlayerCompleted;
-	public delegate void OnPlayerDiedEvent(PlayerReplayModel playerPlaybackModel, bool playerDied);
-    public event OnPlayerDiedEvent OnPlayerDied;
-
     public GameObject RopeOrigin;
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
@@ -428,36 +423,11 @@ public class PlayerController : MonoBehaviour
         RopeOrigin.transform.rotation = grappleShoulderRotation;
     }
 
-	IEnumerator PlayerDied()
-    {
-    	// handle death animation here
-		_playerRecorderController.DoneRecording();
-        if(OnPlayerDied != null)
-			OnPlayerDied(_playerRecorderController.PlayerPlaybackData, false);
-        yield return null;
-    }
-
-	IEnumerator PlayerCompleted()
+	public PlayerReplayModel PlayerCompleted()
     {
     	// handle completed animation here
 		PlayerReplayModel playerReplay = _playerRecorderController.DoneRecording();
-        if(OnPlayerCompleted != null)
-			OnPlayerCompleted(playerReplay, true);
-        yield return null;
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-		if (collision.gameObject.layer == LayerMask.NameToLayer("Lava") && HookPlayerInput.InputActive)
-        {
-        	HookPlayerInput.InputActive = false;
-            StartCoroutine(PlayerDied());
-        }
-		else if (collision.gameObject.layer == LayerMask.NameToLayer("Winning") && HookPlayerInput.InputActive)
-        {
-			HookPlayerInput.InputActive = false;
-			StartCoroutine(PlayerCompleted());
-        }
+        return playerReplay;
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
