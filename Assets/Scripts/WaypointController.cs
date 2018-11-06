@@ -145,12 +145,14 @@ public class WaypointController : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         float angle = Vector3.Dot(other.attachedRigidbody.velocity, GateCollider.transform.forward);
+        _remainingGates = _remainingGates - 1;
+
         if (angle > 0)
         {
             if (_remainingGates > 0)
             {
                 Debug.DrawRay(_gateLineRenderer.GetPosition(0), (_gateLineRenderer.GetPosition(1) - _gateLineRenderer.GetPosition(0)) * 1000.0f, Color.magenta, 10.0f);
-                _remainingGates = _remainingGates - 1;
+
                 transform.position = GateCollider.transform.position;
                 MakeWaypoint();
                 OnGatesPassed();

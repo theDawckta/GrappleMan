@@ -108,7 +108,7 @@ public class SceneController : MonoBehaviour
 
         Player.Init();
         _mainCamera.transform.position = _mainCameraStartPosition;
-        Waypoint.Init(Player.transform.position, 5);
+        Waypoint.Init(Player.transform.position, 1);
         Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
         _gameOn = true;
     }

@@ -22,12 +22,26 @@ public class PlayerRecorderController : MonoBehaviour
 		_playerPlayback = new PlayerReplayModel ();
     }
 
+    void Update()
+    {
+        if (_recording)
+        {
+            if (_timePassed > _pollRate)
+            {
+                AddState(_timePassed);
+                _timePassed = 0.0f;
+            }
+            else
+                _timePassed = _timePassed + Time.deltaTime;
+        }
+    }
+
 	public void StartRecording()
     {
         _playerPlayback = new PlayerReplayModel();
         _recording = true;
+        _timePassed = 0.0f;
         AddState(_timePassed);
-        StartCoroutine("Record");
     }
 
     public void PauseRecording()
@@ -40,29 +54,9 @@ public class PlayerRecorderController : MonoBehaviour
     	_recording = true;
     }
 
-	IEnumerator Record()
-    {
-        _timePassed = 0.0f;
-
-        while(_recording)
-        {
-            if(_timePassed > _pollRate)
-            {
-				AddState(_timePassed);
-				_timePassed = 0.0f;
-            }
-            else
-				_timePassed = _timePassed + Time.deltaTime;
-
-            yield return null;
-        }
-        yield return null;
-    }
-
     public PlayerReplayModel DoneRecording()
 	{
 		AddState(_timePassed, true);
-        StopCoroutine("Record");
 		_recording = false;
 		return new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), SceneManager.GetActiveScene().name, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
     }
