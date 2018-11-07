@@ -30,12 +30,12 @@ public class PlaygroundSceneController : MonoBehaviour
     {
         Player.Init();
         Waypoint.Init(Player.transform.position, 5);
-        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
     void Waypoint_OnGatesPassed()
     {
-        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
     void Waypoint_OnWaypointHidden()

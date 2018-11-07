@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     private bool _hooked = false;
     private bool _hookShooting = false;
     private bool _floating = false;
-    private Vector3 _waypointLocation = new Vector3();
+    private Vector3 _arrowDestination = new Vector3();
     
 
     void Awake()
@@ -92,9 +92,14 @@ public class PlayerController : MonoBehaviour
         PlayerArrow.SetActive(false);
     }
 
-    public void SetWaypointLocation(Vector3 newPosition)
+    public void Disable()
     {
-        _waypointLocation = newPosition;
+        HookPlayerInput.InputActive = false;
+    }
+
+    public void SetArrowDestination(Vector3 newPosition)
+    {
+        _arrowDestination = newPosition;
     }
 
     void Update()
@@ -109,13 +114,17 @@ public class PlayerController : MonoBehaviour
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
+            Debug.Log("HOOK BUTTON WORKED");
+            Debug.Log("GOT DIRECTION: " + HookPlayerInput.GetDirection());
             if (!_hooked)
             {
+                Debug.Log("WASNT HOOKED USING DIRECTION" + HookPlayerInput.GetDirection());
                 CheckHookHit(HookPlayerInput.GetDirection());
             }
             else if(HookPlayerInput.GetDirection() != Vector3.zero)
             {
-            	if(!_grounded)
+                Debug.Log("WAS HOOKED BOOSTING" + HookPlayerInput.GetDirection());
+                if (!_grounded)
                 	BoostPlayer();
 				_hookShooting = !_hookShooting;
 				StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
@@ -123,6 +132,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.ClimbButtonPressed())
         {
+            Debug.Log("CLIMBING INPUT WORKED");
             if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
                 ClimbRope();
         }
@@ -192,8 +202,6 @@ public class PlayerController : MonoBehaviour
 		    	}
 			}
         }
-
-        HandleMove();
 
         // show linerenderer if active
         if ((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
@@ -312,13 +320,6 @@ public class PlayerController : MonoBehaviour
 	    _ropeBendAngles.RemoveAt(_ropeBendAngles.Count - 1);
 	}
 
-	void HandleMove()
-    {
-        // moves player left and right
-        if (_grounded && _playerRigidbody.velocity.magnitude < MaxGroundVelocity)
-            _playerRigidbody.AddForce(new Vector3(HookPlayerInput.Move() * Speed, 0.0f,  0.0f), ForceMode.VelocityChange);
-    }
-
     void ClimbRope()
     {
 		Vector3 direction;
@@ -344,12 +345,12 @@ public class PlayerController : MonoBehaviour
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
                                                                      transform.GetComponent<Rigidbody>().velocity);
-			if (playerMovingTowardHook || HookPlayerInput.RopeReleasePressed())
+            if (playerMovingTowardHook)
             {
                 _floating = true;
                _wallHookFixedJoint.connectedBody = null;
             }
-            else if(!playerMovingTowardHook || HookPlayerInput.RopeReleaseUp())
+            else if (!playerMovingTowardHook)
             {
                 _floating = false;
                 _wallHookFixedJoint.connectedBody = _playerRigidbody;
@@ -403,7 +404,7 @@ public class PlayerController : MonoBehaviour
 
     void HandleArrow()
     {
-        PlayerArrow.transform.LookAt(_waypointLocation, Vector3.right );
+        PlayerArrow.transform.LookAt(_arrowDestination, Vector3.right );
     }
 
     void HandleShoulderRotation()

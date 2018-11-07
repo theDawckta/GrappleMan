@@ -12,8 +12,9 @@ public class PlayerRecorderController : MonoBehaviour
 
     private PlayerController _player;
 	private PlayerReplayModel _playerPlayback;
-    private float _pollRate = 0.05f; 
+    private float _pollRate = 0.1f; 
     private bool _recording = false;
+    private float _timeStarted = 0.0f;
     private float _timePassed = 0.0f;
 
     void Awake()
@@ -26,21 +27,22 @@ public class PlayerRecorderController : MonoBehaviour
     {
         if (_recording)
         {
+            _timePassed = _timePassed + Time.deltaTime;
+
             if (_timePassed > _pollRate)
             {
                 AddState(_timePassed);
                 _timePassed = 0.0f;
             }
-            else
-                _timePassed = _timePassed + Time.deltaTime;
         }
     }
 
 	public void StartRecording()
     {
         _playerPlayback = new PlayerReplayModel();
-        _recording = true;
+        _timeStarted = Time.time;
         _timePassed = 0.0f;
+        _recording = true;
         AddState(_timePassed);
     }
 

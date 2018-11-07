@@ -8,8 +8,8 @@ using UnityEngine;
 
 public class GhostPlaybackController : MonoBehaviour 
 {
-    public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
-    public event OnGhostCompletedEvent OnGhostCompleted;
+    //public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
+    //public event OnGhostCompletedEvent OnGhostCompleted;
 
     private GhostController _ghostPlayer;
 	private PlayerStateModel _tempPlayerState;
@@ -20,6 +20,9 @@ public class GhostPlaybackController : MonoBehaviour
 	private Quaternion _lerpFromShoulderRotation;
 	private Vector3 _lerpFromWallHookPosition;
 	private float _timePassed = 0.0f;
+    float timePassedTotal = 0.0f;
+    float tempPlayerDeltaTime = 0.0f;
+    private float _startTime = 0.0f;
 	private PlayerReplayModel _playerReplayModel = new PlayerReplayModel();
 
 	void Awake () 
@@ -40,12 +43,13 @@ public class GhostPlaybackController : MonoBehaviour
 
     public void StartPlayGhostPlayback()
 	{
-         _timePassed = 0.0f;
+        tempPlayerDeltaTime = 0.0f;
 
-		if(_playerReplayModel.HasStates)
+        if (_playerReplayModel.HasStates)
 		{
 			transform.position = _playerReplayModel.StartingPosition;
             _ghostPlayer.FadeIn(0.3f);
+            _startTime = Time.time;
             StartCoroutine(PlayGhostPlayback());
 		}
 		else
@@ -59,6 +63,10 @@ public class GhostPlaybackController : MonoBehaviour
 		int previousPositionCount = _ghostPlayer.RopeLineRenderer.positionCount;
         bool RemoveLastLineRendererPosition = false;
 		_tempPlayerState = _playerReplayModel.GetNextState();
+        timePassedTotal = timePassedTotal + _timePassed;
+        _timePassed = 0.0f;
+
+        tempPlayerDeltaTime = tempPlayerDeltaTime + _tempPlayerState.DeltaTime;
 
 		_lerpFromPosition = _ghostPlayer.transform.position;
 		_lerpFromRotation = _ghostPlayer.GhostPlayerSprite.transform.rotation;
@@ -105,8 +113,7 @@ public class GhostPlaybackController : MonoBehaviour
             }
         }
 
-        _timePassed = 0.0f;
-		while (_timePassed < _tempPlayerState.DeltaTime)
+        while (Time.time - _startTime < tempPlayerDeltaTime)
 		{
 			float percentageComplete = _timePassed / _tempPlayerState.DeltaTime;
 			_ghostPlayer.transform.position = Vector3.Lerp(_lerpFromPosition, _tempPlayerState.BodyPosition, percentageComplete);
@@ -142,7 +149,7 @@ public class GhostPlaybackController : MonoBehaviour
             }
 
             _timePassed = _timePassed + Time.deltaTime;
-			yield return null;
+            yield return new WaitForEndOfFrame();
 		}
 
 		_ghostPlayer.transform.position = _tempPlayerState.BodyPosition;
@@ -182,7 +189,6 @@ public class GhostPlaybackController : MonoBehaviour
 
     void GhostCompleted()
     {
-        if (OnGhostCompleted != null)
-            OnGhostCompleted(this, _playerReplayModel);
+        Destroy(gameObject);
     }
 }

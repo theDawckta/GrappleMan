@@ -49,7 +49,6 @@ public class UIController : MonoBehaviour
 	public Text UserName;
 	public Text ErrorText;
 	public Text TotalGhostRecordsLocal;
-	public Text TotalGhostRecordsServer;
 	public GameObject PlayerRanksScreen;
 	public PlayerRowController PlayerRow;
 
@@ -75,8 +74,8 @@ public class UIController : MonoBehaviour
     {
     	if (_timeStarted == true)
     	{
-    		UpdateTimer();
-			_timer += Time.deltaTime;
+            _timer = _timer + Time.deltaTime;
+            TimerText.text = GetTimeText(_timer);
 		}
     }
 
@@ -85,7 +84,7 @@ public class UIController : MonoBehaviour
 		for (int i = 0; i < playerReplays.Count; i++)
 		{
 			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
-			playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, playerReplays[i].ReplayTime.ToString());
+            playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, GetTimeText(playerReplays[i].ReplayTime));
 
 			playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
 		}
@@ -94,7 +93,6 @@ public class UIController : MonoBehaviour
 			UIStartButtonClicked ();
 		else
 		{
-			StartScreen.SetActive(false);
 			StartButton.gameObject.SetActive(true);
 			PlayerRanksScreen.SetActive(true);
 		}
@@ -102,12 +100,12 @@ public class UIController : MonoBehaviour
 
 	public void UILevelButtonClicked(string levelName)
 	{
-		OnLevelSelectButtonClicked(levelName);
+        StartScreen.SetActive(false);
+        OnLevelSelectButtonClicked(levelName);
 	}
 
 	public void UIStartButtonClicked()
     {
-		StartScreen.SetActive (false);
 		StartButton.gameObject.SetActive(false);
 		PlayerRanksScreen.SetActive(false);
 		if(OnStartButtonClicked != null)
@@ -189,7 +187,7 @@ public class UIController : MonoBehaviour
         if (OnGhostRecordsValueChanged != null)
         {
             OnGhostRecordsValueChanged(Int32.Parse(GhostRecordsInput.text));
-            PlayerPrefs.SetInt(Constants.GHOST_RECORDS, Int32.Parse(GhostRecordsInput.text));
+            PlayerPrefs.SetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS, Int32.Parse(GhostRecordsInput.text));
         }
     }
 
@@ -205,6 +203,7 @@ public class UIController : MonoBehaviour
 		{
 			Destroy(playerRow.gameObject);
 		}
+        Debug.Log(_timer);
         _timeStarted = false;
     }
 
@@ -240,12 +239,12 @@ public class UIController : MonoBehaviour
 		ConfigScreen.gameObject.SetActive(!ConfigScreen.gameObject.activeSelf);
     }
 
-	void UpdateTimer ()
+    string GetTimeText (float time)
 	{
-		TimerText.text = string.Format("{0:00}:{1:00}.{2:00}",
-						     Mathf.Floor(_timer / 60),
-							 Mathf.Floor(_timer) % 60,
-							 Mathf.Floor((_timer * 100) % 100));
+		return string.Format("{0:00}:{1:00}.{2:00}",
+						     Mathf.Floor(time / 60),
+							 Mathf.Floor(time) % 60,
+							 Mathf.Floor((time * 100) % 100));
     }
 
     IEnumerator FPS()

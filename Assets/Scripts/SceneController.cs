@@ -19,9 +19,7 @@ public class SceneController : MonoBehaviour
     private AudioClip _song;
     private Camera _mainCamera;
     private Vector3 _mainCameraStartPosition;
-	private List<PlayerReplayModel> _playerReplays = new List<PlayerReplayModel>();
     private List<GhostPlaybackController> _ghostPlaybacks = new List<GhostPlaybackController>();
-	private int _playerReplayIndex = 0;
     private bool _gameOn = false;
 	private string _username = "User";
 	private GameObject _currentLevel;
@@ -36,23 +34,25 @@ public class SceneController : MonoBehaviour
         _playerAudio.loop = true;
         _mainCamera = Camera.main;
         _mainCameraStartPosition = _mainCamera.transform.position;
-        PlayerReplay.Init();
+        PlayerReplay.InitLocalRecords();
 		_username = PlayerPrefs.GetString(Constants.USERNAME_KEY);
     }
 
     void Start()
     {
     	// first run init
-		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.GHOST_RECORDS))
+		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.NUM_OF_LOCAL_GHOST_RECORDS))
         {
 			PlayerPrefs.SetInt(Constants.GHOSTS, Constants.GHOST_COMPETITORS);
-			PlayerPrefs.SetInt(Constants.GHOST_RECORDS, Constants.GHOST_COMPETITORS);
+			PlayerPrefs.SetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS, Constants.GHOST_COMPETITORS);
         }
        	
 		GrappleUI.GhostsInput.text = PlayerPrefs.GetInt(Constants.GHOSTS).ToString();
-		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.GHOST_RECORDS).ToString();
+		GrappleUI.GhostRecordsInput.text = PlayerPrefs.GetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS).ToString();
 
-        if(PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
+        GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
+
+        if (PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
 			GrappleUI.NoUsernameScreen.SetActive(true);
         else
         {
@@ -67,7 +67,7 @@ public class SceneController : MonoBehaviour
         _levelName = levelName;
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
-            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=>{
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=> {
 		        ReplaysRecieved(replays);
 	        }));
         }));
@@ -76,7 +76,6 @@ public class SceneController : MonoBehaviour
 	void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
 		int tempNumOfGhosts = (replays.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? replays.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
-		_playerReplays = replays;
 		_currentLevel = (GameObject)Instantiate(Resources.Load ("Levels/" + _levelName));
 
 		foreach (Transform child in LevelHolder.transform) 
@@ -84,16 +83,21 @@ public class SceneController : MonoBehaviour
 		
 		_currentLevel.transform.SetParent (LevelHolder.transform, false);
 
-		_playerReplays = replays;
+        for (int i = 0; i < _ghostPlaybacks.Count; i++)
+        {
+            if (_ghostPlaybacks[i] != null)
+            {
+                Destroy(_ghostPlaybacks[i].gameObject);
+            }
+        }
 
-		InitGhosts ();
+        _ghostPlaybacks = new List<GhostPlaybackController>();
 
 		for (int i = 0; i < tempNumOfGhosts; i++)
 		{
 			GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
 			ghostPlayback.transform.SetParent(GhostHolder.transform);
-			ghostPlayback.OnGhostCompleted += GhostCompleted;
-			ghostPlayback.SetPlayerReplayModel(_playerReplays[i]);
+			ghostPlayback.SetPlayerReplayModel(replays[i]);
 			_ghostPlaybacks.Add(ghostPlayback);
 		}
 
@@ -109,25 +113,9 @@ public class SceneController : MonoBehaviour
         Player.Init();
         _mainCamera.transform.position = _mainCameraStartPosition;
         Waypoint.Init(Player.transform.position, 1);
-        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
         _gameOn = true;
     }
-
-	void InitGhosts()
-	{
-		_playerReplayIndex = 0;
-		GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfCompletedRecords.ToString();
-		GrappleUI.TotalGhostRecordsServer.text = PlayerReplay.NumOfCompletedRecords.ToString();
-
-		// destroy current ghostPlaybacks
-		for (int i = 0; i < _ghostPlaybacks.Count; i++)
-		{
-			_ghostPlaybacks[i].OnGhostCompleted -= GhostCompleted;
-			_ghostPlaybacks[i].StopAllCoroutines();
-			Destroy(_ghostPlaybacks[i].gameObject);
-		}
-		_ghostPlaybacks = new List<GhostPlaybackController>();
-	}
 
 	void ResetGame()
     {
@@ -140,30 +128,12 @@ public class SceneController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    void GhostCompleted(GhostPlaybackController ghost, PlayerReplayModel playerPlayback)
-    {
-        //Debug.Log("GHOST " + ghost.GhostIndex + " RECIEVED IN SCENE CONTROLLER");
-        // find the playerPlaybackModel this ghost was using and release it, add ghost to que to be restarted
-        for (int i = 0; i < _playerReplays.Count; i++)
-        {
-            if (playerPlayback == _playerReplays[i])
-            {
-				_playerReplays[i].InUse = false;
-                _playerReplays[i].SetStateIndex(0);
-                break;
-            }
-        }
-        SetNextPlayerPlaybackIndex();
-		ghost.SetPlayerReplayModel(_playerReplays [_playerReplayIndex]);
-        _playerReplays[_playerReplayIndex].InUse = true;
-        ghost.StartPlayGhostPlayback();
-    }
-
     void PlayerFinished()
     {
         if (_gameOn)
         {
             PlayerReplayModel playerReplay = Player.PlayerCompleted();
+            Player.Disable();
             GrappleUI.EndGame();
             _gameOn = false;
             playerReplay.LevelName = _levelName;
@@ -173,35 +143,16 @@ public class SceneController : MonoBehaviour
         }
     }
 
-    public void SetNextPlayerPlaybackIndex()
-    {
-        if (!_playerReplays[_playerReplayIndex].InUse)
-            return;
-
-        while(_playerReplays[_playerReplayIndex].InUse)
-        {
-            _playerReplayIndex++;
-            if (_playerReplayIndex >= _playerReplays.Count)
-             _playerReplayIndex = 0;
-        }
-    }
-
-	public void SetPlayerReplayModel(List<PlayerReplayModel> playerReplayModel)
-	{
-		_playerReplays = playerReplayModel;
-	}
-
     void GhostsValueChanged(int value)
     {
 		PlayerPrefs.SetInt(Constants.GHOSTS, value);
-        InitGhosts();
     }
 
     void GhostRecordsValueChanged(int value)
     {
-		PlayerPrefs.SetInt(Constants.GHOST_RECORDS, value);
-        PlayerReplay.Init();
-        InitGhosts();
+		PlayerPrefs.SetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS, value);
+        PlayerReplay.InitLocalRecords();
+        GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
     }
 
     void ProcessNewUsername(string username)
@@ -256,7 +207,7 @@ public class SceneController : MonoBehaviour
 
     void OnGatesPassed()
     {
-        Player.SetWaypointLocation(Waypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
     void OnWaypointHidden()

@@ -13,7 +13,7 @@ namespace Grappler.Data
 {
 	public class PlayerReplay : Singleton<PlayerReplay>
     {
-        public static int NumOfCompletedRecords { get; private set;}
+        public static int NumOfLocalRecords { get; private set;}
 
         private static string _playerCompletedDataLocation = string.Format("{0}/{1}", Application.persistentDataPath, "PlayerDataCompleted");
         private static string _playerDataFileName = string.Format("/{0}_{1}_", "User", "GhostData");
@@ -24,19 +24,19 @@ namespace Grappler.Data
 			_dataController = GrappleServerData.Instance;
 		}
 
-        public static void Init()
+        public static void InitLocalRecords()
         {
 			Directory.CreateDirectory(_playerCompletedDataLocation);
 
 			// trim any files greater than PlayerPrefs Ghost_RECORDS
-			int tempNumOfRecords = PlayerPrefs.GetInt(Constants.GHOST_RECORDS);
+			int tempNumOfRecords = PlayerPrefs.GetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS);
 			while (File.Exists(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json"))
             {
 				File.Delete(_playerCompletedDataLocation + _playerDataFileName + tempNumOfRecords + ".json");
                 tempNumOfRecords = tempNumOfRecords + 1;
             }
 
-			NumOfCompletedRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
+			NumOfLocalRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
         }
 
         public static void ClearData()
@@ -64,7 +64,7 @@ namespace Grappler.Data
 				}
 			}));
 
-			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(playerPlayback.LevelName, PlayerPrefs.GetInt(Constants.GHOST_RECORDS));
+			List<PlayerReplayModel> playerReplayModels = GetPlayerReplaysLocal(playerPlayback.LevelName, PlayerPrefs.GetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS));
 
 			if (playerReplayModels.Count == 0)
 			{
@@ -84,7 +84,7 @@ namespace Grappler.Data
 				}
 			}
 
-			if (playerReplayModels.Count < PlayerPrefs.GetInt(Constants.GHOST_RECORDS))
+			if (playerReplayModels.Count < PlayerPrefs.GetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS))
 				SavePlayerReplayLocal(playerPlayback, playerReplayModels.Count, _playerCompletedDataLocation);
 			
 			action (true);
@@ -122,7 +122,7 @@ namespace Grappler.Data
             }
 
             // set NumOfCompletedRecords
-			NumOfCompletedRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
+			NumOfLocalRecords = Directory.GetFiles(_playerCompletedDataLocation, "*.json").Length;
         }
 
 		public IEnumerator GetPlayerReplays(string levelName, Action<List<PlayerReplayModel>> action)
@@ -199,7 +199,6 @@ namespace Grappler.Data
 			{
 				for (int i = 0; i < ReplayData.Count; i++)
 					ReplayTime = ReplayTime + ReplayData[i].DeltaTime;
-				Debug.Log (ReplayTime);
 			}
         }
 
