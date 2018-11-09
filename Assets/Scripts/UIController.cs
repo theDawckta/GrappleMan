@@ -32,6 +32,7 @@ public class UIController : MonoBehaviour
 	public delegate void UserSaveButtonClicked(string value);
 	public event UserSaveButtonClicked OnUserSaveButtonClicked;
 
+    public RectTransform UIPanel;
     public InputField SeedInputField;
     public Text FPSText;
     public Text TimerText;
