@@ -57,7 +57,8 @@ public class SceneController : MonoBehaviour
         else
         {
 			GrappleUI.UserName.text = _username;
-        	GrappleUI.StartScreen.SetActive(true);
+            GrappleUI.Show();
+        	GrappleUI.LevelSelectScreen.SetActive(true);
         }
         //_playerAudio.Play();
     }
@@ -122,7 +123,6 @@ public class SceneController : MonoBehaviour
 		}
 
 		GrappleUI.InitPlayerRanksScreen (replays);
-		GrappleUI.StartButton.gameObject.SetActive (true);
 	}
 
 	private void StartGame()
@@ -189,7 +189,7 @@ public class SceneController : MonoBehaviour
             {
                 _username = username;
                 GrappleUI.NoUsernameScreen.SetActive(false);
-                GrappleUI.StartScreen.SetActive(true);
+                GrappleUI.LevelSelectScreen.SetActive(true);
                 GrappleUI.UserEdit.SetActive(true);
                 GrappleUI.UserInput.gameObject.SetActive(false);
                 GrappleUI.UserSave.SetActive(false);
@@ -207,7 +207,7 @@ public class SceneController : MonoBehaviour
     void UsernameProcessed(string username)
     {
 		GrappleUI.NoUsernameScreen.SetActive(false);
-		GrappleUI.StartScreen.SetActive(true);
+		GrappleUI.LevelSelectScreen.SetActive(true);
 		if(username != string.Empty)
 		{
 			_username = username;

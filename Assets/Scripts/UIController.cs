@@ -37,12 +37,15 @@ public class UIController : MonoBehaviour
     public Text FPSText;
     public Text TimerText;
 	public GameObject NoUsernameScreen;
-    public GameObject StartScreen;
+    public GameObject LevelSelectScreen;
 	public GameObject ConfigScreen;
+    public GameObject PlayerRanksScreen;
+    public PlayerRowController PlayerRow;
+    public GameObject WaitScreen;
+    public GameObject Spinner;
     public InputField GhostsInput;
     public InputField GhostRecordsInput;
-    public int SeedLength;
-    public Button StartButton;
+    //public int SeedLength;
 	public InputField NewUserInput;
     public InputField UserInput;
 	public GameObject UserEdit;
@@ -51,22 +54,31 @@ public class UIController : MonoBehaviour
 	public Text UserName;
 	public Text ErrorText;
 	public Text TotalGhostRecordsLocal;
-	public GameObject PlayerRanksScreen;
-	public PlayerRowController PlayerRow;
 
-    private String seed;
+    //private String seed;
     private float _timer;
     private bool _timeStarted;
+    private GraphicRaycaster _uiCanvasRaycaster;
+    private Tweener _spinnerTweener;
+    private float _showHideTime = 0.5f;
+
+    void Awake()
+    {
+        UserInput.gameObject.SetActive(false);
+        UserSave.SetActive(false);
+        UserCancel.SetActive(false);
+        ErrorText.text = "";
+        UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, 0.0f);
+        _uiCanvasRaycaster = gameObject.GetComponentInChildren<GraphicRaycaster>();
+        _uiCanvasRaycaster.enabled = false;
+    }
 
     void Start()
     {
         StartCoroutine(FPS());
-        seed = RandomString(SeedLength);
-		//UserEdit.SetActive(true);
-        UserInput.gameObject.SetActive(false);
-		UserSave.SetActive(false);
-		UserCancel.SetActive(false);
-		ErrorText.text = "";
+        //seed = RandomString(SeedLength);
+        //UserEdit.SetActive(true);
+
         // SeedInputField.text = seed;
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
@@ -81,8 +93,31 @@ public class UIController : MonoBehaviour
 		}
     }
 
-	public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays)
+    public void Show()
+    {
+        UIPanel.DOAnchorPosX(35.0f, _showHideTime).OnComplete(() => {
+            _uiCanvasRaycaster.enabled = true;
+        });
+    }
+
+    public void Hide(GameObject _currentScreen)
+    {
+        UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
+            _currentScreen.gameObject.SetActive(false);
+        });
+    }
+
+    public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays)
 	{
+        DOTween.Kill(_spinnerTweener.target);
+
+        if (playerReplays.Count == 0)
+        {
+            UIStartButtonClicked();
+            Hide(WaitScreen);
+            return;
+        }
+        
 		for (int i = 0; i < playerReplays.Count; i++)
 		{
 			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
@@ -91,25 +126,22 @@ public class UIController : MonoBehaviour
 			playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
 		}
 
-		if (playerReplays.Count == 0)
-			UIStartButtonClicked ();
-		else
-		{
-			StartButton.gameObject.SetActive(true);
-			PlayerRanksScreen.SetActive(true);
-		}
+        WaitScreen.SetActive(false);
+        PlayerRanksScreen.SetActive(true);
 	}
 
 	public void UILevelButtonClicked(string levelName)
 	{
-        StartScreen.SetActive(false);
+        LevelSelectScreen.SetActive(false);
+        WaitScreen.SetActive(true);
+        Debug.Log("SPINNING");
+        _spinnerTweener = Spinner.transform.DOLocalRotate(new Vector3(0.0f, 0.0f, -359.0f), 2.0f).SetLoops(-1).SetEase(Ease.Linear);
         OnLevelSelectButtonClicked(levelName);
 	}
 
 	public void UIStartButtonClicked()
     {
-		StartButton.gameObject.SetActive(false);
-		PlayerRanksScreen.SetActive(false);
+        Hide(PlayerRanksScreen);
 		if(OnStartButtonClicked != null)
 			OnStartButtonClicked();
         _timer = 0.0f;
@@ -201,7 +233,8 @@ public class UIController : MonoBehaviour
 
     public void EndGame()
     {
-		StartScreen.SetActive (true);
+        LevelSelectScreen.SetActive (true);
+        Show();
 		foreach(Transform playerRow in PlayerRanksScreen.transform.Find("Players")) 
 		{
 			Destroy(playerRow.gameObject);
@@ -214,7 +247,7 @@ public class UIController : MonoBehaviour
     {
         if (SeedInputField.text != "")
         {
-            seed = SeedInputField.text;
+            //seed = SeedInputField.text;
 
             // init levelgenerator here when ready
             // LevelGenerator.Init(seed);
@@ -223,8 +256,8 @@ public class UIController : MonoBehaviour
 
     public void RandomSeed()
     {
-        seed = RandomString(SeedLength);
-        SeedInputField.text = seed;
+        //seed = RandomString(SeedLength);
+        //SeedInputField.text = seed;
 
         // init levelgenerator here when ready
         // LevelGenerator.Init(seed);
@@ -237,9 +270,16 @@ public class UIController : MonoBehaviour
         return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
     }
 
-	public void ToggleConfigScreen()
+	public void OpenConfigScreen()
     {
-		ConfigScreen.gameObject.SetActive(!ConfigScreen.gameObject.activeSelf);
+        LevelSelectScreen.gameObject.SetActive(false);
+		ConfigScreen.gameObject.SetActive(true);
+    }
+
+    public void CloseConfigScreen()
+    {
+        LevelSelectScreen.gameObject.SetActive(true);
+        ConfigScreen.gameObject.SetActive(false);
     }
 
     string GetTimeText (float time)
