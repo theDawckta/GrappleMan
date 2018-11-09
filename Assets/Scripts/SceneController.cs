@@ -4,6 +4,7 @@ using Grappler.Data;
 using Grappler.Util;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class SceneController : MonoBehaviour
 {
@@ -24,9 +25,12 @@ public class SceneController : MonoBehaviour
 	private string _username = "User";
 	private GameObject _currentLevel;
 	private string _levelName;
+    private Renderer[] _levelRenderers;
+    private float _hideShowTime = 0.5f;
 
     void Awake()
     {
+        _levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>();
         Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
@@ -58,8 +62,9 @@ public class SceneController : MonoBehaviour
         {
 			GrappleUI.UserName.text = _username;
             GrappleUI.Show();
-        	GrappleUI.LevelSelectScreen.SetActive(true);
         }
+
+        Player.Enable();
         //_playerAudio.Play();
     }
 
@@ -68,6 +73,8 @@ public class SceneController : MonoBehaviour
         _levelName = levelName;
 
         LoadLevel(_levelName);
+
+        Player.Init();
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=> {
@@ -78,29 +85,66 @@ public class SceneController : MonoBehaviour
 
     private void LoadLevel(string levelName)
     {
-        foreach (Transform child in LevelHolder.transform)
-            GameObject.Destroy(child.gameObject);
+        HideLevel();
+    }
 
-        if (_currentLevelWaypoint != null)
+    void HideLevel()
+    {
+        for (int i = 0; i < _levelRenderers.Length; i++)
         {
-            _currentLevelWaypoint.OnGatesPassed -= OnGatesPassed;
-            _currentLevelWaypoint.OnWaypointVisible -= OnWaypointVisible;
-            _currentLevelWaypoint.OnWaypointHidden -= OnWaypointHidden;
-            _currentLevelWaypoint.OnGatesFinished -= PlayerFinished;
+            Color endColor = new Color(_levelRenderers[i].material.color.r, _levelRenderers[i].material.color.g, _levelRenderers[i].material.color.b, 0.0f);
+            if(i < _levelRenderers.Length - 1)
+                _levelRenderers[i].material.DOColor(endColor, _hideShowTime);
+            else
+            {
+                _levelRenderers[i].material.DOColor(endColor, _hideShowTime).OnComplete(() => {
+                    foreach (Transform child in LevelHolder.transform)
+                        GameObject.Destroy(child.gameObject);
+
+                    if (_currentLevelWaypoint != null)
+                    {
+                        _currentLevelWaypoint.OnGatesPassed -= OnGatesPassed;
+                        _currentLevelWaypoint.OnWaypointVisible -= OnWaypointVisible;
+                        _currentLevelWaypoint.OnWaypointHidden -= OnWaypointHidden;
+                        _currentLevelWaypoint.OnGatesFinished -= PlayerFinished;
+                    }
+                });
+            } 
         }
 
-        _currentLevel = (GameObject)Instantiate(Resources.Load("Levels/" + levelName));
-        _currentLevelWaypoint = _currentLevel.GetComponentInChildren<WaypointController>();
+        Invoke("ShowLevel", 1.5f);
+    }
 
+    public void ShowLevel()
+    {
+        _currentLevel = (GameObject)Instantiate(Resources.Load("Levels/" + _levelName));
+        _currentLevel.SetActive(false);
+        _currentLevel.transform.SetParent(LevelHolder.transform, false);
+        _levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>(true);
+
+        Color hideColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 0.0f);
+        Color showColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 1.0f);
+
+        for (int i = 0; i < _levelRenderers.Length; i++)
+        {
+            _levelRenderers[i].material.color = hideColor;
+        }
+
+        _currentLevelWaypoint = _currentLevel.GetComponentInChildren<WaypointController>();
         _currentLevelWaypoint.OnGatesPassed += OnGatesPassed;
         _currentLevelWaypoint.OnWaypointVisible += OnWaypointVisible;
         _currentLevelWaypoint.OnWaypointHidden += OnWaypointHidden;
         _currentLevelWaypoint.OnGatesFinished += PlayerFinished;
 
-        _currentLevel.transform.SetParent(LevelHolder.transform, false);
+        _currentLevel.SetActive(true);
+
+        for (int j = 0; j < _levelRenderers.Length; j++)
+        {
+            _levelRenderers[j].material.DOColor(showColor, _hideShowTime).SetEase(Ease.Linear);
+        }
     }
 
-	void ReplaysRecieved(List<PlayerReplayModel> replays)
+    void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
 		int tempNumOfGhosts = (replays.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? replays.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
 
@@ -108,7 +152,7 @@ public class SceneController : MonoBehaviour
         {
             if (_ghostPlaybacks[i] != null)
             {
-                Destroy(_ghostPlaybacks[i].gameObject);
+                _ghostPlaybacks[i].Kill();
             }
         }
 
@@ -130,7 +174,7 @@ public class SceneController : MonoBehaviour
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
-        Player.Init();
+        Player.Enable(true);
         _currentLevelWaypoint.Init(Player.transform.position);
         Player.SetArrowDestination(_currentLevelWaypoint.GateCollider.transform.position);
         _mainCamera.transform.position = _mainCameraStartPosition;
@@ -154,7 +198,7 @@ public class SceneController : MonoBehaviour
         if (_gameOn)
         {
             PlayerReplayModel playerReplay = Player.PlayerCompleted();
-            Player.Disable();
+            Player.DisableLeftScreenInput();
             GrappleUI.EndGame();
             _gameOn = false;
             playerReplay.LevelName = _levelName;

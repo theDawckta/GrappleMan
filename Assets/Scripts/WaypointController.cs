@@ -35,26 +35,31 @@ public class WaypointController : MonoBehaviour
         _gateCollider = gameObject.GetComponentInChildren<Collider>();
         _gateCollider.enabled = false;
         _gateLineRenderer = gameObject.GetComponent<LineRenderer>();
+        _gateLineRenderer.enabled = false;
         _remainingGates = NumberOfGates;
         _gateRenderer = GateCollider.GetComponent<Renderer>();
+        _gateRenderer.enabled = false;
     }
 
     void Update()
     {
-        if(_gateVisible != _gateRenderer.isVisible)
+        if(_gateRenderer.enabled)
         {
-            _gateVisible = _gateRenderer.isVisible;
-            if (_gateVisible)
+            if (_gateVisible != _gateRenderer.isVisible)
             {
-                Debug.Log("WAYPOINT VISIBLE");
-                if (OnWaypointVisible != null)
-                    OnWaypointVisible();
-            }
-            else
-            {
-                Debug.Log("WAYPOINT HIDDEN");
-                if (OnWaypointHidden != null)
-                    OnWaypointHidden();
+                _gateVisible = _gateRenderer.isVisible;
+                if (_gateVisible)
+                {
+                    Debug.Log("WAYPOINT VISIBLE");
+                    if (OnWaypointVisible != null)
+                        OnWaypointVisible();
+                }
+                else
+                {
+                    Debug.Log("WAYPOINT HIDDEN");
+                    if (OnWaypointHidden != null)
+                        OnWaypointHidden();
+                }
             }
         }
     }
@@ -64,6 +69,8 @@ public class WaypointController : MonoBehaviour
         transform.position = startPosition;
         _gateLineRenderer.SetPositions(new Vector3[0]);
         MakeWaypoint();
+        _gateLineRenderer.enabled = true;
+        _gateRenderer.enabled = true;
         _gateCollider.enabled = true;
         GateParticles.Play();
     }

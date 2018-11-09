@@ -32,6 +32,7 @@ public class UIController : MonoBehaviour
 	public delegate void UserSaveButtonClicked(string value);
 	public event UserSaveButtonClicked OnUserSaveButtonClicked;
 
+    public SmoothFollow Follow;
     public RectTransform UIPanel;
     public InputField SeedInputField;
     public Text FPSText;
@@ -53,6 +54,7 @@ public class UIController : MonoBehaviour
     public GameObject UserSave;
 	public Text UserName;
 	public Text ErrorText;
+    public Text NoRecordsText;
 	public Text TotalGhostRecordsLocal;
 
     //private String seed;
@@ -68,6 +70,7 @@ public class UIController : MonoBehaviour
         UserSave.SetActive(false);
         UserCancel.SetActive(false);
         ErrorText.text = "";
+        NoRecordsText.gameObject.SetActive(false);
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, 0.0f);
         _uiCanvasRaycaster = gameObject.GetComponentInChildren<GraphicRaycaster>();
         _uiCanvasRaycaster.enabled = false;
@@ -95,13 +98,20 @@ public class UIController : MonoBehaviour
 
     public void Show()
     {
+        if (Follow != null)
+            Follow.MenuOpen();
+
+        LevelSelectScreen.SetActive(true);
         UIPanel.DOAnchorPosX(35.0f, _showHideTime).OnComplete(() => {
             _uiCanvasRaycaster.enabled = true;
         });
     }
 
-    public void Hide(GameObject _currentScreen)
+    void Hide(GameObject _currentScreen)
     {
+        if (Follow != null)
+            Follow.MenuClosed();
+
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
             _currentScreen.gameObject.SetActive(false);
         });
@@ -112,13 +122,11 @@ public class UIController : MonoBehaviour
         DOTween.Kill(_spinnerTweener.target);
 
         if (playerReplays.Count == 0)
-        {
-            UIStartButtonClicked();
-            Hide(WaitScreen);
-            return;
-        }
-        
-		for (int i = 0; i < playerReplays.Count; i++)
+            NoRecordsText.gameObject.SetActive(true);
+        else
+            NoRecordsText.gameObject.SetActive(false);
+
+        for (int i = 0; i < playerReplays.Count; i++)
 		{
 			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
             playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, GetTimeText(playerReplays[i].ReplayTime));

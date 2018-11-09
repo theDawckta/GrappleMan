@@ -5,6 +5,7 @@ using Grappler.Data;
 using Grappler.Util;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -47,10 +48,13 @@ public class PlayerController : MonoBehaviour
     private bool _hookShooting = false;
     private bool _floating = false;
     private Vector3 _arrowDestination = new Vector3();
-    
+    private Renderer[] _renderers;
+    private float _hideShowTime = 0.5f;
+
 
     void Awake()
     {
+        _renderers = gameObject.GetComponentsInChildren<Renderer>();
         _wallHookSprite = GameObject.Find("WallHookSprite").gameObject;
         _wallHook = new GameObject();
         _wallHook.name = "WallHookFixedJoint";
@@ -75,26 +79,60 @@ public class PlayerController : MonoBehaviour
 
 	public void Init()
     {
-        StopAllCoroutines();
-        _ropeLineRenderer.enabled = false;
-        _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
-        _wallHookSprite.transform.parent = GrappleArmEnd.transform;
-        _wallHookFixedJoint.connectedBody = null;
-        transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
-        _ropeBendAngles.Clear();
-        _ropeLineRenderer.positionCount = 0;
-        _hookActive = false;
-        _hooked = false;
-        _floating = false;
-        transform.position = _playerStartPosition;
-		_playerRecorderController.StartRecording();
-		HookPlayerInput.InputActive = true;
-        PlayerArrow.SetActive(false);
+        Hide();
+        HookPlayerInput.InputActive = false;
+        HookPlayerInput.EnableFullScreenTouch();
+    }
+
+    public void Hide()
+    {
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
+            _renderers[i].material.DOColor(endColor, _hideShowTime);
+        }
+
+        transform.DOMove(_playerStartPosition, 1.0f).SetDelay(_hideShowTime + 0.1f).SetEase(Ease.InOutSine).OnComplete(() => {
+            StopAllCoroutines();
+            _ropeLineRenderer.enabled = false;
+            _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
+            _wallHookSprite.transform.parent = GrappleArmEnd.transform;
+            _wallHookFixedJoint.connectedBody = null;
+            transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
+            _ropeBendAngles.Clear();
+            _ropeLineRenderer.positionCount = 0;
+            _hookActive = false;
+            _hooked = false;
+            _floating = false;
+            PlayerArrow.SetActive(false);
+            Show();
+        });
+    }
+
+    public void Show()
+    {
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 1.0f);
+            _renderers[i].material.DOColor(endColor, _hideShowTime);
+        }
     }
 
     public void Disable()
     {
         HookPlayerInput.InputActive = false;
+    }
+
+    public void Enable(bool startRecording = false)
+    {
+        if(startRecording)
+            _playerRecorderController.StartRecording();
+        HookPlayerInput.InputActive = true;
+    }
+
+    public void DisableLeftScreenInput()
+    {
+        HookPlayerInput.DisableLeftScreenInput();
     }
 
     public void SetArrowDestination(Vector3 newPosition)

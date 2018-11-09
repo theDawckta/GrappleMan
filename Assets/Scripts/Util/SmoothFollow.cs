@@ -1,6 +1,6 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
+using DG.Tweening;
 
 public class SmoothFollow : MonoBehaviour
 {
@@ -14,6 +14,14 @@ public class SmoothFollow : MonoBehaviour
     // How much we 
     public float heightDamping = 2.0f;
     public float rotationDamping = 3.0f;
+
+    private float _menuOpenPositionModifier = 0.0f;
+    private Vector3 _menuOpenCameraPosition;
+
+    void Awake()
+    {
+        _menuOpenCameraPosition = Camera.main.ScreenToWorldPoint(new Vector3(Camera.main.pixelWidth / 4, Camera.main.pixelHeight / 2, distance));
+    }
 
     void LateUpdate()
     {
@@ -46,5 +54,17 @@ public class SmoothFollow : MonoBehaviour
 
         // Always look at the target
         transform.LookAt(target);
+
+        transform.position = new Vector3(transform.position.x + _menuOpenPositionModifier, currentHeight, transform.position.z);
+    }
+
+    public void MenuOpen()
+    {
+        DOTween.To(x => _menuOpenPositionModifier = x, 0.0f, _menuOpenCameraPosition.x, 0.5f);
+    }
+
+    public void MenuClosed()
+    {
+        DOTween.To(x => _menuOpenPositionModifier = x, _menuOpenCameraPosition.x, 0.0f, 0.5f);
     }
 }

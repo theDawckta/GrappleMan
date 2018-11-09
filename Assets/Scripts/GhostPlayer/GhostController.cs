@@ -13,6 +13,7 @@ public class GhostController : MonoBehaviour
     public GameObject Body;
     public GameObject GrappleArm;
     public GameObject WallHookSprite;
+    public CanvasGroup UserNameCanvasGroup;
     public Text Username;
 
     public Material GhostHook;
@@ -32,6 +33,7 @@ public class GhostController : MonoBehaviour
         Color highlight = _colors[Random.Range(0, 8)];
         Color hookLine = _colors[Random.Range(0, 8)];
 
+        UserNameCanvasGroup.alpha = 0.0f;
         RopeLineRenderer = WallHookSprite.GetComponent<LineRenderer>();
         RopeLineRenderer.material.color = hookLine;
         RopeOrigin.GetComponent<Renderer>().material.color = secondary;
@@ -40,26 +42,41 @@ public class GhostController : MonoBehaviour
         GrappleArm.GetComponent<Renderer>().material.color = highlight;
         WallHookSprite.GetComponent<Renderer>().material.color = highlight;
 
-        _renderers = gameObject.GetComponentsInChildren<Renderer>();
-
+        _renderers = gameObject.GetComponentsInChildren<Renderer>(true);
         FadeOut(0.0f);
     }
 
-    public void FadeOut(float time)
+    public void FadeOut(float time, bool kill = false)
     {
+        UserNameCanvasGroup.DOFade(0.0f, time);
+
         for (int i = 0; i < _renderers.Length; i++)
         {
 			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
 			_renderers[i].material.DOColor(endColor, time);
+
+
+            if (i < _renderers.Length - 1)
+                _renderers[i].material.DOColor(endColor, time);
+            else
+            {
+                _renderers[i].material.DOColor(endColor, time).OnComplete(() => {
+                    if(kill)
+                        Destroy(gameObject);
+                });
+            }
         }
     }
 
-    public void FadeIn(float time)
+    public void FadeIn(float time, float delay)
     {
+        gameObject.SetActive(true);
+        UserNameCanvasGroup.DOFade(1.0f, time).SetDelay(delay);
+
         for (int i = 0; i < _renderers.Length; i++)
         {
 			Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 1.0f);
-			_renderers[i].material.DOColor(endColor, time);
+            _renderers[i].material.DOColor(endColor, time).SetDelay(delay);
         }
     }
 

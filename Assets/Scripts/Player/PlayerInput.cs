@@ -10,6 +10,8 @@ public class PlayerInput : MonoBehaviour
     private Vector2 _swipeDirection = new Vector2();
     private bool _touchDone = false;
 
+    private bool _disableLeftScreen = true;
+
     void Update()
     {
         foreach (Touch touch in Input.touches)
@@ -35,9 +37,18 @@ public class PlayerInput : MonoBehaviour
         if (InputActive)
         {
 #if (UNITY_STANDALONE || UNITY_EDITOR)
-            return (Input.GetButtonDown("Fire1"));
+            if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
+            {
+                return false;
+            }
+            else
+                return (Input.GetButtonDown("Fire1"));
 #elif (UNITY_IOS || UNITY_ANDROID)
-            if (_touchDone)
+            if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
+            {
+                return false;
+            }
+            else if (_touchDone)
             {
                 _touchDone = false;
                 return true;
@@ -57,7 +68,11 @@ public class PlayerInput : MonoBehaviour
 #if (UNITY_STANDALONE || UNITY_EDITOR)
             return Input.GetKey(KeyCode.Q) ? true : false;
 #elif (UNITY_IOS || UNITY_ANDROID)
-            if(_touchStarted)
+            if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
+            {
+                return false;
+            }
+            else if(_touchStarted)
                 return true;
             else
                 return false;
@@ -87,5 +102,15 @@ public class PlayerInput : MonoBehaviour
         }
         else
             return Vector3.zero;
+    }
+
+    public void EnableFullScreenTouch()
+    {
+        _disableLeftScreen = false;
+    }
+
+    public void DisableLeftScreenInput()
+    {
+        _disableLeftScreen = true;
     }
 }

@@ -28,6 +28,7 @@ public class GhostPlaybackController : MonoBehaviour
 	void Awake () 
 	{
         _ghostPlayer = transform.GetComponent<GhostController>();
+        _ghostPlayer.gameObject.SetActive(false);
 	}
 
     void Start()
@@ -48,7 +49,7 @@ public class GhostPlaybackController : MonoBehaviour
         if (_playerReplayModel.HasStates)
 		{
 			transform.position = _playerReplayModel.StartingPosition;
-            _ghostPlayer.FadeIn(0.3f);
+            _ghostPlayer.FadeIn(1.0f, UnityEngine.Random.Range(3.0f, 5.0f));
             _startTime = Time.time;
             StartCoroutine(PlayGhostPlayback());
 		}
@@ -185,6 +186,11 @@ public class GhostPlaybackController : MonoBehaviour
             _ghostPlayer.FadeOut(1.0f);
             Invoke("GhostCompleted", 1.1f);
         }
+    }
+
+    public void Kill()
+    {
+        _ghostPlayer.FadeOut(1.0f, true);
     }
 
     void GhostCompleted()
