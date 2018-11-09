@@ -29,7 +29,7 @@ public class PlaygroundSceneController : MonoBehaviour
     void Start()
     {
         Player.Init();
-        Waypoint.Init(Player.transform.position, 5);
+        //Waypoint.Init(Player.transform.position, 5);
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
@@ -51,7 +51,7 @@ public class PlaygroundSceneController : MonoBehaviour
     void Waypoint_OnGatesFinished()
     {
         Player.Init();
-        Waypoint.Init(Player.transform.position, 5);
+        //Waypoint.Init(Player.transform.position, 5);
     }
 
     void OnEnable()

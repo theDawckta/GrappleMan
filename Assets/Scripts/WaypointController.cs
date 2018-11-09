@@ -22,6 +22,7 @@ public class WaypointController : MonoBehaviour
     [HideInInspector]
     public Vector3 CurrentWaypointPosition;
 
+    private Collider _gateCollider;
     private LineRenderer _gateLineRenderer;
     private RaycastHit _hit;
     private Vector3 _gateNormal;
@@ -31,6 +32,8 @@ public class WaypointController : MonoBehaviour
 
     void Awake()
     {
+        _gateCollider = gameObject.GetComponentInChildren<Collider>();
+        _gateCollider.enabled = false;
         _gateLineRenderer = gameObject.GetComponent<LineRenderer>();
         _remainingGates = NumberOfGates;
         _gateRenderer = GateCollider.GetComponent<Renderer>();
@@ -56,17 +59,16 @@ public class WaypointController : MonoBehaviour
         }
     }
 
-    public void Init(Vector3 startPosition, int numOfGates)
+    public void Init(Vector3 startPosition)
     {
-        NumberOfGates = numOfGates;
-        _remainingGates = NumberOfGates;
         transform.position = startPosition;
         _gateLineRenderer.SetPositions(new Vector3[0]);
         MakeWaypoint();
+        _gateCollider.enabled = true;
         GateParticles.Play();
     }
 
-    private void MakeWaypoint()
+    void MakeWaypoint()
     {
         Vector3 direction;
         Vector3 longestHit = transform.position;
@@ -82,8 +84,8 @@ public class WaypointController : MonoBehaviour
             for (int i = 1; i < 360.0f; i = i + 30)
             {
                 direction = Quaternion.AngleAxis(i, Vector3.back) * Vector3.right;
-                //Debug.DrawRay(transform.position, direction * 1000.0f, Color.red, 60.0f);
-                if (Physics.Raycast(transform.position, direction, out _hit, Mathf.Infinity))
+                Debug.DrawRay(transform.position, direction * 1000.0f, Color.red, 60.0f);
+                if (Physics.Raycast(transform.position, direction, out _hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
                 {
                     longestHit = ((_hit.point - transform.position).magnitude > (longestHit - transform.position).magnitude) ? _hit.point : longestHit;
                 }
@@ -96,7 +98,7 @@ public class WaypointController : MonoBehaviour
                 direction = Quaternion.AngleAxis(i, Vector3.back) * _gateNormal;
                 direction = Quaternion.AngleAxis(105, Vector3.back) * direction;
                 Debug.DrawRay(transform.position, direction * 1000.0f, Color.red, 10.0f);
-                if (Physics.Raycast(transform.position, direction, out _hit, Mathf.Infinity))
+                if (Physics.Raycast(transform.position, direction, out _hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
                 {
                     longestHit = ((_hit.point - transform.position).magnitude > (longestHit - transform.position).magnitude) ? _hit.point : longestHit;
                 }
@@ -140,6 +142,7 @@ public class WaypointController : MonoBehaviour
         GateCollider.transform.localScale = new Vector3(GateCollider.transform.localScale.x, gateLength,  GateCollider.transform.localScale.z);
 
         CurrentWaypointPosition = GateCollider.transform.position;
+        _gateVisible = _gateRenderer.isVisible;
     }
 
     void OnTriggerEnter(Collider other)
@@ -169,7 +172,7 @@ public class WaypointController : MonoBehaviour
         }
     }
 
-    private void CreatePrimitive(Vector3 location, Color color)
+    void CreatePrimitive(Vector3 location, Color color)
     {
         GameObject testObject2 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         testObject2.transform.position = location;

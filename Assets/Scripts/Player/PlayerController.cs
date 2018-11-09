@@ -114,16 +114,12 @@ public class PlayerController : MonoBehaviour
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
-            Debug.Log("HOOK BUTTON WORKED");
-            Debug.Log("GOT DIRECTION: " + HookPlayerInput.GetDirection());
             if (!_hooked)
             {
-                Debug.Log("WASNT HOOKED USING DIRECTION" + HookPlayerInput.GetDirection());
                 CheckHookHit(HookPlayerInput.GetDirection());
             }
             else if(HookPlayerInput.GetDirection() != Vector3.zero)
             {
-                Debug.Log("WAS HOOKED BOOSTING" + HookPlayerInput.GetDirection());
                 if (!_grounded)
                 	BoostPlayer();
 				_hookShooting = !_hookShooting;
@@ -132,7 +128,6 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.ClimbButtonPressed())
         {
-            Debug.Log("CLIMBING INPUT WORKED");
             if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
                 ClimbRope();
         }

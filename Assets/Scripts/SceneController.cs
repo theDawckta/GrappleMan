@@ -11,10 +11,10 @@ public class SceneController : MonoBehaviour
     public UIController GrappleUI;
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
-    public WaypointController Waypoint;
 	public GameObject GhostHolder;
 	public GameObject LevelHolder;
 
+    private WaypointController _currentLevelWaypoint;
     private AudioSource _playerAudio;
     private AudioClip _song;
     private Camera _mainCamera;
@@ -66,6 +66,8 @@ public class SceneController : MonoBehaviour
 	{
         _levelName = levelName;
 
+        LoadLevel(_levelName);
+
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(levelName, (replays)=> {
 		        ReplaysRecieved(replays);
@@ -73,15 +75,33 @@ public class SceneController : MonoBehaviour
         }));
 	}
 
+    private void LoadLevel(string levelName)
+    {
+        foreach (Transform child in LevelHolder.transform)
+            GameObject.Destroy(child.gameObject);
+
+        if (_currentLevelWaypoint != null)
+        {
+            _currentLevelWaypoint.OnGatesPassed -= OnGatesPassed;
+            _currentLevelWaypoint.OnWaypointVisible -= OnWaypointVisible;
+            _currentLevelWaypoint.OnWaypointHidden -= OnWaypointHidden;
+            _currentLevelWaypoint.OnGatesFinished -= PlayerFinished;
+        }
+
+        _currentLevel = (GameObject)Instantiate(Resources.Load("Levels/" + levelName));
+        _currentLevelWaypoint = _currentLevel.GetComponentInChildren<WaypointController>();
+
+        _currentLevelWaypoint.OnGatesPassed += OnGatesPassed;
+        _currentLevelWaypoint.OnWaypointVisible += OnWaypointVisible;
+        _currentLevelWaypoint.OnWaypointHidden += OnWaypointHidden;
+        _currentLevelWaypoint.OnGatesFinished += PlayerFinished;
+
+        _currentLevel.transform.SetParent(LevelHolder.transform, false);
+    }
+
 	void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
 		int tempNumOfGhosts = (replays.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? replays.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
-		_currentLevel = (GameObject)Instantiate(Resources.Load ("Levels/" + _levelName));
-
-		foreach (Transform child in LevelHolder.transform) 
-			GameObject.Destroy(child.gameObject);
-		
-		_currentLevel.transform.SetParent (LevelHolder.transform, false);
 
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
         {
@@ -111,9 +131,10 @@ public class SceneController : MonoBehaviour
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
         Player.Init();
+        _currentLevelWaypoint.Init(Player.transform.position);
+        Player.SetArrowDestination(_currentLevelWaypoint.GateCollider.transform.position);
         _mainCamera.transform.position = _mainCameraStartPosition;
-        Waypoint.Init(Player.transform.position, 1);
-        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
+
         _gameOn = true;
     }
 
@@ -207,7 +228,7 @@ public class SceneController : MonoBehaviour
 
     void OnGatesPassed()
     {
-        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(_currentLevelWaypoint.GateCollider.transform.position);
     }
 
     void OnWaypointHidden()
@@ -229,10 +250,6 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
-        Waypoint.OnGatesPassed += OnGatesPassed;
-        Waypoint.OnWaypointVisible += OnWaypointVisible;
-        Waypoint.OnWaypointHidden += OnWaypointHidden;
-        Waypoint.OnGatesFinished += PlayerFinished;
     }
 
 	void OnDisable()
@@ -244,9 +261,5 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
-        Waypoint.OnGatesPassed -= OnGatesPassed;
-        Waypoint.OnWaypointVisible -= OnWaypointVisible;
-        Waypoint.OnWaypointHidden -= OnWaypointHidden;
-        Waypoint.OnGatesFinished -= PlayerFinished;
     }
 }

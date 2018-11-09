@@ -1,7 +1,6 @@
 <?php
-    ini_set('display_errors', 1);
-
-	$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
+	//$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
+    $db = mysqli_connect("localhost","grappleapp","ic&EIM(Zxa&s","grappler");
 
 	// Check connection
 	if (mysqli_connect_errno())

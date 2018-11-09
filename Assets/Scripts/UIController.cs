@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System;
 using System.Linq;
 using System.Collections;
@@ -194,6 +195,7 @@ public class UIController : MonoBehaviour
 	public void UIDeletePlayerPrefs()
     {
         PlayerPrefs.DeleteAll();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void EndGame()

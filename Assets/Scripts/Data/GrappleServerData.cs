@@ -11,11 +11,16 @@ using Grappler.Data;
 public class GrappleServerData : Singleton<GrappleServerData>
 {
     private string privateKey = "d41d8cd98f00b204e9800998ecf8427e";
-    private string GetReplaysUrl = "http://www.thedawckta.com/grappler/GetReplays.php?";
-    private string AddUserURL = "http://www.thedawckta.com/grappler/AddUser.php?";
-    private string AddLevelURL = "http://www.thedawckta.com/grappler/AddLevel.php?";
-    private string AddReplayURL = "http://www.thedawckta.com/grappler/AddReplay.php?";
-    
+    //private string GetReplaysUrl = "http://www.thedawckta.com/grappler/GetReplays.php?";
+    //private string AddUserURL = "http://www.thedawckta.com/grappler/AddUser.php?";
+    //private string AddLevelURL = "http://www.thedawckta.com/grappler/AddLevel.php?";
+    //private string AddReplayURL = "http://www.thedawckta.com/grappler/AddReplay.php?";
+
+    private string GetReplaysUrl = "http://10.0.1.14:8888/GetReplays.php?";
+    private string AddUserURL = "http://10.0.1.14:8888/AddUser.php?";
+    private string AddLevelURL = "http://10.0.1.14:8888/AddLevel.php?";
+    private string AddReplayURL = "http://10.0.1.14:8888/AddReplay.php?";
+
     public IEnumerator AddUser(string username, Action<bool> action)
     {
     	username = username.ToUpper();
@@ -64,7 +69,11 @@ public class GrappleServerData : Singleton<GrappleServerData>
         }
     }
 
-	public IEnumerator GetPlayerReplaysServer(string levelName, int numOfReplays, Action<List<PlayerReplayModel>> action)
+    //SELECT Users.UserName, Levels.LevelName, ReplayTime, ReplayData FROM Replays 
+    //INNER JOIN Users ON Users.Id = Replays.UserId 
+    //INNER JOIN Levels ON Levels.Id = Replays.LevelId 
+    //WHERE Levels.LevelName = 'test' ORDER BY ReplayTime ASC LIMIT 26;
+    public IEnumerator GetPlayerReplaysServer(string levelName, int numOfReplays, Action<List<PlayerReplayModel>> action)
     {
 		string hash = Md5Sum(levelName + privateKey);
 

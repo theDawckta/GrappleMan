@@ -1,40 +1,31 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
 
 public class PlayerInput : MonoBehaviour
 {
     public bool InputActive = false;
-    public UIController UI;
+    public int MinSwipeDistance = 15;
 
-    private bool _rightTouchStarted = false;
-    private Vector2 _rightStart = new Vector2();
-    private Vector2 _rightSwipe = new Vector2();
-    private bool _rightTouchDone = false;
-    private int _minSwipeDistance;
-    private int _minDPadDistance;
+    private bool _touchStarted = false;
+    private Vector2 _touchStartPosition = new Vector2();
+    private Vector2 _swipeDirection = new Vector2();
+    private bool _touchDone = false;
 
-    void Start()
-    {
-        _minSwipeDistance = Screen.height * 10 / 100;
-        _minDPadDistance = Screen.height * 3 / 100;
-    }
     void Update()
     {
         foreach (Touch touch in Input.touches)
         {
             if (touch.phase == TouchPhase.Began)
             {
-                _rightTouchStarted = true;
-                _rightStart = touch.position;
+                _touchStarted = true;
+                _touchStartPosition = touch.position;
             }
             if (touch.phase == TouchPhase.Moved)
-                _rightSwipe = touch.position - _rightStart;
+                _swipeDirection = touch.position - _touchStartPosition;
             if (touch.phase == TouchPhase.Ended)
             {
-                _rightTouchDone = true;
-                _rightTouchStarted = false;
-                _rightSwipe = touch.position - _rightStart;
+                _touchDone = true;
+                _touchStarted = false;
+                _swipeDirection = touch.position - _touchStartPosition;
             }
         }
     }
@@ -46,9 +37,9 @@ public class PlayerInput : MonoBehaviour
 #if (UNITY_STANDALONE || UNITY_EDITOR)
             return (Input.GetButtonDown("Fire1"));
 #elif (UNITY_IOS || UNITY_ANDROID)
-            if (_rightTouchDone)
+            if (_touchDone)
             {
-                _rightTouchDone = false;
+                _touchDone = false;
                 return true;
             }
             else
@@ -66,7 +57,7 @@ public class PlayerInput : MonoBehaviour
 #if (UNITY_STANDALONE || UNITY_EDITOR)
             return Input.GetKey(KeyCode.Q) ? true : false;
 #elif (UNITY_IOS || UNITY_ANDROID)
-            if(_rightTouchStarted)
+            if(_touchStarted)
                 return true;
             else
                 return false;
@@ -88,8 +79,8 @@ public class PlayerInput : MonoBehaviour
             return direction;
 
 #elif (UNITY_IOS || UNITY_ANDROID)
-            if(Mathf.Abs(_rightSwipe.x) > _minSwipeDistance || Mathf.Abs(_rightSwipe.y) > _minSwipeDistance)
-                return _rightSwipe;
+            if(Mathf.Abs(_swipeDirection.x) > MinSwipeDistance || Mathf.Abs(_swipeDirection.y) > MinSwipeDistance)
+                return _swipeDirection;
             else
             return Vector3.zero;
 #endif
