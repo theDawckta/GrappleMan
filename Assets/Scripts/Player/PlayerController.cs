@@ -49,7 +49,7 @@ public class PlayerController : MonoBehaviour
     private bool _floating = false;
     private Vector3 _arrowDestination = new Vector3();
     private Renderer[] _renderers;
-    private float _hideShowTime = 0.5f;
+    private float _hideShowTime = 1.0f;
 
 
     void Awake()
@@ -75,6 +75,12 @@ public class PlayerController : MonoBehaviour
 		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
 		HookPlayerInput.InputActive = false;
         PlayerArrow.SetActive(false);
+
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
+            _renderers[i].material.color = endColor;
+        }
     }
 
 	public void Init()
@@ -457,11 +463,11 @@ public class PlayerController : MonoBehaviour
         RopeOrigin.transform.rotation = grappleShoulderRotation;
     }
 
-	public PlayerReplayModel PlayerCompleted()
+	public void PlayerCompleted(string levelName)
     {
     	// handle completed animation here
-		PlayerReplayModel playerReplay = _playerRecorderController.DoneRecording();
-        return playerReplay;
+        if(_playerRecorderController.Recording)
+            _playerRecorderController.DoneRecording(levelName);
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)

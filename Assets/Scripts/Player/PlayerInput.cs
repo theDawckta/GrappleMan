@@ -4,6 +4,30 @@ public class PlayerInput : MonoBehaviour
 {
     public bool InputActive = false;
     public int MinSwipeDistance = 15;
+    public bool TouchStarted 
+    {
+        get
+        {
+#if (UNITY_STANDALONE || UNITY_EDITOR)
+            if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
+            {
+                return false;
+            }
+            else
+                return (Input.GetButtonDown("Fire1"));
+#elif (UNITY_IOS || UNITY_ANDROID)
+            if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
+            {
+                return false;
+            }
+            else if(_touchStarted)
+                return true;
+            else
+                return false;
+#endif
+        }
+        private set{} 
+    }
 
     private bool _touchStarted = false;
     private Vector2 _touchStartPosition = new Vector2();

@@ -8,9 +8,6 @@ using UnityEngine;
 
 public class GhostPlaybackController : MonoBehaviour 
 {
-    //public delegate void OnGhostCompletedEvent(GhostPlaybackController ghost, PlayerReplayModel playerPlayback);
-    //public event OnGhostCompletedEvent OnGhostCompleted;
-
     private GhostController _ghostPlayer;
 	private PlayerStateModel _tempPlayerState;
 	private Vector3[] _lerpFromLineRendererPositions;

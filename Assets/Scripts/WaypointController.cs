@@ -86,7 +86,7 @@ public class WaypointController : MonoBehaviour
         float gateLength;
 
         //CreatePrimitive(transform.position, Color.red);
-        if(_remainingGates == NumberOfGates)
+        if(_remainingGates == NumberOfGates || NumberOfGates == 0)
         {
             for (int i = 1; i < 360.0f; i = i + 30)
             {
@@ -159,7 +159,7 @@ public class WaypointController : MonoBehaviour
 
         if (angle > 0)
         {
-            if (_remainingGates > 0)
+            if (_remainingGates > 0 || _remainingGates < 0)
             {
                 Debug.DrawRay(_gateLineRenderer.GetPosition(0), (_gateLineRenderer.GetPosition(1) - _gateLineRenderer.GetPosition(0)) * 1000.0f, Color.magenta, 10.0f);
 
@@ -172,6 +172,7 @@ public class WaypointController : MonoBehaviour
                 if(OnGatesFinished != null)
                 {
                     GateParticles.Stop();
+                    gameObject.SetActive(false);
                     OnGatesFinished();
                 }
                 _remainingGates = NumberOfGates;

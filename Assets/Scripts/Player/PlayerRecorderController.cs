@@ -8,7 +8,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerRecorderController : MonoBehaviour
 {
-	public PlayerReplayModel PlayerPlaybackData {get {return _playerPlayback;} set{}}
+	public PlayerReplayModel PlayerPlaybackData { get { return _playerPlayback; } private set{} }
+    public bool Recording { get { return _recording; } private set{} }
 
     private PlayerController _player;
 	private PlayerReplayModel _playerPlayback;
@@ -56,11 +57,14 @@ public class PlayerRecorderController : MonoBehaviour
     	_recording = true;
     }
 
-    public PlayerReplayModel DoneRecording()
+    public void DoneRecording(string levelName)
 	{
 		AddState(_timePassed, true);
 		_recording = false;
-		return new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), SceneManager.GetActiveScene().name, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
+        PlayerReplayModel playerReplayModel = new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), levelName, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
+        PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerReplayModel, (Success) => {
+            // placeholder if needed
+        }));
     }
 
     void AddState(float deltaTime, bool lastState = false)

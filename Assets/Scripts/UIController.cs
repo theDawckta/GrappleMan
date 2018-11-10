@@ -101,7 +101,6 @@ public class UIController : MonoBehaviour
         if (Follow != null)
             Follow.MenuOpen();
 
-        LevelSelectScreen.SetActive(true);
         UIPanel.DOAnchorPosX(35.0f, _showHideTime).OnComplete(() => {
             _uiCanvasRaycaster.enabled = true;
         });

@@ -26,8 +26,8 @@ public class GhostController : MonoBehaviour
     private Renderer[] _renderers;
     private Color[] _colors = new Color[] {Color.black, Color.blue, Color.cyan, Color.gray, Color.green, Color.magenta, Color.red, Color.white, Color.yellow};
 
-	void Awake()
-	{
+    void Awake()
+    {
         Color primary = _colors[Random.Range(0, 8)];
         Color secondary = _colors[Random.Range(0, 8)];
         Color highlight = _colors[Random.Range(0, 8)];
@@ -43,7 +43,12 @@ public class GhostController : MonoBehaviour
         WallHookSprite.GetComponent<Renderer>().material.color = highlight;
 
         _renderers = gameObject.GetComponentsInChildren<Renderer>(true);
-        FadeOut(0.0f);
+
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
+            _renderers[i].material.color = endColor;
+        }
     }
 
     public void FadeOut(float time, bool kill = false)
