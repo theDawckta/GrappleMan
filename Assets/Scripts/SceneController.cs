@@ -68,12 +68,12 @@ public class SceneController : MonoBehaviour
             GrappleUI.UserName.text = _username;
             GrappleUI.LevelSelectScreen.SetActive(true);
         }
-
-        GrappleUI.Show();
+        
         Player.Enable();
         Player.Show();
         ShowLevel();
         StartCoroutine("WaitForPlayerInput");
+        StartCoroutine("WaitForOpenUI");
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) => {
@@ -83,6 +83,12 @@ public class SceneController : MonoBehaviour
             }));
         }));
         //_playerAudio.Play();
+    }
+
+    IEnumerator WaitForOpenUI()
+    {
+        yield return new WaitForSeconds(0.5f);
+        GrappleUI.Show();
     }
 
     IEnumerator ReleaseGhosts()
@@ -276,8 +282,11 @@ public class SceneController : MonoBehaviour
                 _username = username;
                 GrappleUI.NoUsernameScreen.SetActive(false);
                 GrappleUI.LevelSelectScreen.SetActive(true);
+                GrappleUI.ConfigScreen.SetActive(false);
+                GrappleUI.UserName.text = _username;
                 GrappleUI.UserEdit.SetActive(true);
                 GrappleUI.UserInput.gameObject.SetActive(false);
+                GrappleUI.UserInput.text = "";
                 GrappleUI.UserSave.SetActive(false);
                 GrappleUI.UserCancel.SetActive(false);
                 GrappleUI.SetErrorText("");

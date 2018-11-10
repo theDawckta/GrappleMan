@@ -62,7 +62,7 @@ public class UIController : MonoBehaviour
     private bool _timeStarted;
     private GraphicRaycaster _uiCanvasRaycaster;
     private Tweener _spinnerTweener;
-    private float _showHideTime = 0.5f;
+    private float _showHideTime = 1.0f;
 
     void Awake()
     {
@@ -235,7 +235,8 @@ public class UIController : MonoBehaviour
 	public void UIDeletePlayerPrefs()
     {
         PlayerPrefs.DeleteAll();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        ConfigScreen.SetActive(false);
+        NoUsernameScreen.SetActive(true);
     }
 
     public void EndGame()

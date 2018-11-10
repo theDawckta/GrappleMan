@@ -31,11 +31,10 @@ public class GhostController : MonoBehaviour
         Color primary = _colors[Random.Range(0, 8)];
         Color secondary = _colors[Random.Range(0, 8)];
         Color highlight = _colors[Random.Range(0, 8)];
-        Color hookLine = _colors[Random.Range(0, 8)];
 
         UserNameCanvasGroup.alpha = 0.0f;
         RopeLineRenderer = WallHookSprite.GetComponent<LineRenderer>();
-        RopeLineRenderer.material.color = hookLine;
+        RopeLineRenderer.material.color = highlight;
         RopeOrigin.GetComponent<Renderer>().material.color = secondary;
         Foot.GetComponent<Renderer>().material.color = secondary;
         Body.GetComponent<Renderer>().material.color = primary;

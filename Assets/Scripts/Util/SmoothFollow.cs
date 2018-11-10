@@ -60,11 +60,11 @@ public class SmoothFollow : MonoBehaviour
 
     public void MenuOpen()
     {
-        DOTween.To(x => _menuOpenPositionModifier = x, 0.0f, _menuOpenCameraPosition.x, 0.5f);
+        DOTween.To(x => _menuOpenPositionModifier = x, 0.0f, _menuOpenCameraPosition.x, 1.0f);
     }
 
     public void MenuClosed()
     {
-        DOTween.To(x => _menuOpenPositionModifier = x, _menuOpenCameraPosition.x, 0.0f, 0.5f);
+        DOTween.To(x => _menuOpenPositionModifier = x, _menuOpenCameraPosition.x, 0.0f, 1.0f);
     }
 }
