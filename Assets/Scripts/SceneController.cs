@@ -75,7 +75,12 @@ public class SceneController : MonoBehaviour
         StartCoroutine("WaitForPlayerInput");
         StartCoroutine("WaitForOpenUI");
 
-        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
+            if (!Success && ReturnString != "")
+            {
+                Debug.Log("Server Error: " + ReturnString);
+                return;
+            }
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) => {
                 ReplaysRecieved(replays);
                 if(replays.Count > 0)
@@ -130,7 +135,13 @@ public class SceneController : MonoBehaviour
 
         Player.Init();
 
-        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (NewLevel) => {
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
+            if(!Success && ReturnString != "")
+            {
+                Debug.Log("Server Error: " + ReturnString);
+                GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
+                return;
+            }
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays)=> {
 		        ReplaysRecieved(replays);
 
@@ -276,8 +287,23 @@ public class SceneController : MonoBehaviour
             return;
         }
             
-        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddUser(username, (Success) => {
-            if(Success)
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddUser(username, (Success, ReturnString) => {
+            if(!Success && ReturnString != null)
+            {
+                Debug.Log("Server Error: " + ReturnString);
+                _username = username;
+                GrappleUI.NoUsernameScreen.SetActive(false);
+                GrappleUI.LevelSelectScreen.SetActive(true);
+                GrappleUI.ConfigScreen.SetActive(false);
+                GrappleUI.UserName.text = _username;
+                GrappleUI.UserEdit.SetActive(true);
+                GrappleUI.UserInput.gameObject.SetActive(false);
+                GrappleUI.UserInput.text = "";
+                GrappleUI.UserSave.SetActive(false);
+                GrappleUI.UserCancel.SetActive(false);
+                GrappleUI.SetErrorText("");
+            }
+            else if(Success)
             {
                 _username = username;
                 GrappleUI.NoUsernameScreen.SetActive(false);

@@ -21,7 +21,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
     private string AddLevelURL = "http://10.0.1.14:8888/AddLevel.php?";
     private string AddReplayURL = "http://10.0.1.14:8888/AddReplay.php?";
 
-    public IEnumerator AddUser(string username, Action<bool> action)
+    public IEnumerator AddUser(string username, Action<bool, string> action)
     {
     	username = username.ToUpper();
         string hash = Md5Sum(username + privateKey);
@@ -29,23 +29,27 @@ public class GrappleServerData : Singleton<GrappleServerData>
         WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(username) + "&hash=" + hash);
         yield return NewUserPost;
 
-        if (NewUserPost.text == "")
-            action(false);
+        if (NewUserPost.error != "")
+            action(false, NewUserPost.error);
+        else if (NewUserPost.text == "")
+            action(false, "");
 		else
-            action(true);
+            action(true, NewUserPost.text);
     }
 
-    public IEnumerator AddLevel(string levelName, Action<bool> action)
+    public IEnumerator AddLevel(string levelName, Action<bool, string> action)
     {
         string hash = Md5Sum(levelName + privateKey);
 
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
 
-        if (NewLevelPost.text == "")
-            action(false);
+        if (NewLevelPost.error != "")
+            action(false, NewLevelPost.error);
+        else if (NewLevelPost.text == "")
+            action(false, "");
         else
-            action(true);
+            action(true, NewLevelPost.text);
     }
     
 	public IEnumerator AddReplay(PlayerReplayModel playerReplay, Action<bool> action)
