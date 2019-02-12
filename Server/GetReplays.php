@@ -1,6 +1,6 @@
 <?php
-    //$db = mysqli_connect("127.0.0.1","grappleapp","ic&EIM(Zxa&s","grappler");
-    $db = mysqli_connect("localhost","grappleapp","ic&EIM(Zxa&s","grappler");
+    $db = mysqli_connect("162.241.252.191","zekelasa_grapple","N#d?1M5b#$}c","zekelasa_Grappler");
+    //$db = mysqli_connect("localhost","grappleapp","ic&EIM(Zxa&s","grappler");
 
     if (mysqli_connect_errno())
     {

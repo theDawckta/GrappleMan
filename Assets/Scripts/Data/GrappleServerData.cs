@@ -11,15 +11,15 @@ using Grappler.Data;
 public class GrappleServerData : Singleton<GrappleServerData>
 {
     private string privateKey = "d41d8cd98f00b204e9800998ecf8427e";
-    //private string GetReplaysUrl = "http://www.thedawckta.com/grappler/GetReplays.php?";
-    //private string AddUserURL = "http://www.thedawckta.com/grappler/AddUser.php?";
-    //private string AddLevelURL = "http://www.thedawckta.com/grappler/AddLevel.php?";
-    //private string AddReplayURL = "http://www.thedawckta.com/grappler/AddReplay.php?";
+    private string GetReplaysUrl = "http://www.zekelasater.com/Grappler/GetReplays.php?";
+    private string AddUserURL = "http://www.zekelasater.com/Grappler/AddUser.php?";
+    private string AddLevelURL = "http://www.zekelasater.com/Grappler/AddLevel.php?";
+    private string AddReplayURL = "http://www.zekelasater.com/Grappler/AddReplay.php?";
 
-    private string GetReplaysUrl = "http://10.0.1.14:8888/GetReplays.php?";
-    private string AddUserURL = "http://10.0.1.14:8888/AddUser.php?";
-    private string AddLevelURL = "http://10.0.1.14:8888/AddLevel.php?";
-    private string AddReplayURL = "http://10.0.1.14:8888/AddReplay.php?";
+    //private string GetReplaysUrl = "http://10.0.1.14:8888/GetReplays.php?";
+    //private string AddUserURL = "http://10.0.1.14:8888/AddUser.php?";
+    //private string AddLevelURL = "http://10.0.1.14:8888/AddLevel.php?";
+    //private string AddReplayURL = "http://10.0.1.14:8888/AddReplay.php?";
 
     public IEnumerator AddUser(string username, Action<bool, string> action)
     {
@@ -29,7 +29,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
         WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(username) + "&hash=" + hash);
         yield return NewUserPost;
 
-        if (NewUserPost.error != "")
+        if (!string.IsNullOrEmpty(NewUserPost.error))
             action(false, NewUserPost.error);
         else if (NewUserPost.text == "")
             action(false, "");
@@ -44,7 +44,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
 
-        if (NewLevelPost.error != "")
+        if (!string.IsNullOrEmpty(NewLevelPost.error))
             action(false, NewLevelPost.error);
         else if (NewLevelPost.text == "")
             action(false, "");
