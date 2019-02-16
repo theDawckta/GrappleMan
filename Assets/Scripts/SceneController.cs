@@ -125,7 +125,7 @@ public class SceneController : MonoBehaviour
         _playerMoved = true;
     }
 
-	private void InitPlayerRankScreen(string levelName)
+	private void GetReplays(string levelName)
 	{
         Player.PlayerCompleted(_levelName);
 
@@ -139,7 +139,8 @@ public class SceneController : MonoBehaviour
             if(!Success && ReturnString != "")
             {
                 Debug.Log("Server Error: " + ReturnString);
-                GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
+                StartGame();
+                //GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
                 return;
             }
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays)=> {
@@ -155,7 +156,8 @@ public class SceneController : MonoBehaviour
                     _ghostPlaybacks.Add(ghostPlayback);
                 }
 
-                GrappleUI.InitPlayerRanksScreen(replays);
+                StartGame();
+                //GrappleUI.InitPlayerRanksScreen(replays);
             }));
         }));
 	}
@@ -218,7 +220,6 @@ public class SceneController : MonoBehaviour
 
     void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
-
         StopCoroutine("ReleaseGhosts");
         _replays = replays;
 		int tempNumOfGhosts = (replays.Count < PlayerPrefs.GetInt(Constants.GHOSTS)) ? replays.Count : PlayerPrefs.GetInt(Constants.GHOSTS);
@@ -234,6 +235,25 @@ public class SceneController : MonoBehaviour
 
 	private void StartGame()
 	{
+        GrappleUI.Hide();
+        StartCoroutine(StartCountDown());
+    }
+
+    IEnumerator StartCountDown()
+    {
+        int counter = 3;
+
+        GrappleUI.ShowCountdown();
+
+        while (counter > 0)
+        {
+            yield return new WaitForSeconds(1);
+            counter--;
+            GrappleUI.UpdateCountdown(counter);
+        }
+
+        GrappleUI.HideCountdown();
+
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
@@ -243,6 +263,8 @@ public class SceneController : MonoBehaviour
         _mainCamera.transform.position = _mainCameraStartPosition;
 
         _gameOn = true;
+
+        yield return null;
     }
 
 	void ResetGame()
@@ -260,8 +282,11 @@ public class SceneController : MonoBehaviour
     {
         if (_gameOn)
         {
-            Player.PlayerCompleted(_levelName);
             Player.DisableLeftScreenInput();
+            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
+
+            GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
+
             GrappleUI.EndGame();
             _gameOn = false;
         }
@@ -365,7 +390,7 @@ public class SceneController : MonoBehaviour
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
-		GrappleUI.OnLevelSelectButtonClicked += InitPlayerRankScreen;
+		GrappleUI.OnLevelSelectButtonClicked += GetReplays;
 		GrappleUI.OnResetButtonClicked += ResetGame;
         GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
@@ -376,7 +401,7 @@ public class SceneController : MonoBehaviour
 	void OnDisable()
 	{
         GrappleUI.OnStartButtonClicked -= StartGame;
-		GrappleUI.OnLevelSelectButtonClicked -= InitPlayerRankScreen;
+		GrappleUI.OnLevelSelectButtonClicked -= GetReplays;
         GrappleUI.OnResetButtonClicked -= ResetGame;
         GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;

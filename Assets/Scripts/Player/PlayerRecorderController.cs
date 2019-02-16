@@ -57,7 +57,7 @@ public class PlayerRecorderController : MonoBehaviour
     	_recording = true;
     }
 
-    public void DoneRecording(string levelName)
+    public PlayerReplayModel DoneRecording(string levelName)
 	{
 		AddState(_timePassed, true);
 		_recording = false;
@@ -65,6 +65,8 @@ public class PlayerRecorderController : MonoBehaviour
         PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerReplayModel, (Success) => {
             // placeholder if needed
         }));
+
+        return playerReplayModel;
     }
 
     void AddState(float deltaTime, bool lastState = false)

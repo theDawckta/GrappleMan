@@ -13,4 +13,9 @@ public class PlayerRowController : MonoBehaviour
 		PlayerName.text = playerName;
 		PlayerTime.text = playerTime;
 	}
+
+    public void MarkRowAsPlayer()
+    {
+        PlayerName.color = Color.black;
+    }
 }

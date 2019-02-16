@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Grappler;
 using Grappler.Data;
 using DG.Tweening;
+using TMPro;
 
 public class UIController : MonoBehaviour
 {
@@ -37,6 +38,8 @@ public class UIController : MonoBehaviour
     public InputField SeedInputField;
     public Text FPSText;
     public Text TimerText;
+    public GameObject Countdown;
+    public TextMeshProUGUI CountdownText;
 	public GameObject NoUsernameScreen;
     public GameObject LevelSelectScreen;
 	public GameObject ConfigScreen;
@@ -106,31 +109,61 @@ public class UIController : MonoBehaviour
         });
     }
 
-    void Hide(GameObject _currentScreen)
+    //public void Hide(GameObject _currentScreen)
+    public void Hide()
     {
+        DOTween.Kill(_spinnerTweener.target);
         if (Follow != null)
             Follow.MenuClosed();
 
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
-            _currentScreen.gameObject.SetActive(false);
+            //_currentScreen.gameObject.SetActive(false);
+            WaitScreen.SetActive(true);
         });
     }
 
-    public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays)
+    public void ShowCountdown()
+    {
+        _timer = 0.0f;
+        CountdownText.text = "3";
+        Countdown.SetActive(true);
+    }
+
+    public void UpdateCountdown(int time)
+    {
+        CountdownText.text = time.ToString();
+    }
+
+    public void HideCountdown()
+    {
+        Countdown.SetActive(false);
+        _timeStarted = true;
+    }
+
+    public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays, PlayerReplayModel currentPlayerReplay)
 	{
-        DOTween.Kill(_spinnerTweener.target);
+        //DOTween.Kill(_spinnerTweener.target);
+
+        foreach (Transform playerRow in PlayerRanksScreen.transform.Find("Players"))
+            Destroy(playerRow.gameObject);
 
         if (playerReplays.Count == 0)
             NoRecordsText.gameObject.SetActive(true);
         else
             NoRecordsText.gameObject.SetActive(false);
 
+        playerReplays.Add(currentPlayerReplay);
+        playerReplays.Sort((x, y) => x.ReplayTime.CompareTo(y.ReplayTime));
+
         for (int i = 0; i < playerReplays.Count; i++)
 		{
 			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
             playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, GetTimeText(playerReplays[i].ReplayTime));
 
-			playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
+            if (currentPlayerReplay.UserName == playerReplays[i].UserName)
+                playerRow.MarkRowAsPlayer();
+
+            playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
 		}
 
         WaitScreen.SetActive(false);
@@ -146,16 +179,16 @@ public class UIController : MonoBehaviour
         OnLevelSelectButtonClicked(levelName);
 	}
 
-	public void UIStartButtonClicked()
+    public void UIDoneButtonClicked()
     {
-        Hide(PlayerRanksScreen);
-		if(OnStartButtonClicked != null)
-			OnStartButtonClicked();
-        _timer = 0.0f;
-		_timeStarted = true;
+        PlayerRanksScreen.SetActive(false);
+        LevelSelectScreen.SetActive(true);
+        //if (OnStartButtonClicked != null)
+        //    OnStartButtonClicked();
+        
     }
 
-	public void UIUserEditButtonClicked()
+    public void UIUserEditButtonClicked()
     {
         UserEdit.SetActive(false);
         UserInput.gameObject.SetActive(true);
@@ -241,12 +274,9 @@ public class UIController : MonoBehaviour
 
     public void EndGame()
     {
-        LevelSelectScreen.SetActive (true);
+        //LevelSelectScreen.SetActive (true);
         Show();
-		foreach(Transform playerRow in PlayerRanksScreen.transform.Find("Players")) 
-		{
-			Destroy(playerRow.gameObject);
-		}
+		
         Debug.Log(_timer);
         _timeStarted = false;
     }

@@ -463,11 +463,11 @@ public class PlayerController : MonoBehaviour
         RopeOrigin.transform.rotation = grappleShoulderRotation;
     }
 
-	public void PlayerCompleted(string levelName)
+	public PlayerReplayModel PlayerCompleted(string levelName)
     {
     	// handle completed animation here
-        if(_playerRecorderController.Recording)
-            _playerRecorderController.DoneRecording(levelName);
+        //if(_playerRecorderController.Recording)
+            return _playerRecorderController.DoneRecording(levelName);
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)
