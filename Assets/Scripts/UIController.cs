@@ -206,7 +206,7 @@ public class UIController : MonoBehaviour
 
 	public void UINewUserSaveButtonClicked()
     {
-		OnUserSaveButtonClicked(NewUserInput.text);
+        OnUserSaveButtonClicked(NewUserInput.text.ToUpper());
     }
 
 	public void UIUserSaveButtonClicked()

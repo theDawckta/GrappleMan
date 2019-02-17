@@ -46,7 +46,7 @@ public class GhostPlaybackController : MonoBehaviour
         if (_playerReplayModel.HasStates)
 		{
 			transform.position = _playerReplayModel.StartingPosition;
-            _ghostPlayer.FadeIn(1.0f, UnityEngine.Random.Range(3.0f, 5.0f));
+            _ghostPlayer.FadeIn(1.0f, 0.5f);
             _startTime = Time.time;
             StartCoroutine(PlayGhostPlayback());
 		}
