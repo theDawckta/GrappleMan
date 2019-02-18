@@ -313,7 +313,7 @@ public class SceneController : MonoBehaviour
         }
             
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddUser(username, (Success, ReturnString) => {
-            if(!Success && ReturnString != null)
+            if(!Success && !string.IsNullOrEmpty(ReturnString))
             {
                 Debug.Log("Server Error: " + ReturnString);
                 _username = username;

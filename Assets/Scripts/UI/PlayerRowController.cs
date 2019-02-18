@@ -16,6 +16,6 @@ public class PlayerRowController : MonoBehaviour
 
     public void MarkRowAsPlayer()
     {
-        PlayerName.color = Color.black;
+        PlayerName.color = Color.blue;
     }
 }

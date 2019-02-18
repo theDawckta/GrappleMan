@@ -160,7 +160,7 @@ public class UIController : MonoBehaviour
 			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
             playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, GetTimeText(playerReplays[i].ReplayTime));
 
-            if (currentPlayerReplay.UserName == playerReplays[i].UserName)
+            if (currentPlayerReplay == playerReplays[i])
                 playerRow.MarkRowAsPlayer();
 
             playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);

@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour
     public float BoostForce = 10.0f;
     public float HookSpeed = 130.0f;
     public float ClimbSpeed = 1.0f;
-    public float MaxClimbVelocity = 40.0f;
     public float AnimationSmoothTime = 0.4F;
 	public LineRenderer RopeLineRenderer {get {return _ropeLineRenderer;}}
 	public GameObject WallHookSprite {get {return _wallHookSprite;}}
@@ -172,8 +171,12 @@ public class PlayerController : MonoBehaviour
         }
         else if (HookPlayerInput.ClimbButtonPressed())
         {
-            if (_hooked && _ropeLineRenderer.positionCount > 1 && _currentRopeLength > _ropeMinLength && _playerRigidbody.velocity.magnitude < MaxClimbVelocity)
+            if (_hooked && _currentRopeLength > _ropeMinLength)
+            {
+                Debug.Log("climbing");
                 ClimbRope();
+            }
+                
         }
 
 		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
@@ -363,13 +366,10 @@ public class PlayerController : MonoBehaviour
     {
 		Vector3 direction;
 
-		if(_hooked)
-		{
-	        _wallHookFixedJoint.connectedBody = null;
-			direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
-			direction = direction * ClimbSpeed / Time.deltaTime;
-            _playerRigidbody.AddForce(direction, ForceMode.Force);
-		}
+        _wallHookFixedJoint.connectedBody = null;
+		direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
+		direction = direction * ClimbSpeed / Time.deltaTime;
+        _playerRigidbody.AddForce(direction, ForceMode.Force);
     }
 
 	void BoostPlayer()
