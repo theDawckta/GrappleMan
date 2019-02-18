@@ -125,7 +125,6 @@ public class UIController : MonoBehaviour
     public void ShowCountdown()
     {
         _timer = 0.0f;
-        TimerText.text = GetTimeText(_timer);
         CountdownText.text = "3";
         Countdown.SetActive(true);
     }
@@ -184,9 +183,10 @@ public class UIController : MonoBehaviour
     {
         PlayerRanksScreen.SetActive(false);
         LevelSelectScreen.SetActive(true);
+        TimerText.text = GetTimeText(_timer);
         //if (OnStartButtonClicked != null)
         //    OnStartButtonClicked();
-        
+
     }
 
     public void UIUserEditButtonClicked()

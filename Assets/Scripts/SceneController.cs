@@ -247,6 +247,7 @@ public class SceneController : MonoBehaviour
     {
         int counter = 3;
 
+        Player.Disable();
         GrappleUI.ShowCountdown();
 
         while (counter > 0)
