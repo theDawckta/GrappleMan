@@ -125,6 +125,7 @@ public class UIController : MonoBehaviour
     public void ShowCountdown()
     {
         _timer = 0.0f;
+        TimerText.text = GetTimeText(_timer);
         CountdownText.text = "3";
         Countdown.SetActive(true);
     }

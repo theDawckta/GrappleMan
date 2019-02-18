@@ -127,7 +127,11 @@ public class SceneController : MonoBehaviour
 
 	private void GetReplays(string levelName)
 	{
-        Player.PlayerCompleted(_levelName);
+        if(_playerMoved == true)
+        {
+            Player.PlayerCompleted(_levelName);
+            _playerMoved = false;
+        }
 
         _levelName = levelName;
 
