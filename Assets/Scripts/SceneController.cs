@@ -202,7 +202,7 @@ public class SceneController : MonoBehaviour
 
         Color hideColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 0.0f);
         Color showColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 1.0f);
-
+        Color BeforeColor = _levelRenderers[0].material.color;
         for (int i = 0; i < _levelRenderers.Length; i++)
         {
             _levelRenderers[i].material.color = hideColor;
