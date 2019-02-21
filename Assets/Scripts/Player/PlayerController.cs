@@ -346,7 +346,7 @@ public class PlayerController : MonoBehaviour
 
             if(_hooked)
             {
-				_wallHook.GetComponent<FixedJoint>().connectedBody = null;
+                _wallHookFixedJoint.connectedBody = null;
                 _wallHook.transform.position = intersection;
                 if(!_grounded)
                 	_wallHookFixedJoint.connectedBody = _playerRigidbody;
