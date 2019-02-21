@@ -208,13 +208,15 @@ public class PlayerController : MonoBehaviour
             {
                 CheckRopeSlack();
             }
-
+            
           	hit = Physics.Raycast(transform.position, direction, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
             if (hit)
             {
-				hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
+                Debug.DrawRay(transform.position, direction, Color.red, 10.0f);
+                hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
                 if (hit)
                 {
+                    Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, Color.yellow, 10.0f);
                     if (_playerRaycastOut.transform.gameObject == _nextPlayerRaycastOut.transform.gameObject)
                     {
 						if(_hookActive)

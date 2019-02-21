@@ -9,23 +9,28 @@ ModelImporter:
     100006: //RootNode
     100008: StraightTube
     100010: CurveTube
+    100012: Cube
     400000: Camera
     400002: Cylinder
     400004: Lamp
     400006: //RootNode
     400008: StraightTube
     400010: CurveTube
+    400012: Cube
     2000000: Camera
     2100000: No Name
     2300000: Cylinder
     2300002: StraightTube
     2300004: CurveTube
+    2300006: Cube
     3300000: Cylinder
     3300002: StraightTube
     3300004: CurveTube
+    3300006: Cube
     4300000: Cylinder
     4300002: StraightTube
     4300004: CurveTube
+    4300006: Cube
     10800000: Lamp
   externalObjects: {}
   materials:
