@@ -21,6 +21,7 @@ ModelImporter:
     400014: Cube.001
     2000000: Camera
     2100000: No Name
+    2100002: StraightTubeMat
     2300000: Cylinder
     2300002: StraightTube
     2300004: CurveTube
@@ -39,7 +40,7 @@ ModelImporter:
     10800000: Lamp
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
