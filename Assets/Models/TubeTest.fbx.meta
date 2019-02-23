@@ -11,6 +11,7 @@ ModelImporter:
     100010: CurveTube
     100012: Cube
     100014: Cube.001
+    100016: Torch
     400000: Camera
     400002: Cylinder
     400004: Lamp
@@ -19,6 +20,7 @@ ModelImporter:
     400010: CurveTube
     400012: Cube
     400014: Cube.001
+    400016: Torch
     2000000: Camera
     2100000: No Name
     2100002: StraightTubeMat
@@ -27,16 +29,19 @@ ModelImporter:
     2300004: CurveTube
     2300006: Cube
     2300008: Cube.001
+    2300010: Torch
     3300000: Cylinder
     3300002: StraightTube
     3300004: CurveTube
     3300006: Cube
     3300008: Cube.001
+    3300010: Torch
     4300000: Cylinder
     4300002: StraightTube
     4300004: CurveTube
     4300006: Cube
     4300008: Cube.001
+    4300010: Torch
     10800000: Lamp
   externalObjects: {}
   materials:
