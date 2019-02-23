@@ -12,11 +12,8 @@ using TMPro;
 
 public class UIController : MonoBehaviour
 {
-	public delegate void StartButtonClicked();
-	public event StartButtonClicked OnStartButtonClicked;
-
-	public delegate void LevelSelectButtonClicked(string levelName);
-	public event LevelSelectButtonClicked OnLevelSelectButtonClicked;
+    public delegate void StartButtonClicked();
+    public event StartButtonClicked OnStartButtonClicked;
 
     public delegate void ResetDataButtonClicked();
     public event ResetDataButtonClicked OnResetDataButtonClicked;
@@ -41,7 +38,7 @@ public class UIController : MonoBehaviour
     public GameObject Countdown;
     public TextMeshProUGUI CountdownText;
 	public GameObject NoUsernameScreen;
-    public GameObject LevelSelectScreen;
+    public GameObject StartScreen;
 	public GameObject ConfigScreen;
     public GameObject PlayerRanksScreen;
     public PlayerRowController PlayerRow;
@@ -82,12 +79,6 @@ public class UIController : MonoBehaviour
     void Start()
     {
         StartCoroutine(FPS());
-        //seed = RandomString(SeedLength);
-        //UserEdit.SetActive(true);
-
-        // SeedInputField.text = seed;
-        // init levelgenerator here when ready
-        // LevelGenerator.Init(seed);
     }
 
     void Update()
@@ -108,8 +99,7 @@ public class UIController : MonoBehaviour
             _uiCanvasRaycaster.enabled = true;
         });
     }
-
-    //public void Hide(GameObject _currentScreen)
+    
     public void Hide()
     {
         DOTween.Kill(_spinnerTweener.target);
@@ -117,7 +107,6 @@ public class UIController : MonoBehaviour
             Follow.MenuClosed();
 
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
-            //_currentScreen.gameObject.SetActive(false);
             WaitScreen.SetActive(true);
         });
     }
@@ -142,8 +131,6 @@ public class UIController : MonoBehaviour
 
     public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays, PlayerReplayModel currentPlayerReplay)
 	{
-        //DOTween.Kill(_spinnerTweener.target);
-
         foreach (Transform playerRow in PlayerRanksScreen.transform.Find("Players"))
             Destroy(playerRow.gameObject);
 
@@ -170,23 +157,20 @@ public class UIController : MonoBehaviour
         PlayerRanksScreen.SetActive(true);
 	}
 
-	public void UILevelButtonClicked(string levelName)
+	public void UIStartButtonClicked(string levelName)
 	{
-        LevelSelectScreen.SetActive(false);
+        StartScreen.SetActive(false);
         WaitScreen.SetActive(true);
         Debug.Log("SPINNING");
         _spinnerTweener = Spinner.transform.DOLocalRotate(new Vector3(0.0f, 0.0f, -359.0f), 2.0f).SetLoops(-1).SetEase(Ease.Linear);
-        OnLevelSelectButtonClicked(levelName);
+        OnStartButtonClicked();
 	}
 
     public void UIDoneButtonClicked()
     {
         PlayerRanksScreen.SetActive(false);
-        LevelSelectScreen.SetActive(true);
+        StartScreen.SetActive(true);
         TimerText.text = GetTimeText(_timer);
-        //if (OnStartButtonClicked != null)
-        //    OnStartButtonClicked();
-
     }
 
     public void UIUserEditButtonClicked()
@@ -282,26 +266,6 @@ public class UIController : MonoBehaviour
         _timeStarted = false;
     }
 
-    public void SetSeed()
-    {
-        if (SeedInputField.text != "")
-        {
-            //seed = SeedInputField.text;
-
-            // init levelgenerator here when ready
-            // LevelGenerator.Init(seed);
-        }
-    }
-
-    public void RandomSeed()
-    {
-        //seed = RandomString(SeedLength);
-        //SeedInputField.text = seed;
-
-        // init levelgenerator here when ready
-        // LevelGenerator.Init(seed);
-    }
-
     public static string RandomString(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -311,13 +275,13 @@ public class UIController : MonoBehaviour
 
 	public void OpenConfigScreen()
     {
-        LevelSelectScreen.gameObject.SetActive(false);
+        StartScreen.gameObject.SetActive(false);
 		ConfigScreen.gameObject.SetActive(true);
     }
 
     public void CloseConfigScreen()
     {
-        LevelSelectScreen.gameObject.SetActive(true);
+        StartScreen.gameObject.SetActive(true);
         ConfigScreen.gameObject.SetActive(false);
     }
 

@@ -1,4 +1,4 @@
 ﻿namespace Enums
 {
-    public enum SectionType { NE, NS, SE, SN, WE, WN, WS }
+    public enum SectionType { START_SECTION, NE, NS, SE, SN, WE, WN, WS }
 }

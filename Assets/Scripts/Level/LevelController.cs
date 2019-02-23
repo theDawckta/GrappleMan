@@ -5,36 +5,47 @@ using Enums;
 
 public class LevelController : MonoBehaviour
 {
-    public string Seed;
     public bool UseRandomSeed;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
+    public GameObject FrontBarrier;
 
-    private GameObject Player;
+    private string _seed = "123456";
+    private GameObject _player;
     private List<LevelSectionController> _oldLevelSections = new List<LevelSectionController>();
     private LevelSectionController _currentSection;
     private System.Random _pseudoRandom;
     
     void Start ()
     {
-        if (UseRandomSeed)
-        {
-            Seed = Time.time.ToString();
-        }
-
-        _pseudoRandom = new System.Random(Seed.GetHashCode());
-        _currentSection = LevelSections.Find(x => x.Section == SectionType.WE);
+        _currentSection = LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION));
         Instantiate(_currentSection, transform);
     }
 	
 	void Update ()
     {
-		while(Player != null && Vector3.Distance(_currentSection.transform.position, Player.transform.position) < 320.0f)
+		while(_player != null && Vector3.Distance(_currentSection.transform.position, _player.transform.position) < 320.0f)
             LoadSection();
 	}
 
     public void Init(GameObject player)
     {
-        Player = player;
+        _player = player;
+        _pseudoRandom = new System.Random(_seed.GetHashCode());
+    }
+
+    public string GetSeed()
+    {
+        return _seed;
+    }
+
+    public void ShowBarrier()
+    {
+        FrontBarrier.gameObject.SetActive(true);
+    }
+
+    public void HideBarrier()
+    {
+        FrontBarrier.gameObject.SetActive(false);
     }
 
     private void LoadSection()

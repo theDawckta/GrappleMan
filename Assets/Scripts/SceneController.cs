@@ -14,9 +14,9 @@ public class SceneController : MonoBehaviour
     public PlayerRecorderController PlayerRecorder;
 	public GhostPlaybackController GhostPlayback;
 	public GameObject GhostHolder;
-	public GameObject LevelHolder;
+    public LevelController Level;
+    public WaypointController Waypoint;
 
-    private WaypointController _currentLevelWaypoint;
     private AudioSource _playerAudio;
     private AudioClip _song;
     private Camera _mainCamera;
@@ -26,8 +26,8 @@ public class SceneController : MonoBehaviour
     private bool _gameOn = false;
 	private string _username = "User";
 	private GameObject _currentLevel;
-	private string _levelName = "Start";
-    private Renderer[] _levelRenderers;
+	private string _levelName = "StartSection";
+    //private Renderer[] _levelRenderers;
     private float _hideShowTime = 1.0f;
     private bool _playerMoved = false;
     private int _startGhostIndex;
@@ -35,7 +35,7 @@ public class SceneController : MonoBehaviour
 
     void Awake()
     {
-        _levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>();
+        //_levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>();
         Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
@@ -66,12 +66,12 @@ public class SceneController : MonoBehaviour
         else
         {
             GrappleUI.UserName.text = _username;
-            GrappleUI.LevelSelectScreen.SetActive(true);
+            GrappleUI.StartScreen.SetActive(true);
         }
         
         Player.Enable();
         Player.Show();
-        ShowLevel();
+        Level.Init(Player.gameObject);
         StartCoroutine("WaitForPlayerInput");
         StartCoroutine("WaitForOpenUI");
 
@@ -125,102 +125,44 @@ public class SceneController : MonoBehaviour
         _playerMoved = true;
     }
 
-	private void GetReplays(string levelName)
-	{
-        if(_playerMoved == true)
-        {
-            Player.PlayerCompleted(_levelName);
-            _playerMoved = false;
-        }
+	//private void GetReplays(string levelName)
+	//{
+ //       if(_playerMoved == true)
+ //       {
+ //           Player.PlayerCompleted(_levelName);
+ //           _playerMoved = false;
+ //       }
 
-        _levelName = levelName;
+ //       _levelName = levelName;
 
-        HideOldLevel();
+ //       Player.Init();
 
-        Player.Init();
+ //       GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
+ //           if(!Success && ReturnString != "")
+ //           {
+ //               Debug.Log("Server Error: " + ReturnString);
+ //               StartGame();
+ //               //GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
+ //               return;
+ //           }
+ //           PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays)=> {
+	//	        ReplaysRecieved(replays);
 
-        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
-            if(!Success && ReturnString != "")
-            {
-                Debug.Log("Server Error: " + ReturnString);
-                StartGame();
-                //GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
-                return;
-            }
-            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays)=> {
-		        ReplaysRecieved(replays);
+ //               _ghostPlaybacks = new List<GhostPlaybackController>();
 
-                _ghostPlaybacks = new List<GhostPlaybackController>();
+ //               for (int i = 0; i < _replays.Count; i++)
+ //               {
+ //                   GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
+ //                   ghostPlayback.transform.SetParent(GhostHolder.transform);
+ //                   ghostPlayback.SetPlayerReplayModel(_replays[i]);
+ //                   _ghostPlaybacks.Add(ghostPlayback);
+ //               }
 
-                for (int i = 0; i < _replays.Count; i++)
-                {
-                    GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
-                    ghostPlayback.transform.SetParent(GhostHolder.transform);
-                    ghostPlayback.SetPlayerReplayModel(_replays[i]);
-                    _ghostPlaybacks.Add(ghostPlayback);
-                }
-
-                StartGame();
-                //GrappleUI.InitPlayerRanksScreen(replays);
-            }));
-        }));
-	}
-
-    void HideOldLevel()
-    {
-        for (int i = 0; i < _levelRenderers.Length; i++)
-        {
-            Color endColor = new Color(_levelRenderers[i].material.color.r, _levelRenderers[i].material.color.g, _levelRenderers[i].material.color.b, 0.0f);
-            if(i < _levelRenderers.Length - 1)
-                _levelRenderers[i].material.DOColor(endColor, _hideShowTime);
-            else
-            {
-                _levelRenderers[i].material.DOColor(endColor, _hideShowTime).OnComplete(() => {
-                    foreach (Transform child in LevelHolder.transform)
-                        GameObject.Destroy(child.gameObject);
-
-                    if (_currentLevelWaypoint != null)
-                    {
-                        _currentLevelWaypoint.OnGatesPassed -= OnGatesPassed;
-                        _currentLevelWaypoint.OnWaypointVisible -= OnWaypointVisible;
-                        _currentLevelWaypoint.OnWaypointHidden -= OnWaypointHidden;
-                        _currentLevelWaypoint.OnGatesFinished -= PlayerFinished;
-                    }
-                });
-            } 
-        }
-
-        Invoke("ShowLevel", 2.0f);
-    }
-
-    public void ShowLevel()
-    {
-        _currentLevel = (GameObject)Instantiate(Resources.Load("Levels/" + _levelName));
-        _currentLevel.SetActive(false);
-        _currentLevel.transform.SetParent(LevelHolder.transform, false);
-        _levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>(true);
-
-        Color hideColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 0.0f);
-        Color showColor = new Color(_levelRenderers[0].material.color.r, _levelRenderers[0].material.color.g, _levelRenderers[0].material.color.b, 1.0f);
-        Color BeforeColor = _levelRenderers[0].material.color;
-        for (int i = 0; i < _levelRenderers.Length; i++)
-        {
-            _levelRenderers[i].material.color = hideColor;
-        }
-
-        _currentLevelWaypoint = _currentLevel.GetComponentInChildren<WaypointController>();
-        _currentLevelWaypoint.OnGatesPassed += OnGatesPassed;
-        _currentLevelWaypoint.OnWaypointVisible += OnWaypointVisible;
-        _currentLevelWaypoint.OnWaypointHidden += OnWaypointHidden;
-        _currentLevelWaypoint.OnGatesFinished += PlayerFinished;
-
-        _currentLevel.SetActive(true);
-
-        for (int j = 0; j < _levelRenderers.Length; j++)
-        {
-            _levelRenderers[j].material.DOColor(showColor, _hideShowTime).SetEase(Ease.Linear);
-        }
-    }
+ //               StartGame();
+ //               //GrappleUI.InitPlayerRanksScreen(replays);
+ //           }));
+ //       }));
+	//}
 
     void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
@@ -239,8 +181,38 @@ public class SceneController : MonoBehaviour
 
 	private void StartGame()
 	{
-        GrappleUI.Hide();
-        StartCoroutine(StartCountDown());
+        if (_playerMoved == true)
+        {
+            Player.PlayerCompleted(_levelName);
+            _playerMoved = false;
+        }
+
+        _levelName = Level.GetSeed();
+
+        Player.Init();
+
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
+            if (!Success && ReturnString != "")
+            {
+                Debug.Log("Server Error: " + ReturnString);
+            }
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) => {
+                ReplaysRecieved(replays);
+
+                _ghostPlaybacks = new List<GhostPlaybackController>();
+
+                for (int i = 0; i < _replays.Count; i++)
+                {
+                    GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
+                    ghostPlayback.transform.SetParent(GhostHolder.transform);
+                    ghostPlayback.SetPlayerReplayModel(_replays[i]);
+                    _ghostPlaybacks.Add(ghostPlayback);
+                }
+
+                GrappleUI.Hide();
+                StartCoroutine(StartCountDown());
+            }));
+        }));
     }
 
     IEnumerator StartCountDown()
@@ -262,9 +234,10 @@ public class SceneController : MonoBehaviour
         for (int i = 0; i < _ghostPlaybacks.Count; i++)
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
+        Level.HideBarrier();
         Player.Enable(true);
-        _currentLevelWaypoint.Init(Player.transform.position);
-        Player.SetArrowDestination(_currentLevelWaypoint.GateCollider.transform.position);
+        Waypoint.Init(Player.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
         _mainCamera.transform.position = _mainCameraStartPosition;
 
         _gameOn = true;
@@ -323,7 +296,7 @@ public class SceneController : MonoBehaviour
                 Debug.Log("Server Error: " + ReturnString);
                 _username = username;
                 GrappleUI.NoUsernameScreen.SetActive(false);
-                GrappleUI.LevelSelectScreen.SetActive(true);
+                GrappleUI.StartScreen.SetActive(true);
                 GrappleUI.ConfigScreen.SetActive(false);
                 GrappleUI.UserName.text = _username;
                 GrappleUI.UserEdit.SetActive(true);
@@ -337,7 +310,7 @@ public class SceneController : MonoBehaviour
             {
                 _username = username;
                 GrappleUI.NoUsernameScreen.SetActive(false);
-                GrappleUI.LevelSelectScreen.SetActive(true);
+                GrappleUI.StartScreen.SetActive(true);
                 GrappleUI.ConfigScreen.SetActive(false);
                 GrappleUI.UserName.text = _username;
                 GrappleUI.UserEdit.SetActive(true);
@@ -358,7 +331,7 @@ public class SceneController : MonoBehaviour
     void UsernameProcessed(string username)
     {
 		GrappleUI.NoUsernameScreen.SetActive(false);
-		GrappleUI.LevelSelectScreen.SetActive(true);
+		GrappleUI.StartScreen.SetActive(true);
 		if(username != string.Empty)
 		{
 			_username = username;
@@ -379,7 +352,7 @@ public class SceneController : MonoBehaviour
 
     void OnGatesPassed()
     {
-        Player.SetArrowDestination(_currentLevelWaypoint.GateCollider.transform.position);
+        Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
     void OnWaypointHidden()
@@ -395,22 +368,28 @@ public class SceneController : MonoBehaviour
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
-		GrappleUI.OnLevelSelectButtonClicked += GetReplays;
 		GrappleUI.OnResetButtonClicked += ResetGame;
         GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
+        Waypoint.OnGatesPassed += OnGatesPassed;
+        Waypoint.OnWaypointVisible += OnWaypointVisible;
+        Waypoint.OnWaypointHidden += OnWaypointHidden;
+        Waypoint.OnGatesFinished += PlayerFinished;
     }
 
-	void OnDisable()
+    void OnDisable()
 	{
         GrappleUI.OnStartButtonClicked -= StartGame;
-		GrappleUI.OnLevelSelectButtonClicked -= GetReplays;
         GrappleUI.OnResetButtonClicked -= ResetGame;
         GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
+        Waypoint.OnGatesPassed -= OnGatesPassed;
+        Waypoint.OnWaypointVisible -= OnWaypointVisible;
+        Waypoint.OnWaypointHidden -= OnWaypointHidden;
+        Waypoint.OnGatesFinished -= PlayerFinished;
     }
 }
