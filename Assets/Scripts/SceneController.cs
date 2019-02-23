@@ -6,6 +6,7 @@ using Grappler.Util;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DG.Tweening;
+using Cinemachine;
 
 public class SceneController : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class SceneController : MonoBehaviour
 	public GameObject GhostHolder;
     public LevelController Level;
     public WaypointController Waypoint;
+    public CinemachineSmoothPath SmoothPath;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
@@ -124,45 +126,6 @@ public class SceneController : MonoBehaviour
         Player.Enable(true);
         _playerMoved = true;
     }
-
-	//private void GetReplays(string levelName)
-	//{
- //       if(_playerMoved == true)
- //       {
- //           Player.PlayerCompleted(_levelName);
- //           _playerMoved = false;
- //       }
-
- //       _levelName = levelName;
-
- //       Player.Init();
-
- //       GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
- //           if(!Success && ReturnString != "")
- //           {
- //               Debug.Log("Server Error: " + ReturnString);
- //               StartGame();
- //               //GrappleUI.InitPlayerRanksScreen(new List<PlayerReplayModel>());
- //               return;
- //           }
- //           PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays)=> {
-	//	        ReplaysRecieved(replays);
-
- //               _ghostPlaybacks = new List<GhostPlaybackController>();
-
- //               for (int i = 0; i < _replays.Count; i++)
- //               {
- //                   GhostPlaybackController ghostPlayback = (GhostPlaybackController)Instantiate(GhostPlayback);
- //                   ghostPlayback.transform.SetParent(GhostHolder.transform);
- //                   ghostPlayback.SetPlayerReplayModel(_replays[i]);
- //                   _ghostPlaybacks.Add(ghostPlayback);
- //               }
-
- //               StartGame();
- //               //GrappleUI.InitPlayerRanksScreen(replays);
- //           }));
- //       }));
-	//}
 
     void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
@@ -365,6 +328,11 @@ public class SceneController : MonoBehaviour
         Player.PlayerArrow.SetActive(false);
     }
 
+    void LevelSectionAdded(List<CinemachineSmoothPath.Waypoint> waypoints)
+    {
+        SmoothPath.m_Waypoints = waypoints.ToArray();
+    }
+
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
@@ -377,6 +345,7 @@ public class SceneController : MonoBehaviour
         Waypoint.OnWaypointVisible += OnWaypointVisible;
         Waypoint.OnWaypointHidden += OnWaypointHidden;
         Waypoint.OnGatesFinished += PlayerFinished;
+        Level.OnLevelSectionAdded += LevelSectionAdded;
     }
 
     void OnDisable()
@@ -391,5 +360,6 @@ public class SceneController : MonoBehaviour
         Waypoint.OnWaypointVisible -= OnWaypointVisible;
         Waypoint.OnWaypointHidden -= OnWaypointHidden;
         Waypoint.OnGatesFinished -= PlayerFinished;
+        Level.OnLevelSectionAdded -= LevelSectionAdded;
     }
 }

@@ -1,10 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 using Enums;
+using Cinemachine;
 
 public class LevelController : MonoBehaviour
 {
+    public delegate void LevelSetionAdded(List<CinemachineSmoothPath.Waypoint> waypoints);
+    public event LevelSetionAdded OnLevelSectionAdded;
+
     public bool UseRandomSeed;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
@@ -14,11 +19,17 @@ public class LevelController : MonoBehaviour
     private List<LevelSectionController> _oldLevelSections = new List<LevelSectionController>();
     private LevelSectionController _currentSection;
     private System.Random _pseudoRandom;
+    private List<CinemachineSmoothPath.Waypoint> _cameraWayoints = new List<CinemachineSmoothPath.Waypoint>();
     
     void Start ()
     {
         _currentSection = LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION));
         Instantiate(_currentSection, transform);
+        CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
+        newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
+        _cameraWayoints.Add(newWaypoint);
+
+        OnLevelSectionAdded(_cameraWayoints);
     }
 	
 	void Update ()
@@ -61,5 +72,10 @@ public class LevelController : MonoBehaviour
 
         _currentSection = Instantiate(LevelSections.Find(x => x.Section == nextSection), transform);
         _currentSection.transform.position = newSectionPosition;
+        CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
+        newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
+        _cameraWayoints.Add(newWaypoint);
+
+        OnLevelSectionAdded(_cameraWayoints);
     }
 }

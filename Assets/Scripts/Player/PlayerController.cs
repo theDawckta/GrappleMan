@@ -89,6 +89,23 @@ public class PlayerController : MonoBehaviour
         HookPlayerInput.EnableFullScreenTouch();
     }
 
+    public void ResetPlayer()
+    {
+        StopAllCoroutines();
+        _ropeLineRenderer.enabled = false;
+        _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
+        _wallHookSprite.transform.parent = GrappleArmEnd.transform;
+        _wallHookFixedJoint.connectedBody = null;
+        transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        _ropeBendAngles.Clear();
+        _ropeLineRenderer.positionCount = 0;
+        _hookActive = false;
+        _hooked = false;
+        _floating = false;
+        PlayerArrow.SetActive(false);
+        Show();
+    }
+
     public void Hide()
     {
         for (int i = 0; i < _renderers.Length; i++)
@@ -97,21 +114,21 @@ public class PlayerController : MonoBehaviour
             _renderers[i].material.DOColor(endColor, _hideShowTime);
         }
 
-        transform.DOMove(_playerStartPosition, 1.0f).SetDelay(_hideShowTime + 0.1f).SetEase(Ease.InOutSine).OnComplete(() => {
-            StopAllCoroutines();
-            _ropeLineRenderer.enabled = false;
-            _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
-            _wallHookSprite.transform.parent = GrappleArmEnd.transform;
-            _wallHookFixedJoint.connectedBody = null;
-            transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
-            _ropeBendAngles.Clear();
-            _ropeLineRenderer.positionCount = 0;
-            _hookActive = false;
-            _hooked = false;
-            _floating = false;
-            PlayerArrow.SetActive(false);
-            Show();
-        });
+        //transform.DOMove(_playerStartPosition, 1.0f).SetDelay(_hideShowTime + 0.1f).SetEase(Ease.InOutSine).OnComplete(() => {
+        //    StopAllCoroutines();
+        //    _ropeLineRenderer.enabled = false;
+        //    _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
+        //    _wallHookSprite.transform.parent = GrappleArmEnd.transform;
+        //    _wallHookFixedJoint.connectedBody = null;
+        //    transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        //    _ropeBendAngles.Clear();
+        //    _ropeLineRenderer.positionCount = 0;
+        //    _hookActive = false;
+        //    _hooked = false;
+        //    _floating = false;
+        //    PlayerArrow.SetActive(false);
+        //    Show();
+        //});
     }
 
     public void Show()
@@ -202,38 +219,36 @@ public class PlayerController : MonoBehaviour
         if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
         {
 			bool hit = false;
-            // raycast from player back to previous LineRenderer position
 			Vector3 direction = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
 
             if (_hooked)
             {
                 CheckRopeSlack();
             }
-            
+
           	hit = Physics.Raycast(transform.position, direction, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
             if (hit)
             {
-                Debug.DrawRay(transform.position, direction.normalized * (Vector3.Distance(_playerRaycastOut.point, transform.position)), Color.red, 10.0f);
-                hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
+				hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
                 if (hit)
                 {
-                    Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized * (Vector3.Distance(_nextPlayerRaycastOut.point, _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2))), Color.yellow, 10.0f);
-					if(_hookActive)
-			    		StopAllCoroutines();
+                    if (_playerRaycastOut.transform.gameObject == _nextPlayerRaycastOut.transform.gameObject)
+                    {
+						if(_hookActive)
+			    			StopAllCoroutines();
 
-					HandleLineWinding(_playerRaycastOut, _nextPlayerRaycastOut);
+						HandleLineWinding(_playerRaycastOut, _nextPlayerRaycastOut);
 
-					if(_hookActive)
-			    		RestartMoveHook();
+						if(_hookActive)
+			    			RestartMoveHook();
+		    		}
 	    		}
 	    	}
 			else if (_ropeLineRenderer.positionCount > 2)
 			{
-                // angle from player to first rope bend
 				Vector3 playersAngle = transform.position - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
-                // angle from first rope bend to next rope position
-				Vector3 firstBendAngle = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
-                float currentAngle = AngleFromAToB(playersAngle, firstBendAngle);
+				Vector3 previousAngle = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
+                float currentAngle = AngleFromAToB(playersAngle, previousAngle);
 		        if (Mathf.Sign(currentAngle) != Mathf.Sign(_ropeBendAngles[_ropeBendAngles.Count - 1]))
 		        {
 					if(_hookActive)
@@ -318,45 +333,31 @@ public class PlayerController : MonoBehaviour
 
 	void HandleLineWinding(RaycastHit playerRaycastOut, RaycastHit nextPlayerRaycastOut)
 	{
-        // grab cornernormal for exact linerenderer position later
         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
-
-        // find out if you are rotating clockwise or counterclockwise
         float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
-        // normals from the 2 faces hit are rotated 90 degrees to see if they intersect
-        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * 90) * playerRaycastOut.normal) * 100.0f;
-        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * -90) * nextPlayerRaycastOut.normal) * 100.0f;
+        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 100.0f;
+        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
 
         try
         {
-            Vector2 intersection2D = Math3d.LineIntersectionPoint(playerRaycastOut.point, playerRaycastOut.point + pointDirection1 * 10.0f, nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection2 * 10.0f);
-
-            Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection2 * 10.0f, Color.magenta, 10.0f);
-            Debug.DrawRay(playerRaycastOut.point, pointDirection1 * 10.0f, Color.blue, 10.0f);
+            Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
             Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
-
-            Debug.DrawRay(intersection, cornerNormal * 10.0f, Color.green, 10.0f);
-            // offset intersection by half of the linerenderer width so it lines up right on the edge
-            intersection = intersection + (cornerNormal.normalized * _ropeLineRenderer.startWidth / 2);
-
-            // insert new point in _ropeLineRenderer
+            intersection = intersection + (cornerNormal.normalized * 0.1f);
             _ropeLineRenderer.positionCount = _ropeLineRenderer.positionCount + 1;
             _ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 2, intersection);
 
             if(_hooked)
             {
-                _wallHookFixedJoint.connectedBody = null;
+				_wallHook.GetComponent<FixedJoint>().connectedBody = null;
                 _wallHook.transform.position = intersection;
                 if(!_grounded)
                 	_wallHookFixedJoint.connectedBody = _playerRigidbody;
             }
 
-            // angle from player to first rope bend
-            Vector3 playersAngle = transform.position - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
-            // angle from first rope bend to next rope position
-            Vector3 firstBendAngle = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
-            _ropeBendAngles.Add(AngleFromAToB(playersAngle, firstBendAngle));
+			Vector3 playersAngle = transform.position - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2);
+			Vector3 previousAngle = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 3);
+            _ropeBendAngles.Add(AngleFromAToB(playersAngle, previousAngle));
         }
         catch
         {

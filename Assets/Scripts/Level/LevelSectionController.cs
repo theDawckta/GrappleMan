@@ -9,4 +9,5 @@ public class LevelSectionController : MonoBehaviour
     public List<SectionType> PossibleNextSections = new List<SectionType>();
     public float OffsetX = 0.0f;
     public float OffsetY = 0.0f;
+    public GameObject CameraPathPoint;
 }
