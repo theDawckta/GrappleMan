@@ -198,7 +198,9 @@ public class SceneController : MonoBehaviour
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
         Level.HideBarrier();
+        Player.ResetPlayer();
         Player.Enable(true);
+        Player.Show();
         Waypoint.Init(Player.transform.position);
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
         _mainCamera.transform.position = _mainCameraStartPosition;
