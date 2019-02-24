@@ -114,22 +114,6 @@ public class PlayerController : MonoBehaviour
             Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
             _renderers[i].material.DOColor(endColor, _hideShowTime);
         }
-
-        //transform.DOMove(_playerStartPosition, 1.0f).SetDelay(_hideShowTime + 0.1f).SetEase(Ease.InOutSine).OnComplete(() => {
-        //    StopAllCoroutines();
-        //    _ropeLineRenderer.enabled = false;
-        //    _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
-        //    _wallHookSprite.transform.parent = GrappleArmEnd.transform;
-        //    _wallHookFixedJoint.connectedBody = null;
-        //    transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
-        //    _ropeBendAngles.Clear();
-        //    _ropeLineRenderer.positionCount = 0;
-        //    _hookActive = false;
-        //    _hooked = false;
-        //    _floating = false;
-        //    PlayerArrow.SetActive(false);
-        //    Show();
-        //});
     }
 
     public void Show()
@@ -483,9 +467,7 @@ public class PlayerController : MonoBehaviour
 
 	public PlayerReplayModel PlayerCompleted(string levelName)
     {
-    	// handle completed animation here
-        //if(_playerRecorderController.Recording)
-            return _playerRecorderController.DoneRecording(levelName);
+        return _playerRecorderController.DoneRecording(levelName);
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)

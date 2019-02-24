@@ -49,7 +49,6 @@ public class UIController : MonoBehaviour
     public GameObject Spinner;
     public InputField GhostsInput;
     public InputField GhostRecordsInput;
-    //public int SeedLength;
 	public InputField NewUserInput;
     public InputField UserInput;
 	public GameObject UserEdit;
@@ -59,8 +58,7 @@ public class UIController : MonoBehaviour
 	public Text ErrorText;
     public Text NoRecordsText;
 	public Text TotalGhostRecordsLocal;
-
-    //private String seed;
+    
     private float _timer;
     private bool _timeStarted;
     private GraphicRaycaster _uiCanvasRaycaster;

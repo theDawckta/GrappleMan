@@ -31,15 +31,12 @@ public class SceneController : MonoBehaviour
 	private GameObject _currentLevel;
 	private string _levelName;
     private string _startLevelName = "StartSection";
-    //private Renderer[] _levelRenderers;
-    private float _hideShowTime = 1.0f;
     private bool _playerMoved = false;
     private int _startGhostIndex;
     private float _ghostReleaseInterval = 2.0f;
 
     void Awake()
     {
-        //_levelRenderers = LevelHolder.GetComponentsInChildren<Renderer>();
         Application.targetFrameRate = 60;
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
@@ -152,7 +149,7 @@ public class SceneController : MonoBehaviour
         }
 	}
 
-	private void StartGame()
+    private void StartGame()
 	{
         if (_playerMoved == true)
         {
@@ -306,39 +303,6 @@ public class SceneController : MonoBehaviour
         }));
     }
 
-    void UsernameProcessed(string username)
-    {
-		GrappleUI.NoUsernameScreen.SetActive(false);
-		GrappleUI.StartScreen.SetActive(true);
-		if(username != string.Empty)
-		{
-			_username = username;
-			GrappleUI.UserName.text = _username;
-			PlayerPrefs.SetString(Constants.USERNAME_KEY, _username);
-		}
-
-		GrappleUI.UserEdit.SetActive(true);
-		GrappleUI.UserInput.gameObject.SetActive(false);
-		GrappleUI.UserSave.SetActive(false);
-		GrappleUI.UserCancel.SetActive(false);
-    }
-
-    public void SetVolume(float volume)
-    {
-        AudioListener.volume = volume;
-    }
-
-    void ResetGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    void ResetData()
-    {
-        PlayerReplay.ClearData();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
     void GhostsValueChanged(int value)
     {
         PlayerPrefs.SetInt(Constants.GHOSTS, value);
@@ -369,6 +333,22 @@ public class SceneController : MonoBehaviour
     void LevelSectionAdded(List<CinemachineSmoothPath.Waypoint> waypoints)
     {
         SmoothPath.m_Waypoints = waypoints.ToArray();
+    }
+
+    public void SetVolume(float volume)
+    {
+        AudioListener.volume = volume;
+    }
+
+    void ResetGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    void ResetData()
+    {
+        PlayerReplay.ClearData();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     void OnEnable()
