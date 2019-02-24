@@ -15,6 +15,9 @@ public class UIController : MonoBehaviour
     public delegate void StartButtonClicked();
     public event StartButtonClicked OnStartButtonClicked;
 
+    public delegate void DoneButtonClicked();
+    public event DoneButtonClicked OnDoneButtonClicked;
+
     public delegate void ResetDataButtonClicked();
     public event ResetDataButtonClicked OnResetDataButtonClicked;
 
@@ -113,7 +116,6 @@ public class UIController : MonoBehaviour
 
     public void ShowCountdown()
     {
-        _timer = 0.0f;
         CountdownText.text = "3";
         Countdown.SetActive(true);
     }
@@ -170,7 +172,9 @@ public class UIController : MonoBehaviour
     {
         PlayerRanksScreen.SetActive(false);
         StartScreen.SetActive(true);
+        _timer = 0.0f;
         TimerText.text = GetTimeText(_timer);
+        OnDoneButtonClicked();
     }
 
     public void UIUserEditButtonClicked()
@@ -254,6 +258,7 @@ public class UIController : MonoBehaviour
     {
         PlayerPrefs.DeleteAll();
         ConfigScreen.SetActive(false);
+        StartScreen.SetActive(false);
         NoUsernameScreen.SetActive(true);
     }
 

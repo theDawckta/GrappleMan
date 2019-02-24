@@ -23,12 +23,10 @@ public class LevelController : MonoBehaviour
     
     void Start ()
     {
-        _currentSection = LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION));
-        Instantiate(_currentSection, transform);
+        _currentSection = Instantiate(LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION)), transform);
         CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
         newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
         _cameraWayoints.Add(newWaypoint);
-
         OnLevelSectionAdded(_cameraWayoints);
     }
 	
@@ -41,6 +39,26 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
+        _pseudoRandom = new System.Random(_seed.GetHashCode());
+    }
+
+    public void Reset()
+    {
+        for (int i = 0; i < _oldLevelSections.Count; i++)
+            Destroy(_oldLevelSections[i].gameObject);
+
+        Destroy(_currentSection.gameObject);
+        _cameraWayoints.Clear();
+        OnLevelSectionAdded(_cameraWayoints);
+
+        _pseudoRandom = new System.Random(_seed.GetHashCode());
+        _currentSection = Instantiate(LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION)), transform);
+
+        CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
+        newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
+        _cameraWayoints.Add(newWaypoint);
+        OnLevelSectionAdded(_cameraWayoints);
+
         _pseudoRandom = new System.Random(_seed.GetHashCode());
     }
 

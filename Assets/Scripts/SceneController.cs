@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Grappler;
 using Grappler.Data;
@@ -28,7 +29,8 @@ public class SceneController : MonoBehaviour
     private bool _gameOn = false;
 	private string _username = "User";
 	private GameObject _currentLevel;
-	private string _levelName = "StartSection";
+	private string _levelName;
+    private string _startLevelName = "StartSection";
     //private Renderer[] _levelRenderers;
     private float _hideShowTime = 1.0f;
     private bool _playerMoved = false;
@@ -47,6 +49,7 @@ public class SceneController : MonoBehaviour
         _mainCameraStartPosition = _mainCamera.transform.position;
         PlayerReplay.InitLocalRecords();
 		_username = PlayerPrefs.GetString(Constants.USERNAME_KEY);
+        _levelName = _startLevelName;
     }
 
     void Start()
@@ -64,7 +67,10 @@ public class SceneController : MonoBehaviour
         GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
 
         if (PlayerPrefs.GetString(Constants.USERNAME_KEY) == "")
-			GrappleUI.NoUsernameScreen.SetActive(true);
+        {
+            GrappleUI.NoUsernameScreen.SetActive(true);
+            GrappleUI.StartScreen.SetActive(false);
+        }
         else
         {
             GrappleUI.UserName.text = _username;
@@ -74,21 +80,25 @@ public class SceneController : MonoBehaviour
         Player.Enable();
         Player.Show();
         Level.Init(Player.gameObject);
-        StartCoroutine("WaitForPlayerInput");
-        StartCoroutine("WaitForOpenUI");
 
-        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
+        {
             if (!Success && ReturnString != "")
             {
                 Debug.Log("Server Error: " + ReturnString);
                 return;
             }
-            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) => {
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) =>
+            {
                 ReplaysRecieved(replays);
-                if(replays.Count > 0)
+                if (replays.Count > 0)
                     StartCoroutine("ReleaseGhosts");
             }));
         }));
+
+        StartCoroutine("WaitForPlayerInput");
+        StartCoroutine("WaitForOpenUI");
+
         //_playerAudio.Play();
     }
 
@@ -183,6 +193,7 @@ public class SceneController : MonoBehaviour
         int counter = 3;
 
         Player.Disable();
+        Player.ResetPlayer();
         GrappleUI.ShowCountdown();
 
         while (counter > 0)
@@ -198,7 +209,6 @@ public class SceneController : MonoBehaviour
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
         Level.HideBarrier();
-        Player.ResetPlayer();
         Player.Enable(true);
         Player.Show();
         Waypoint.Init(Player.transform.position);
@@ -208,17 +218,6 @@ public class SceneController : MonoBehaviour
         _gameOn = true;
 
         yield return null;
-    }
-
-	void ResetGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    void ResetData()
-    {
-        PlayerReplay.ClearData();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     void PlayerFinished()
@@ -235,16 +234,30 @@ public class SceneController : MonoBehaviour
         }
     }
 
-    void GhostsValueChanged(int value)
+    void GameFinished()
     {
-		PlayerPrefs.SetInt(Constants.GHOSTS, value);
-    }
+        Level.ShowBarrier();
+        Player.Hide();
+        Player.ResetPlayer();
+        _levelName = _startLevelName;
+        Level.Reset();
 
-    void GhostRecordsValueChanged(int value)
-    {
-		PlayerPrefs.SetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS, value);
-        PlayerReplay.InitLocalRecords();
-        GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
+        StartCoroutine("WaitForPlayerInput");
+
+        GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
+        {
+            if (!Success && ReturnString != "")
+            {
+                Debug.Log("Server Error: " + ReturnString);
+                return;
+            }
+            PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) =>
+            {
+                ReplaysRecieved(replays);
+                if (replays.Count > 0)
+                    StartCoroutine("ReleaseGhosts");
+            }));
+        }));
     }
 
     void ProcessNewUsername(string username)
@@ -315,6 +328,29 @@ public class SceneController : MonoBehaviour
         AudioListener.volume = volume;
     }
 
+    void ResetGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    void ResetData()
+    {
+        PlayerReplay.ClearData();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    void GhostsValueChanged(int value)
+    {
+        PlayerPrefs.SetInt(Constants.GHOSTS, value);
+    }
+
+    void GhostRecordsValueChanged(int value)
+    {
+        PlayerPrefs.SetInt(Constants.NUM_OF_LOCAL_GHOST_RECORDS, value);
+        PlayerReplay.InitLocalRecords();
+        GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
+    }
+
     void OnGatesPassed()
     {
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
@@ -338,7 +374,8 @@ public class SceneController : MonoBehaviour
     void OnEnable()
 	{
 		GrappleUI.OnStartButtonClicked += StartGame;
-		GrappleUI.OnResetButtonClicked += ResetGame;
+        GrappleUI.OnDoneButtonClicked += GameFinished;
+        GrappleUI.OnResetButtonClicked += ResetGame;
         GrappleUI.OnResetDataButtonClicked += ResetData;
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
@@ -353,6 +390,7 @@ public class SceneController : MonoBehaviour
     void OnDisable()
 	{
         GrappleUI.OnStartButtonClicked -= StartGame;
+        GrappleUI.OnDoneButtonClicked -= GameFinished;
         GrappleUI.OnResetButtonClicked -= ResetGame;
         GrappleUI.OnResetDataButtonClicked -= ResetData;
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
