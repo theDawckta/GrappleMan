@@ -14,7 +14,7 @@ public class LevelController : MonoBehaviour
     public bool UseRandomSeed;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
-    public GameObject Death;
+    public GameObject Pressure;
 
     private string _seed = "123456";
     private GameObject _player;
@@ -23,6 +23,7 @@ public class LevelController : MonoBehaviour
     private System.Random _pseudoRandom;
     private List<CinemachineSmoothPath.Waypoint> _cameraWayoints = new List<CinemachineSmoothPath.Waypoint>();
     private List<Vector3> _pressureWayoints = new List<Vector3>();
+    private Tween _pressureTween;
 
     void Start ()
     {
@@ -46,8 +47,8 @@ public class LevelController : MonoBehaviour
 
     public void StartDeathMarch()
     {
-        _pressureWayoints.Insert(0, Death.transform.position);
-        Death.transform.DOPath(_pressureWayoints.ToArray(), 5f, PathType.Linear, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureStepComplete);
+        _pressureWayoints.Insert(0, Pressure.transform.position);
+        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureStepComplete);
     }
 
     public void UpdateDeathMarchWaypoints(List<Vector3> newWaypoints)
@@ -96,11 +97,15 @@ public class LevelController : MonoBehaviour
 
         OnLevelSectionAdded(_cameraWayoints);
         _pressureWayoints.Add(new Vector3 (newWaypoint.position.x, newWaypoint.position.y, 0.0f));
+        _pressureTween.Pause();
+        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureStepComplete);
     }
 
     public void PressureStepComplete(int waypointIndex)
     {
-        if(waypointIndex > 2)
+        DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale * 1.2f, 0.5f);
+
+        if (waypointIndex > 2)
             Destroy(_oldLevelSections[waypointIndex - 3].gameObject);
     }
 
