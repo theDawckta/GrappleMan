@@ -206,6 +206,7 @@ public class SceneController : MonoBehaviour
             _ghostPlaybacks[i].StartPlayGhostPlayback();
 
         Level.HideBarrier();
+        Level.StartDeathMarch();
         Player.Enable(true);
         Player.Show();
         Waypoint.Init(Player.transform.position);

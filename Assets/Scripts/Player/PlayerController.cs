@@ -214,11 +214,14 @@ public class PlayerController : MonoBehaviour
           	hit = Physics.Raycast(transform.position, direction, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
             if (hit)
             {
-				hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
+                Debug.DrawRay(transform.position, direction.normalized * (Vector3.Distance(_playerRaycastOut.point, transform.position)), Color.red, 10.0f);
+                hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
                 if (hit)
                 {
-                    if (_playerRaycastOut.transform.gameObject == _nextPlayerRaycastOut.transform.gameObject)
-                    {
+                    Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized * (Vector3.Distance(_nextPlayerRaycastOut.point, _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2))), Color.yellow, 10.0f);
+
+                    //if (_playerRaycastOut.transform.gameObject == _nextPlayerRaycastOut.transform.gameObject)
+                    //{
 						if(_hookActive)
 			    			StopAllCoroutines();
 
@@ -226,7 +229,7 @@ public class PlayerController : MonoBehaviour
 
 						if(_hookActive)
 			    			RestartMoveHook();
-		    		}
+		    		//}
 	    		}
 	    	}
 			else if (_ropeLineRenderer.positionCount > 2)
@@ -327,8 +330,13 @@ public class PlayerController : MonoBehaviour
         try
         {
             Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
+
+            Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection2 * 10.0f, Color.magenta, 10.0f);
+            Debug.DrawRay(playerRaycastOut.point, pointDirection1 * 10.0f, Color.blue, 10.0f);
+
             Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
             intersection = intersection + (cornerNormal.normalized * 0.1f);
+            Debug.DrawRay(intersection, cornerNormal * 10.0f, Color.green, 10.0f);
             _ropeLineRenderer.positionCount = _ropeLineRenderer.positionCount + 1;
             _ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 2, intersection);
 
@@ -407,7 +415,7 @@ public class PlayerController : MonoBehaviour
         Vector3 shotDirectionVector3 = new Vector3(shotDirection.x, shotDirection.y, 0.0f);
 		if (Physics.Raycast(RopeOrigin.transform.position, shotDirectionVector3, out wallHit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall")))
         {
-            _wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.1f;
+            _wallHookHitPosition = wallHit.point + wallHit.normal.normalized * 0.2f;
 			_hookShooting = !_hookShooting;
 			StartCoroutine(MoveHook(_wallHookSprite.transform.position, _wallHookHitPosition, _hookShooting));
         }
