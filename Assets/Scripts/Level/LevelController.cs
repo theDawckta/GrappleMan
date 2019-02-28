@@ -17,6 +17,7 @@ public class LevelController : MonoBehaviour
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
     public GameObject Pressure;
+    public float PressureMaxSpeed = 12.0f;
 
     private string _seed = "123456";
     private GameObject _player;
@@ -48,7 +49,6 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
-        //_pseudoRandom = new System.Random(_seed.GetHashCode());
     }
 
     public void StartDeathMarch()
@@ -76,7 +76,6 @@ public class LevelController : MonoBehaviour
 
         _nextSection = SectionType.START_SECTION;
         Pressure.transform.position = _pressureStartPosition;
-        Debug.Log(seed);
         _pseudoRandom = new System.Random(seed);
 
         LoadSection();
@@ -117,33 +116,18 @@ public class LevelController : MonoBehaviour
 
     public void PressureWaypointChange(int waypointIndex)
     {
-        DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale * 1.2f, 5.0f);
+        if (_pressureTween.timeScale < PressureMaxSpeed)
+            DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale + 1.1f, 5.0f);
 
-        if (waypointIndex > 2)
-        {
-            //float currentTimeScale = _pressureTween.timeScale;
-            //Destroy(_levelSections[0].gameObject);
-            //_levelSections.RemoveAt(0);
-            ////_pressureWayoints.RemoveAt(0);
-            //_cameraWaypoints.RemoveAt(0);
-            //OnCameraWaypointsChanged(_cameraWaypoints);
-            //_pressureTween.Kill();
-            //Pressure.transform.position = _pressureWayoints[0];
-            //_pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).Pause();
-            ////_pressureTween.GotoWaypoint(1, true);
-            //_pressureTween.timeScale = currentTimeScale;
-            //_pressureTween.Play();
-        }
-        else if(waypointIndex > 0)
+        Debug.Log(_pressureTween.timeScale);
+
+        if (waypointIndex > 0)
         {
             float currentTimeScale = _pressureTween.timeScale;
             _pressureWayoints.RemoveAt(0);
             _pressureTween.Kill();
-            //Pressure.transform.position = _pressureWayoints[0];
             _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange);
-            //_pressureTween.GotoWaypoint(1, true);
             _pressureTween.timeScale = currentTimeScale;
-            //_pressureTween.Play();
         }
     }
 

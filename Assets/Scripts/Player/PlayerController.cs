@@ -14,11 +14,11 @@ public class PlayerController : MonoBehaviour
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
     public GameObject PlayerArrow;
-    public float Speed = 2.5f;
+    //public float Speed = 2.5f;
 	public float MaxGroundVelocity = 20.0f;
-    public float BoostForce = 10.0f;
-    public float HookSpeed = 130.0f;
-    public float ClimbSpeed = 1.0f;
+    public float BoostForce = 15.0f;
+    public float HookSpeed = 150.0f;
+    public float ClimbSpeed = 1.5f;
     public float AnimationSmoothTime = 0.4F;
 	public LineRenderer RopeLineRenderer {get {return _ropeLineRenderer;}}
 	public GameObject WallHookSprite {get {return _wallHookSprite;}}

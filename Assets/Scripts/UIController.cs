@@ -56,7 +56,6 @@ public class UIController : MonoBehaviour
     public GameObject UserSave;
 	public Text UserName;
 	public Text ErrorText;
-    public Text NoRecordsText;
 	public Text TotalGhostRecordsLocal;
     
     private float _timer;
@@ -71,7 +70,6 @@ public class UIController : MonoBehaviour
         UserSave.SetActive(false);
         UserCancel.SetActive(false);
         ErrorText.text = "";
-        NoRecordsText.gameObject.SetActive(false);
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, 0.0f);
         _uiCanvasRaycaster = gameObject.GetComponentInChildren<GraphicRaycaster>();
         _uiCanvasRaycaster.enabled = false;
@@ -134,11 +132,6 @@ public class UIController : MonoBehaviour
         foreach (Transform playerRow in PlayerRanksScreen.transform.Find("Players"))
             Destroy(playerRow.gameObject);
 
-        if (playerReplays.Count == 0)
-            NoRecordsText.gameObject.SetActive(true);
-        else
-            NoRecordsText.gameObject.SetActive(false);
-
         playerReplays.Add(currentPlayerReplay);
         playerReplays.Sort((x, y) => y.ReplayTime.CompareTo(x.ReplayTime));
 
@@ -161,7 +154,6 @@ public class UIController : MonoBehaviour
 	{
         StartScreen.SetActive(false);
         WaitScreen.SetActive(true);
-        Debug.Log("SPINNING");
         _spinnerTweener = Spinner.transform.DOLocalRotate(new Vector3(0.0f, 0.0f, -359.0f), 2.0f).SetLoops(-1).SetEase(Ease.Linear);
         OnStartButtonClicked();
 	}
@@ -262,10 +254,7 @@ public class UIController : MonoBehaviour
 
     public void EndGame()
     {
-        //LevelSelectScreen.SetActive (true);
         Show();
-		
-        Debug.Log(_timer);
         _timeStarted = false;
     }
 
