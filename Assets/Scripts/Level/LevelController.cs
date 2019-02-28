@@ -10,6 +10,8 @@ public class LevelController : MonoBehaviour
 {
     public delegate void LevelSetionAdded(List<CinemachineSmoothPath.Waypoint> waypoints);
     public event LevelSetionAdded OnCameraWaypointsChanged;
+    public delegate void PlayerHit();
+    public event PlayerHit OnPlayerHit;
 
     public bool UseRandomSeed;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
@@ -22,17 +24,19 @@ public class LevelController : MonoBehaviour
     private SectionType _nextSection;
     private System.Random _pseudoRandom;
     private List<CinemachineSmoothPath.Waypoint> _cameraWaypoints = new List<CinemachineSmoothPath.Waypoint>();
+    private Vector3 _pressureStartPosition;
     private List<Vector3> _pressureWayoints = new List<Vector3>();
     private Tween _pressureTween;
 
     void Start ()
     {
+        _pressureStartPosition = Pressure.transform.position;
         Reset();
     }
 	
 	void Update ()
     {
-        if(_player != null)
+        if(_player != null && _levelSections.Count > 0)
         {
             while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 320.0f)
                 LoadSection();
@@ -63,7 +67,6 @@ public class LevelController : MonoBehaviour
         for (int i = 0; i < _levelSections.Count; i++)
             Destroy(_levelSections[i].gameObject);
 
-
         _levelSections.Clear();
         _cameraWaypoints.Clear();
         _pressureWayoints.Clear();
@@ -71,6 +74,7 @@ public class LevelController : MonoBehaviour
         OnCameraWaypointsChanged(_cameraWaypoints);
 
         _nextSection = SectionType.START_SECTION;
+        Pressure.transform.position = _pressureStartPosition;
         _pseudoRandom = new System.Random(_seed.GetHashCode());
 
         LoadSection();
@@ -139,6 +143,12 @@ public class LevelController : MonoBehaviour
             _pressureTween.timeScale = currentTimeScale;
             //_pressureTween.Play();
         }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        OnPlayerHit();
+        _pressureTween.Kill();
     }
 
     public string GetSeed()
