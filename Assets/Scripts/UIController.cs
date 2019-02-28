@@ -140,7 +140,7 @@ public class UIController : MonoBehaviour
             NoRecordsText.gameObject.SetActive(false);
 
         playerReplays.Add(currentPlayerReplay);
-        playerReplays.Sort((x, y) => x.ReplayTime.CompareTo(y.ReplayTime));
+        playerReplays.Sort((x, y) => y.ReplayTime.CompareTo(x.ReplayTime));
 
         for (int i = 0; i < playerReplays.Count; i++)
 		{
