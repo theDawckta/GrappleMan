@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -48,7 +48,7 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
-        _pseudoRandom = new System.Random(_seed.GetHashCode());
+        //_pseudoRandom = new System.Random(_seed.GetHashCode());
     }
 
     public void StartDeathMarch()
@@ -64,6 +64,7 @@ public class LevelController : MonoBehaviour
 
     public void Reset()
     {
+        int seed = int.Parse(_seed);
         for (int i = 0; i < _levelSections.Count; i++)
             Destroy(_levelSections[i].gameObject);
 
@@ -75,7 +76,8 @@ public class LevelController : MonoBehaviour
 
         _nextSection = SectionType.START_SECTION;
         Pressure.transform.position = _pressureStartPosition;
-        _pseudoRandom = new System.Random(_seed.GetHashCode());
+        Debug.Log(seed);
+        _pseudoRandom = new System.Random(seed);
 
         LoadSection();
     }
