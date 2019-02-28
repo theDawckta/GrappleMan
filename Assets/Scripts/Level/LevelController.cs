@@ -9,7 +9,7 @@ using DG.Tweening;
 public class LevelController : MonoBehaviour
 {
     public delegate void LevelSetionAdded(List<CinemachineSmoothPath.Waypoint> waypoints);
-    public event LevelSetionAdded OnLevelSectionAdded;
+    public event LevelSetionAdded OnCameraWaypointsChanged;
 
     public bool UseRandomSeed;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
@@ -18,10 +18,10 @@ public class LevelController : MonoBehaviour
 
     private string _seed = "123456";
     private GameObject _player;
-    private List<LevelSectionController> _oldLevelSections = new List<LevelSectionController>();
-    private LevelSectionController _currentSection;
+    private List<LevelSectionController> _levelSections = new List<LevelSectionController>();
+    private SectionType _nextSection;
     private System.Random _pseudoRandom;
-    private List<CinemachineSmoothPath.Waypoint> _cameraWayoints = new List<CinemachineSmoothPath.Waypoint>();
+    private List<CinemachineSmoothPath.Waypoint> _cameraWaypoints = new List<CinemachineSmoothPath.Waypoint>();
     private List<Vector3> _pressureWayoints = new List<Vector3>();
     private Tween _pressureTween;
 
@@ -32,12 +32,14 @@ public class LevelController : MonoBehaviour
 	
 	void Update ()
     {
-        if(_player != null && _currentSection != null)
+        if(_player != null)
         {
-            while (Vector3.Distance(_currentSection.transform.position, _player.transform.position) < 320.0f)
+            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 320.0f)
                 LoadSection();
+            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 320.0f)
+                DestroySection();
         }
-	}
+    }
 
     public void Init(GameObject player)
     {
@@ -47,8 +49,8 @@ public class LevelController : MonoBehaviour
 
     public void StartDeathMarch()
     {
-        _pressureWayoints.Insert(0, Pressure.transform.position);
-        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureStepComplete);
+        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange);
+        _pressureTween.timeScale = 2.0f;
     }
 
     public void UpdateDeathMarchWaypoints(List<Vector3> newWaypoints)
@@ -58,55 +60,85 @@ public class LevelController : MonoBehaviour
 
     public void Reset()
     {
-        for (int i = 0; i < _oldLevelSections.Count; i++)
-            Destroy(_oldLevelSections[i].gameObject);
+        for (int i = 0; i < _levelSections.Count; i++)
+            Destroy(_levelSections[i].gameObject);
 
-        if(_currentSection != null)
-            Destroy(_currentSection.gameObject);
 
-        _cameraWayoints.Clear();
-        OnLevelSectionAdded(_cameraWayoints);
+        _levelSections.Clear();
+        _cameraWaypoints.Clear();
+        _pressureWayoints.Clear();
 
+        OnCameraWaypointsChanged(_cameraWaypoints);
+
+        _nextSection = SectionType.START_SECTION;
         _pseudoRandom = new System.Random(_seed.GetHashCode());
-        _currentSection = Instantiate(LevelSections.Find(x => x.Section.Equals(SectionType.START_SECTION)), transform);
 
-        CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
-        newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
-        _cameraWayoints.Add(newWaypoint);
-        OnLevelSectionAdded(_cameraWayoints);
-        _pressureWayoints.Add(new Vector3(newWaypoint.position.x, newWaypoint.position.y, 0.0f));
-        _pseudoRandom = new System.Random(_seed.GetHashCode());
+        LoadSection();
     }
 
     private void LoadSection()
     {
-        List<SectionType> possibleNextSections = _currentSection.PossibleNextSections;
-        SectionType nextSection = possibleNextSections[_pseudoRandom.Next(0, possibleNextSections.Count - 1)];
+        Vector3 oldSectionPosition;
 
-        _oldLevelSections.Add(_currentSection);
-
-        Vector3 newSectionPosition = new Vector3(_currentSection.transform.position.x + _currentSection.OffsetX,
-                                                 _currentSection.transform.position.y + _currentSection.OffsetY,
-                                                 0.0f);
-
-        _currentSection = Instantiate(LevelSections.Find(x => x.Section == nextSection), transform);
-        _currentSection.transform.position = newSectionPosition;
+        LevelSectionController newSection = Instantiate(LevelSections.Find(x => x.Section == _nextSection), transform);
+        _levelSections.Add(newSection);
+        if(newSection.Section != SectionType.START_SECTION)
+        {
+            oldSectionPosition = _levelSections[_levelSections.Count - 2].transform.position;
+            newSection.transform.position = new Vector3(oldSectionPosition.x + _levelSections[_levelSections.Count - 2].OffsetX,
+                                                        oldSectionPosition.y + _levelSections[_levelSections.Count - 2].OffsetY,
+                                                        0.0f);
+        }
+        
         CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
-        newWaypoint.position = _currentSection.CameraPathPoint.transform.position;
-        _cameraWayoints.Add(newWaypoint);
+        newWaypoint.position = newSection.CameraPathPoint.transform.position;
+        _cameraWaypoints.Add(newWaypoint);
+        OnCameraWaypointsChanged(_cameraWaypoints);
 
-        OnLevelSectionAdded(_cameraWayoints);
-        _pressureWayoints.Add(new Vector3 (newWaypoint.position.x, newWaypoint.position.y, 0.0f));
-        _pressureTween.Pause();
-        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureStepComplete);
+        _pressureWayoints.Add(new Vector3(newWaypoint.position.x, newWaypoint.position.y, 0.0f));
+
+        List<SectionType> possibleNextSections = newSection.PossibleNextSections;
+        _nextSection = possibleNextSections[_pseudoRandom.Next(0, possibleNextSections.Count - 1)];
     }
 
-    public void PressureStepComplete(int waypointIndex)
+    private void DestroySection()
     {
-        DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale * 1.2f, 0.5f);
+        Destroy(_levelSections[0].gameObject);
+        _levelSections.RemoveAt(0);
+        _cameraWaypoints.RemoveAt(0);
+        OnCameraWaypointsChanged(_cameraWaypoints);
+    }
+
+    public void PressureWaypointChange(int waypointIndex)
+    {
+        DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale * 1.2f, 5.0f);
 
         if (waypointIndex > 2)
-            Destroy(_oldLevelSections[waypointIndex - 3].gameObject);
+        {
+            //float currentTimeScale = _pressureTween.timeScale;
+            //Destroy(_levelSections[0].gameObject);
+            //_levelSections.RemoveAt(0);
+            ////_pressureWayoints.RemoveAt(0);
+            //_cameraWaypoints.RemoveAt(0);
+            //OnCameraWaypointsChanged(_cameraWaypoints);
+            //_pressureTween.Kill();
+            //Pressure.transform.position = _pressureWayoints[0];
+            //_pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).Pause();
+            ////_pressureTween.GotoWaypoint(1, true);
+            //_pressureTween.timeScale = currentTimeScale;
+            //_pressureTween.Play();
+        }
+        else if(waypointIndex > 0)
+        {
+            float currentTimeScale = _pressureTween.timeScale;
+            _pressureWayoints.RemoveAt(0);
+            _pressureTween.Kill();
+            //Pressure.transform.position = _pressureWayoints[0];
+            _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange);
+            //_pressureTween.GotoWaypoint(1, true);
+            _pressureTween.timeScale = currentTimeScale;
+            //_pressureTween.Play();
+        }
     }
 
     public string GetSeed()

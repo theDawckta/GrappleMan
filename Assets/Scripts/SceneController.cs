@@ -19,6 +19,7 @@ public class SceneController : MonoBehaviour
     public LevelController Level;
     public WaypointController Waypoint;
     public CinemachineSmoothPath SmoothPath;
+    public CinemachineVirtualCamera VirtualCamera;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
@@ -334,6 +335,7 @@ public class SceneController : MonoBehaviour
     void LevelSectionAdded(List<CinemachineSmoothPath.Waypoint> waypoints)
     {
         SmoothPath.m_Waypoints = waypoints.ToArray();
+        SmoothPath.InvalidateDistanceCache();
     }
 
     public void SetVolume(float volume)
@@ -365,7 +367,7 @@ public class SceneController : MonoBehaviour
         Waypoint.OnWaypointVisible += OnWaypointVisible;
         Waypoint.OnWaypointHidden += OnWaypointHidden;
         Waypoint.OnGatesFinished += PlayerFinished;
-        Level.OnLevelSectionAdded += LevelSectionAdded;
+        Level.OnCameraWaypointsChanged += LevelSectionAdded;
     }
 
     void OnDisable()
@@ -381,6 +383,6 @@ public class SceneController : MonoBehaviour
         Waypoint.OnWaypointVisible -= OnWaypointVisible;
         Waypoint.OnWaypointHidden -= OnWaypointHidden;
         Waypoint.OnGatesFinished -= PlayerFinished;
-        Level.OnLevelSectionAdded -= LevelSectionAdded;
+        Level.OnCameraWaypointsChanged -= LevelSectionAdded;
     }
 }

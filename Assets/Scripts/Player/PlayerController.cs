@@ -175,7 +175,6 @@ public class PlayerController : MonoBehaviour
         {
             if (_hooked && _currentRopeLength > _ropeMinLength)
             {
-                Debug.Log("climbing");
                 ClimbRope();
             }
                 
