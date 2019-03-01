@@ -34,6 +34,7 @@ public class SceneController : MonoBehaviour
     private bool _playerMoved = false;
     private int _startGhostIndex;
     private float _ghostReleaseInterval = 2.0f;
+    private float UICameraOffset = 0.75f;
 
     void Awake()
     {
@@ -101,6 +102,7 @@ public class SceneController : MonoBehaviour
 
     IEnumerator WaitForOpenUI()
     {
+        VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
         yield return new WaitForSeconds(0.5f);
         GrappleUI.Show();
     }
@@ -160,6 +162,8 @@ public class SceneController : MonoBehaviour
         _levelName = Level.GetSeed();
 
         Player.Init();
+
+        VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
             if (!Success && ReturnString != "")
@@ -221,6 +225,7 @@ public class SceneController : MonoBehaviour
         if (_gameOn)
         {
             Player.DisableLeftScreenInput();
+            VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
             PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
 
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
