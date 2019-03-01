@@ -77,7 +77,6 @@ public class SceneController : MonoBehaviour
         }
         
         Player.Enable();
-        Player.Show();
         Level.Init(Player.gameObject);
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
@@ -163,8 +162,6 @@ public class SceneController : MonoBehaviour
 
         _levelName = Level.GetSeed();
 
-        Player.Init();
-
         VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
         VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
 
@@ -186,6 +183,7 @@ public class SceneController : MonoBehaviour
                     _ghostPlaybacks.Add(ghostPlayback);
                 }
 
+                Player.ResetPlayer();
                 GrappleUI.Hide();
                 StartCoroutine(StartCountDown());
             }));
@@ -195,11 +193,9 @@ public class SceneController : MonoBehaviour
     IEnumerator StartCountDown()
     {
         int counter = 3;
-
-        Player.Disable();
-        Player.ResetPlayer();
+        
         GrappleUI.ShowCountdown();
-
+        
         while (counter > 0)
         {
             yield return new WaitForSeconds(1);
@@ -215,7 +211,6 @@ public class SceneController : MonoBehaviour
         Level.HideBarrier();
         Level.StartDeathMarch();
         Player.Enable(true);
-        Player.Show();
         _mainCamera.transform.position = _mainCameraStartPosition;
         _gameOn = true;
 
@@ -241,7 +236,6 @@ public class SceneController : MonoBehaviour
     void GameFinished()
     {
         Level.ShowBarrier();
-        Player.Hide();
         Player.ResetPlayer();
         _levelName = _startLevelName;
         Level.Reset();

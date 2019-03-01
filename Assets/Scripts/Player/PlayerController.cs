@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
     public GameObject PlayerArrow;
-    //public float Speed = 2.5f;
 	public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
@@ -74,24 +73,13 @@ public class PlayerController : MonoBehaviour
 		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
 		HookPlayerInput.InputActive = false;
         PlayerArrow.SetActive(false);
-
-        for (int i = 0; i < _renderers.Length; i++)
-        {
-            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
-            _renderers[i].material.color = endColor;
-        }
-    }
-
-	public void Init()
-    {
-        Hide();
-        HookPlayerInput.InputActive = false;
-        HookPlayerInput.EnableFullScreenTouch();
     }
 
     public void ResetPlayer()
     {
-        StopAllCoroutines();
+        HookPlayerInput.InputActive = false;
+        HookPlayerInput.EnableFullScreenTouch();
+        transform.position = _playerStartPosition;
         _ropeLineRenderer.enabled = false;
         _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
         _wallHookSprite.transform.parent = GrappleArmEnd.transform;
@@ -104,31 +92,6 @@ public class PlayerController : MonoBehaviour
         _hookShooting = false;
         _floating = false;
         PlayerArrow.SetActive(false);
-        transform.position = _playerStartPosition;
-        Show();
-    }
-
-    public void Hide()
-    {
-        for (int i = 0; i < _renderers.Length; i++)
-        {
-            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
-            _renderers[i].material.DOColor(endColor, _hideShowTime);
-        }
-    }
-
-    public void Show()
-    {
-        for (int i = 0; i < _renderers.Length; i++)
-        {
-            Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 1.0f);
-            _renderers[i].material.DOColor(endColor, _hideShowTime);
-        }
-    }
-
-    public void Disable()
-    {
-        HookPlayerInput.InputActive = false;
     }
 
     public void Enable(bool startRecording = false)

@@ -29,8 +29,8 @@ public class PlaygroundSceneController : MonoBehaviour
 
     void Start()
     {
-        Player.Init();
-        Player.Show();
+        Player.ResetPlayer();
+        //Player.Show();
         Player.HookPlayerInput.InputActive = true;
         //Waypoint.Init(Player.transform.position, 5);
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
