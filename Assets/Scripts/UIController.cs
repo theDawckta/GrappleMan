@@ -62,6 +62,7 @@ public class UIController : MonoBehaviour
     private bool _timeStarted;
     private GraphicRaycaster _uiCanvasRaycaster;
     private Tweener _spinnerTweener;
+    private Vector3 _startSpinnerRotation;
     private float _showHideTime = 1.0f;
 
     void Awake()
@@ -73,6 +74,7 @@ public class UIController : MonoBehaviour
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, 0.0f);
         _uiCanvasRaycaster = gameObject.GetComponentInChildren<GraphicRaycaster>();
         _uiCanvasRaycaster.enabled = false;
+        _startSpinnerRotation = Spinner.transform.localEulerAngles;
     }
 
     void Start()
@@ -101,12 +103,13 @@ public class UIController : MonoBehaviour
     
     public void Hide()
     {
-        DOTween.Kill(_spinnerTweener.target);
         if (Follow != null)
             Follow.MenuClosed();
 
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
             WaitScreen.SetActive(true);
+            DOTween.Kill(_spinnerTweener.target);
+            Spinner.transform.localEulerAngles = _startSpinnerRotation;
         });
     }
 

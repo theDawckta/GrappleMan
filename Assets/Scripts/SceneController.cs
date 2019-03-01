@@ -159,12 +159,10 @@ public class SceneController : MonoBehaviour
             Player.PlayerCompleted(_levelName);
             _playerMoved = false;
         }
+        Player.Disable();
 
         _levelName = Level.GetSeed();
-
-        VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
-        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
-
+        
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
             if (!Success && ReturnString != "")
             {
@@ -182,9 +180,12 @@ public class SceneController : MonoBehaviour
                     ghostPlayback.SetPlayerReplayModel(_replays[i]);
                     _ghostPlaybacks.Add(ghostPlayback);
                 }
-
+                
                 Player.ResetPlayer();
                 GrappleUI.Hide();
+                VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
+                VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
+                Player.EnableFullScreenInput();
                 StartCoroutine(StartCountDown());
             }));
         }));

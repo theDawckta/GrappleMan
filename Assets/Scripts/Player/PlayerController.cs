@@ -71,14 +71,11 @@ public class PlayerController : MonoBehaviour
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
 		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
-		HookPlayerInput.InputActive = false;
         PlayerArrow.SetActive(false);
     }
 
     public void ResetPlayer()
     {
-        HookPlayerInput.InputActive = false;
-        HookPlayerInput.EnableFullScreenTouch();
         transform.position = _playerStartPosition;
         _ropeLineRenderer.enabled = false;
         _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
@@ -101,9 +98,19 @@ public class PlayerController : MonoBehaviour
         HookPlayerInput.InputActive = true;
     }
 
+    public void Disable()
+    {
+        HookPlayerInput.InputActive = false;
+    }
+
     public void DisableLeftScreenInput()
     {
         HookPlayerInput.DisableLeftScreenInput();
+    }
+
+    public void EnableFullScreenInput()
+    {
+        HookPlayerInput.EnableFullScreenTouch();
     }
 
     public void SetArrowDestination(Vector3 newPosition)
@@ -129,8 +136,7 @@ public class PlayerController : MonoBehaviour
             }
             else if(HookPlayerInput.GetDirection() != Vector3.zero)
             {
-                if (!_grounded)
-                	BoostPlayer();
+                BoostPlayer();
 				_hookShooting = !_hookShooting;
 				StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
             }
