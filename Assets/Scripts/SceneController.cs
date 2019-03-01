@@ -19,6 +19,7 @@ public class SceneController : MonoBehaviour
     public LevelController Level;
     public CinemachineSmoothPath SmoothPath;
     public CinemachineVirtualCamera VirtualCamera;
+    public CinemachineVirtualCamera VirtualBackgroundCamera;
 
     private AudioSource _playerAudio;
     private AudioClip _song;
@@ -103,6 +104,7 @@ public class SceneController : MonoBehaviour
     IEnumerator WaitForOpenUI()
     {
         VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
         yield return new WaitForSeconds(0.5f);
         GrappleUI.Show();
     }
@@ -164,6 +166,7 @@ public class SceneController : MonoBehaviour
         Player.Init();
 
         VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
+        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
             if (!Success && ReturnString != "")
@@ -225,6 +228,7 @@ public class SceneController : MonoBehaviour
         {
             Player.DisableLeftScreenInput();
             VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+            VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
             PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
 
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);

@@ -72,6 +72,10 @@ public class LevelController : MonoBehaviour
         _cameraWaypoints.Clear();
         _pressureWayoints.Clear();
 
+
+        CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
+        newWaypoint.position = new Vector3(_pressureStartPosition.x, _pressureStartPosition.y, -80.0f) ;
+        _cameraWaypoints.Add(newWaypoint);
         OnCameraWaypointsChanged(_cameraWaypoints);
 
         _nextSection = SectionType.START_SECTION;
