@@ -166,7 +166,7 @@ public class SceneController : MonoBehaviour
         Player.Init();
 
         VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
-        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) => {
             if (!Success && ReturnString != "")
