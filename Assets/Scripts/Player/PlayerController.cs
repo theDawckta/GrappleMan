@@ -101,6 +101,7 @@ public class PlayerController : MonoBehaviour
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
+        _hookShooting = false;
         _floating = false;
         PlayerArrow.SetActive(false);
         transform.position = _playerStartPosition;
