@@ -214,7 +214,6 @@ public class SceneController : MonoBehaviour
         Player.Enable(true);
         Player.Show();
         _mainCamera.transform.position = _mainCameraStartPosition;
-
         _gameOn = true;
 
         yield return null;
