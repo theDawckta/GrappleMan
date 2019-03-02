@@ -13,6 +13,39 @@ ModelImporter:
     100014: Cube.001
     100016: Torch
     100018: Background
+    100020: BLLeg
+    100022: BLLegBone
+    100024: BLThigh
+    100026: BLThighBone
+    100028: Bone
+    100030: Bone 1
+    100032: Bone 2
+    100034: Bone 3
+    100036: Bone 4
+    100038: Bone 5
+    100040: Bone 6
+    100042: Bone 7
+    100044: Bone_end
+    100046: Bone_end 1
+    100048: Bone_end 2
+    100050: Bone_end 3
+    100052: Bone_end 4
+    100054: Bone_end 5
+    100056: Bone_end 6
+    100058: Bone_end 7
+    100060: BRLeg
+    100062: BRLegBone
+    100064: BRThigh
+    100066: BRThighBone
+    100068: Bug
+    100070: FLLeg
+    100072: FLLegBone
+    100074: FLThigh
+    100076: FLThighBone
+    100078: FRLeg
+    100080: FRLegBone
+    100082: FRThigh
+    100084: FRThighBone
     400000: Camera
     400002: Cylinder
     400004: Lamp
@@ -23,6 +56,39 @@ ModelImporter:
     400014: Cube.001
     400016: Torch
     400018: Background
+    400020: BLLeg
+    400022: BLLegBone
+    400024: BLThigh
+    400026: BLThighBone
+    400028: Bone
+    400030: Bone 1
+    400032: Bone 2
+    400034: Bone 3
+    400036: Bone 4
+    400038: Bone 5
+    400040: Bone 6
+    400042: Bone 7
+    400044: Bone_end
+    400046: Bone_end 1
+    400048: Bone_end 2
+    400050: Bone_end 3
+    400052: Bone_end 4
+    400054: Bone_end 5
+    400056: Bone_end 6
+    400058: Bone_end 7
+    400060: BRLeg
+    400062: BRLegBone
+    400064: BRThigh
+    400066: BRThighBone
+    400068: Bug
+    400070: FLLeg
+    400072: FLLegBone
+    400074: FLThigh
+    400076: FLThighBone
+    400078: FRLeg
+    400080: FRLegBone
+    400082: FRThigh
+    400084: FRThighBone
     2000000: Camera
     2100000: No Name
     2100002: StraightTubeMat
@@ -33,6 +99,15 @@ ModelImporter:
     2300008: Cube.001
     2300010: Torch
     2300012: Background
+    2300014: BLLeg
+    2300016: BLThigh
+    2300018: BRLeg
+    2300020: BRThigh
+    2300022: Bug
+    2300024: FLLeg
+    2300026: FLThigh
+    2300028: FRLeg
+    2300030: FRThigh
     3300000: Cylinder
     3300002: StraightTube
     3300004: CurveTube
@@ -40,6 +115,15 @@ ModelImporter:
     3300008: Cube.001
     3300010: Torch
     3300012: Background
+    3300014: BLLeg
+    3300016: BLThigh
+    3300018: BRLeg
+    3300020: BRThigh
+    3300022: Bug
+    3300024: FLLeg
+    3300026: FLThigh
+    3300028: FRLeg
+    3300030: FRThigh
     4300000: Cylinder
     4300002: StraightTube
     4300004: CurveTube
@@ -47,6 +131,8 @@ ModelImporter:
     4300008: Cube.001
     4300010: Torch
     4300012: Background
+    4300014: Bug
+    4300016: FRThigh
     10800000: Lamp
   externalObjects: {}
   materials:

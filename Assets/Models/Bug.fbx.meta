@@ -1,0 +1,228 @@
+fileFormatVersion: 2
+guid: 18711a0e0176db64eaa0da18624a1d03
+ModelImporter:
+  serializedVersion: 23
+  fileIDToRecycleName:
+    100000: BLLeg
+    100002: BLLegBone
+    100004: BLThigh
+    100006: BLThighBone
+    100008: Bone
+    100010: Bone 1
+    100012: Bone 2
+    100014: Bone 3
+    100016: Bone 4
+    100018: Bone 5
+    100020: Bone 6
+    100022: Bone 7
+    100024: Bone_end
+    100026: Bone_end 1
+    100028: Bone_end 2
+    100030: Bone_end 3
+    100032: Bone_end 4
+    100034: Bone_end 5
+    100036: Bone_end 6
+    100038: Bone_end 7
+    100040: BRLeg
+    100042: BRLegBone
+    100044: BRThigh
+    100046: BRThighBone
+    100048: //RootNode
+    100050: FLLeg
+    100052: FLLegBone
+    100054: FLThigh
+    100056: FLThighBone
+    100058: FRLeg
+    100060: FRLegBone
+    100062: FRThigh
+    100064: FRThighBone
+    100066: Bone 10
+    100068: Bone 11
+    100070: Bone 12
+    100072: Bone 8
+    100074: Bone 9
+    100076: Bone_end 10
+    100078: Bone_end 11
+    100080: Bone_end 12
+    100082: Bone_end 8
+    100084: Bone_end 9
+    100086: Bug
+    100088: LeftHip
+    100090: LeftShoulder
+    100092: RightHip
+    100094: RightShoulder
+    100096: BLHand
+    100098: BRHand
+    100100: FLHand
+    100102: FRHand
+    400000: BLLeg
+    400002: BLLegBone
+    400004: BLThigh
+    400006: BLThighBone
+    400008: Bone
+    400010: Bone 1
+    400012: Bone 2
+    400014: Bone 3
+    400016: Bone 4
+    400018: Bone 5
+    400020: Bone 6
+    400022: Bone 7
+    400024: Bone_end
+    400026: Bone_end 1
+    400028: Bone_end 2
+    400030: Bone_end 3
+    400032: Bone_end 4
+    400034: Bone_end 5
+    400036: Bone_end 6
+    400038: Bone_end 7
+    400040: BRLeg
+    400042: BRLegBone
+    400044: BRThigh
+    400046: BRThighBone
+    400048: //RootNode
+    400050: FLLeg
+    400052: FLLegBone
+    400054: FLThigh
+    400056: FLThighBone
+    400058: FRLeg
+    400060: FRLegBone
+    400062: FRThigh
+    400064: FRThighBone
+    400066: Bone 10
+    400068: Bone 11
+    400070: Bone 12
+    400072: Bone 8
+    400074: Bone 9
+    400076: Bone_end 10
+    400078: Bone_end 11
+    400080: Bone_end 12
+    400082: Bone_end 8
+    400084: Bone_end 9
+    400086: Bug
+    400088: LeftHip
+    400090: LeftShoulder
+    400092: RightHip
+    400094: RightShoulder
+    400096: BLHand
+    400098: BRHand
+    400100: FLHand
+    400102: FRHand
+    2100000: No Name
+    2300000: BLLeg
+    2300002: BLThigh
+    2300004: BRLeg
+    2300006: BRThigh
+    2300008: //RootNode
+    2300010: FLLeg
+    2300012: FLThigh
+    2300014: FRLeg
+    2300016: FRThigh
+    2300018: Bug
+    2300020: BLHand
+    2300022: BRHand
+    2300024: FLHand
+    2300026: FRHand
+    3300000: BLLeg
+    3300002: BLThigh
+    3300004: BRLeg
+    3300006: BRThigh
+    3300008: //RootNode
+    3300010: FLLeg
+    3300012: FLThigh
+    3300014: FRLeg
+    3300016: FRThigh
+    3300018: Bug
+    3300020: BLHand
+    3300022: BRHand
+    3300024: FLHand
+    3300026: FRHand
+    4300000: Bug
+    4300002: FRThigh
+    4300004: BLThigh
+    4300006: Torso
+    4300008: FLThigh
+    4300010: FLHand
+    9500000: //RootNode
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 3
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
