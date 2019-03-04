@@ -10,4 +10,5 @@ public class LevelSectionController : MonoBehaviour
     public float OffsetX = 0.0f;
     public float OffsetY = 0.0f;
     public GameObject CameraPathPoint;
+    public GameObject PressurePathPoint;
 }

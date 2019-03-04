@@ -40,7 +40,7 @@ public class LevelController : MonoBehaviour
     {
         if(_player != null && _levelSections.Count > 0)
         {
-            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 320.0f)
+            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 640.0f)
                 LoadSection();
             while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 320.0f)
                 DestroySection();
@@ -50,12 +50,12 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
-        Bug.LegPlacement();
+        Bug.Init();
     }
 
     public void StartDeathMarch()
     {
-        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange);
+        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.01f, Vector3.left);
         _pressureTween.timeScale = 2.0f;
     }
 
@@ -92,6 +92,7 @@ public class LevelController : MonoBehaviour
         Vector3 oldSectionPosition;
 
         LevelSectionController newSection = Instantiate(LevelSections.Find(x => x.Section == _nextSection), transform);
+        //LevelSectionController newSection = Instantiate(LevelSections.Find(x => x.Section == SectionType.WE), transform);
         _levelSections.Add(newSection);
         if(newSection.Section != SectionType.START_SECTION)
         {
@@ -106,7 +107,7 @@ public class LevelController : MonoBehaviour
         _cameraWaypoints.Add(newWaypoint);
         OnCameraWaypointsChanged(_cameraWaypoints);
 
-        _pressureWayoints.Add(new Vector3(newWaypoint.position.x, newWaypoint.position.y, 0.0f));
+        _pressureWayoints.Add(newSection.PressurePathPoint.transform.position);
 
         List<SectionType> possibleNextSections = newSection.PossibleNextSections;
         _nextSection = possibleNextSections[_pseudoRandom.Next(0, possibleNextSections.Count - 1)];
@@ -132,15 +133,15 @@ public class LevelController : MonoBehaviour
             float currentTimeScale = _pressureTween.timeScale;
             _pressureWayoints.RemoveAt(0);
             _pressureTween.Kill();
-            _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange);
+            _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.01f, Vector3.left);
             _pressureTween.timeScale = currentTimeScale;
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        OnPlayerHit();
-        _pressureTween.Kill();
+        //OnPlayerHit();
+        //_pressureTween.Kill();
     }
 
     public string GetSeed()
