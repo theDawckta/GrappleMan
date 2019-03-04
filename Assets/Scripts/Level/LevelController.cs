@@ -14,6 +14,7 @@ public class LevelController : MonoBehaviour
     public event PlayerHit OnPlayerHit;
 
     public bool UseRandomSeed;
+    public BugController Bug;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
     public GameObject Pressure;
@@ -49,6 +50,7 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
+        Bug.LegPlacement();
     }
 
     public void StartDeathMarch()
