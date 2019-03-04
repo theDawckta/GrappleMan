@@ -69,12 +69,12 @@ public class BugController : MonoBehaviour
         PlaceLeg(-1, FRTarget, FRRaycastOrigin);
     }
 
-    void PlaceLeg(int rotationIncrement, Transform legTarget, Transform RaycastOrigin)
+    void PlaceLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
-        for (int i = 0; ; i = i - 5 * rotationIncrement)
+        for (int i = 0; i != 90 * rotationDirection; i = i - 5 * rotationDirection)
         {
             _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
-            Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
+            //Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
             if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
             {
@@ -85,8 +85,8 @@ public class BugController : MonoBehaviour
         Vector3 halfwayPoint = ((_hit.point - legTarget.position) * 0.5f) + legTarget.position;
         Vector3 halfwayPointDirection = _hit.point - legTarget.position;
 
-        Vector3 direction = Quaternion.AngleAxis(90 * rotationIncrement, Vector3.back) * halfwayPointDirection;
-        halfwayPoint = halfwayPoint + (direction * 0.25f);
+        Vector3 direction = Quaternion.AngleAxis(90 * rotationDirection, Vector3.back) * halfwayPointDirection;
+        halfwayPoint = halfwayPoint + (direction * 0.1f);
         Vector3[] path = new Vector3[] { legTarget.position, halfwayPoint, _hit.point };
 
         legTarget.DOPath(path, 0.25f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
@@ -95,6 +95,7 @@ public class BugController : MonoBehaviour
 
     void PlaceBackLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
+        int rotationSign = (rotationDirection < 0) ? -1 : 1;
         _direction = Quaternion.AngleAxis(rotationDirection, Vector3.back) * Bug.transform.right;
         Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
@@ -103,8 +104,8 @@ public class BugController : MonoBehaviour
             Vector3 halfwayPoint = ((_hit.point - legTarget.position) * 0.5f) + legTarget.position;
             Vector3 halfwayPointDirection = _hit.point - legTarget.position;
 
-            Vector3 direction = Quaternion.AngleAxis(90 * rotationDirection, Vector3.back) * halfwayPointDirection;
-            halfwayPoint = halfwayPoint + (direction * 0.25f);
+            Vector3 direction = Quaternion.AngleAxis(90 * -rotationSign, Vector3.back) * halfwayPointDirection;
+            halfwayPoint = halfwayPoint + (direction * 0.1f);
             Vector3[] path = new Vector3[] { legTarget.position, halfwayPoint, _hit.point };
 
             legTarget.DOPath(path, 0.25f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
