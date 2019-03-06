@@ -13,7 +13,6 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
-    public GameObject PlayerArrow;
 	public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
@@ -71,7 +70,6 @@ public class PlayerController : MonoBehaviour
         _hookHitSoundEffect = Resources.Load("SoundEffects/GunHit") as AudioClip;
         _distToGround = PlayerSprite.GetComponent<Collider>().bounds.extents.y;
 		_playerRecorderController = gameObject.GetComponentInChildren<PlayerRecorderController>();
-        PlayerArrow.SetActive(false);
     }
 
     public void ResetPlayer()
@@ -88,7 +86,6 @@ public class PlayerController : MonoBehaviour
         _hooked = false;
         _hookShooting = false;
         _floating = false;
-        PlayerArrow.SetActive(false);
     }
 
     public void Enable(bool startRecording = false)
@@ -126,7 +123,6 @@ public class PlayerController : MonoBehaviour
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
         HandleBodyRotation();
-        HandleArrow();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -418,11 +414,6 @@ public class PlayerController : MonoBehaviour
 			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
 			PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, zAngle);
 		}
-    }
-
-    void HandleArrow()
-    {
-        PlayerArrow.transform.LookAt(_arrowDestination, Vector3.right );
     }
 
     void HandleShoulderRotation()
