@@ -18,7 +18,8 @@ public class LevelController : MonoBehaviour
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
     public GameObject Pressure;
-    public float PressureMaxSpeed = 11.0f;
+    public float PressureMaxSpeed = 3.0f;
+    public float CameraDistance = -160.0f;
 
     private string _seed = "123456";
     private GameObject _player;
@@ -43,9 +44,9 @@ public class LevelController : MonoBehaviour
     {
         if(_player != null && _levelSections.Count > 0)
         {
-            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 10280.0f)
+            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 640.0f)
                 LoadSection();
-            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 320.0f)
+            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 160.0f)
                 DestroySection();
         }
     }
@@ -80,7 +81,7 @@ public class LevelController : MonoBehaviour
 
 
         CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
-        newWaypoint.position = new Vector3(_pressureStartPosition.x, _pressureStartPosition.y, -80.0f);
+        newWaypoint.position = new Vector3(_pressureStartPosition.x, _pressureStartPosition.y, CameraDistance);
         _cameraWaypoints.Add(newWaypoint);
         OnCameraWaypointsChanged(_cameraWaypoints);
 
@@ -111,7 +112,7 @@ public class LevelController : MonoBehaviour
         }
         
         CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
-        newWaypoint.position = newSection.CameraPathPoint.transform.position;
+        newWaypoint.position = new Vector3(newSection.CameraPathPoint.transform.position.x, newSection.CameraPathPoint.transform.position.y, CameraDistance);
         _cameraWaypoints.Add(newWaypoint);
         OnCameraWaypointsChanged(_cameraWaypoints);
 
@@ -133,7 +134,7 @@ public class LevelController : MonoBehaviour
     public void PressureWaypointChange(int waypointIndex)
     {
         if (_pressureTween.timeScale < PressureMaxSpeed)
-            DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale + 1.1f, 5.0f);
+            DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale + 0.2f, 0.5f);
 
         if (waypointIndex > 0)
         {
@@ -142,6 +143,7 @@ public class LevelController : MonoBehaviour
             _pressureTween.Kill();
             _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
             _pressureTween.timeScale = currentTimeScale;
+            Debug.Log(_pressureTween.timeScale);
         }
     }
 

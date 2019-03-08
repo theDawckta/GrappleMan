@@ -147,7 +147,7 @@ public class PlayerController : MonoBehaviour
         }
 
 		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
-			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, RopeOrigin.transform.position);
+			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, GrappleArmEnd.transform.position);
 
 		HandleShoulderRotation();
     }

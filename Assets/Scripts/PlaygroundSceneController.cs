@@ -42,16 +42,6 @@ public class PlaygroundSceneController : MonoBehaviour
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
     }
 
-    void Waypoint_OnWaypointHidden()
-    {
-        Player.PlayerArrow.SetActive(true);
-    }
-
-    void Waypoint_OnWaypointVisible()
-    {
-        Player.PlayerArrow.SetActive(false);
-    }
-
     void Waypoint_OnGatesFinished()
     {
         //Player.Init();
@@ -61,8 +51,6 @@ public class PlaygroundSceneController : MonoBehaviour
     void OnEnable()
 	{
         Waypoint.OnGatesPassed += Waypoint_OnGatesPassed;
-        Waypoint.OnWaypointVisible += Waypoint_OnWaypointVisible;
-        Waypoint.OnWaypointHidden += Waypoint_OnWaypointHidden;
         Waypoint.OnGatesFinished += Waypoint_OnGatesFinished;
     }
 
@@ -70,7 +58,6 @@ public class PlaygroundSceneController : MonoBehaviour
 	{
         Waypoint.OnGatesPassed -= Waypoint_OnGatesPassed;
         Waypoint.OnGatesFinished -= Waypoint_OnGatesFinished;
-        Waypoint.OnWaypointHidden -= Waypoint_OnWaypointHidden;
         Waypoint.OnGatesFinished -= Waypoint_OnGatesFinished;
     }
 }

@@ -9,17 +9,17 @@ public class GhostController : MonoBehaviour
 {
     public GameObject GhostPlayerSprite;
     public GameObject RopeOrigin;
-    public GameObject Foot;
-    public GameObject Body;
-    public GameObject GrappleArm;
+    //public GameObject Foot;
+    //public GameObject Body;
+    //public GameObject GrappleArm;
     public GameObject WallHookSprite;
     public CanvasGroup UserNameCanvasGroup;
     public Text Username;
 
-    public Material GhostHook;
-    public Material GhostHookArm;
-    public Material GhostPlayerBody;
-    public Material GhostPlayerFoot;
+    //public Material GhostHook;
+    //public Material GhostHookArm;
+    //public Material GhostPlayerBody;
+    //public Material GhostPlayerFoot;
 	[HideInInspector]
 	public LineRenderer RopeLineRenderer;
 
@@ -35,10 +35,10 @@ public class GhostController : MonoBehaviour
         UserNameCanvasGroup.alpha = 0.0f;
         RopeLineRenderer = WallHookSprite.GetComponent<LineRenderer>();
         RopeLineRenderer.material.color = highlight;
-        RopeOrigin.GetComponent<Renderer>().material.color = secondary;
-        Foot.GetComponent<Renderer>().material.color = secondary;
-        Body.GetComponent<Renderer>().material.color = primary;
-        GrappleArm.GetComponent<Renderer>().material.color = highlight;
+        //RopeOrigin.GetComponent<Renderer>().material.color = secondary;
+        //Foot.GetComponent<Renderer>().material.color = secondary;
+        //Body.GetComponent<Renderer>().material.color = primary;
+        //GrappleArm.GetComponent<Renderer>().material.color = highlight;
         WallHookSprite.GetComponent<Renderer>().material.color = highlight;
 
         _renderers = gameObject.GetComponentsInChildren<Renderer>(true);

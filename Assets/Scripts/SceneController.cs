@@ -89,8 +89,8 @@ public class SceneController : MonoBehaviour
             PlayerReplay.Instance.StartCoroutine(PlayerReplay.Instance.GetPlayerReplays(_levelName, (replays) =>
             {
                 ReplaysRecieved(replays);
-                if (replays.Count > 0)
-                    StartCoroutine("ReleaseGhosts");
+                //if (replays.Count > 0)
+                    //StartCoroutine("ReleaseGhosts");
             }));
         }));
 
@@ -317,7 +317,7 @@ public class SceneController : MonoBehaviour
         GrappleUI.TotalGhostRecordsLocal.text = PlayerReplay.NumOfLocalRecords.ToString();
     }
 
-    void LevelSectionAdded(List<CinemachineSmoothPath.Waypoint> waypoints)
+    void CameraWaypointsChanged(List<CinemachineSmoothPath.Waypoint> waypoints)
     {
         SmoothPath.m_Waypoints = waypoints.ToArray();
         SmoothPath.InvalidateDistanceCache();
@@ -348,7 +348,7 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged += GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
-        Level.OnCameraWaypointsChanged += LevelSectionAdded;
+        Level.OnCameraWaypointsChanged += CameraWaypointsChanged;
         Level.OnPlayerHit += PlayerFinished;
     }
 
@@ -361,7 +361,7 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostsValueChanged -= GhostsValueChanged;
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
-        Level.OnCameraWaypointsChanged -= LevelSectionAdded;
+        Level.OnCameraWaypointsChanged -= CameraWaypointsChanged;
         Level.OnPlayerHit += PlayerFinished;
     }
 }
