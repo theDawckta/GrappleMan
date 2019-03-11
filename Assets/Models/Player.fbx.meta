@@ -14,6 +14,31 @@ ModelImporter:
     100016: WallHookSprite
     100018: GrappleArm
     100020: RopOrigin
+    100022: LightningPlaneUpper
+    100024: BezierCircle
+    100026: UpperLightningPlane
+    100028: UpperLightningPlane.001
+    100030: UpperLightningPlane.002
+    100032: UpperLightningPlane.003
+    100034: UpperLightningPlane.004
+    100036: UpperLightningPlane.005
+    100038: UpperLightningPlane.006
+    100040: UpperLightningPlane.007
+    100042: UpperLightningPlane.008
+    100044: UpperLightningPlane.009
+    100046: UpperLightningPlane.010
+    100048: UpperLightningPlanes
+    100050: UpperLightningPlane.011
+    100052: UpperLightningPlane.012
+    100054: LowerLightningPlanes
+    100056: UpperLightningPlane.013
+    100058: LowerLightningPlane.000
+    100060: LowerLightningPlane.001
+    100062: LowerLightningPlane.002
+    100064: LowerLightningPlane.003
+    100066: LowerLightningPlane.004
+    100068: LowerLightningPlane.005
+    100070: LowerLightningPlane.006
     400000: Capsule1
     400002: Capsule1.001
     400004: GrappleArmEnd
@@ -25,6 +50,31 @@ ModelImporter:
     400016: WallHookSprite
     400018: GrappleArm
     400020: RopOrigin
+    400022: LightningPlaneUpper
+    400024: BezierCircle
+    400026: UpperLightningPlane
+    400028: UpperLightningPlane.001
+    400030: UpperLightningPlane.002
+    400032: UpperLightningPlane.003
+    400034: UpperLightningPlane.004
+    400036: UpperLightningPlane.005
+    400038: UpperLightningPlane.006
+    400040: UpperLightningPlane.007
+    400042: UpperLightningPlane.008
+    400044: UpperLightningPlane.009
+    400046: UpperLightningPlane.010
+    400048: UpperLightningPlanes
+    400050: UpperLightningPlane.011
+    400052: UpperLightningPlane.012
+    400054: LowerLightningPlanes
+    400056: UpperLightningPlane.013
+    400058: LowerLightningPlane.000
+    400060: LowerLightningPlane.001
+    400062: LowerLightningPlane.002
+    400064: LowerLightningPlane.003
+    400066: LowerLightningPlane.004
+    400068: LowerLightningPlane.005
+    400070: LowerLightningPlane.006
     2100000: No Name
     2300000: Capsule1
     2300002: Capsule1.001
@@ -35,6 +85,29 @@ ModelImporter:
     2300012: WallHookSprite
     2300014: GrappleArm
     2300016: RopOrigin
+    2300018: LightningPlaneUpper
+    2300020: BezierCircle
+    2300022: UpperLightningPlane
+    2300024: UpperLightningPlane.001
+    2300026: UpperLightningPlane.002
+    2300028: UpperLightningPlane.003
+    2300030: UpperLightningPlane.004
+    2300032: UpperLightningPlane.005
+    2300034: UpperLightningPlane.006
+    2300036: UpperLightningPlane.007
+    2300038: UpperLightningPlane.008
+    2300040: UpperLightningPlane.010
+    2300042: UpperLightningPlane.011
+    2300044: UpperLightningPlane.012
+    2300046: UpperLightningPlane.009
+    2300048: UpperLightningPlane.013
+    2300050: LowerLightningPlane.000
+    2300052: LowerLightningPlane.001
+    2300054: LowerLightningPlane.002
+    2300056: LowerLightningPlane.003
+    2300058: LowerLightningPlane.004
+    2300060: LowerLightningPlane.005
+    2300062: LowerLightningPlane.006
     3300000: Capsule1
     3300002: Capsule1.001
     3300004: GrappleArmEnd
@@ -44,6 +117,29 @@ ModelImporter:
     3300012: WallHookSprite
     3300014: GrappleArm
     3300016: RopOrigin
+    3300018: LightningPlaneUpper
+    3300020: BezierCircle
+    3300022: UpperLightningPlane
+    3300024: UpperLightningPlane.001
+    3300026: UpperLightningPlane.002
+    3300028: UpperLightningPlane.003
+    3300030: UpperLightningPlane.004
+    3300032: UpperLightningPlane.005
+    3300034: UpperLightningPlane.006
+    3300036: UpperLightningPlane.007
+    3300038: UpperLightningPlane.008
+    3300040: UpperLightningPlane.010
+    3300042: UpperLightningPlane.011
+    3300044: UpperLightningPlane.012
+    3300046: UpperLightningPlane.009
+    3300048: UpperLightningPlane.013
+    3300050: LowerLightningPlane.000
+    3300052: LowerLightningPlane.001
+    3300054: LowerLightningPlane.002
+    3300056: LowerLightningPlane.003
+    3300058: LowerLightningPlane.004
+    3300060: LowerLightningPlane.005
+    3300062: LowerLightningPlane.006
     4300000: GrappleArmEnd
     4300002: RopeOrigin
     4300004: PlayerSprite
@@ -52,6 +148,16 @@ ModelImporter:
     4300010: WallHookSprite
     4300012: RopOrigin
     4300014: GrappleArm
+    4300016: LightningPlaneUpper
+    4300018: BezierCircle
+    4300020: UpperLightningPlane
+    4300022: UpperLightningPlane.008
+    4300024: UpperLightningPlane.010
+    4300026: UpperLightningPlane.012
+    4300028: UpperLightningPlane.011
+    4300030: UpperLightningPlane.013
+    4300032: LowerLightningPlane.003
+    2186277476908879412: ImportLogs
   externalObjects: {}
   materials:
     importMaterials: 1

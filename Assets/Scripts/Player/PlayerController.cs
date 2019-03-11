@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     public GameObject PlayerSprite;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
+    public GameObject LowerLightningPlanes;
+    public GameObject UpperLightningPlanes;
 	public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
@@ -47,7 +49,6 @@ public class PlayerController : MonoBehaviour
     private Vector3 _arrowDestination = new Vector3();
     private Renderer[] _renderers;
     private float _hideShowTime = 1.0f;
-
 
     void Awake()
     {
@@ -117,12 +118,39 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-    	// keep this around for debugging
-		//Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
-        if(_hooked)
+        if (_hooked)
+        {
+            Vector3 lineDirection = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
+            Vector3 shipDirection = (PlayerSprite.transform.right + PlayerSprite.transform.position) - PlayerSprite.transform.position;
+            // Debug.Log("SHIP DIRECTION: " + PlayerSprite.transform.eulerAngles);
+            float RopeAngle = Vector3.SignedAngle(shipDirection, lineDirection, Vector3.back);
+            float ShipAngle = Vector3.SignedAngle(shipDirection, Vector3.right, Vector3.back);
+            if (RopeAngle > 0)
+            {
+                LowerLightningPlanes.SetActive(true);
+                UpperLightningPlanes.SetActive(false);
+            }
+            else
+            {
+                LowerLightningPlanes.SetActive(false);
+                UpperLightningPlanes.SetActive(true);
+            }
+
+            Debug.Log("ROPE: " + RopeAngle + "     SHIP: " + ShipAngle);
+            Debug.Log("ROPE AND SHIP: " + (RopeAngle + ShipAngle));
+        }
+        else
+        {
+            LowerLightningPlanes.SetActive(false);
+            UpperLightningPlanes.SetActive(false);
+        }
+
+        // keep this around for debugging
+        //Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
+        if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
-        HandleBodyRotation();
+        //HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -388,32 +416,32 @@ public class PlayerController : MonoBehaviour
 
     void HandleBodyRotation()
     {
-		if(PlayerSprite != null)
-		{
-			Vector3 newRotation = PlayerSprite.transform.eulerAngles;
-			if(_grounded)
-			{
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
-			}
-			else if(_hooked && !_floating)	
-			{	
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 3);
-			}
-			else if(_hookActive)
-			{
-				newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 3);
-			}
-			else if(_floating || !_grounded)
-			{
+        if (PlayerSprite != null)
+        {
+            Vector3 newRotation = PlayerSprite.transform.eulerAngles;
+            if (_grounded)
+            {
+                newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
+            }
+            else if (_hooked && !_floating)
+            {
+                newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 3);
+            }
+            else if (_hookActive)
+            {
+                newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 3);
+            }
+            else if (_floating || !_grounded)
+            {
                 if (_playerRigidbody.velocity.y > 0.0f)
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, -_playerRigidbody.velocity.x * 2);
                 else
                     newRotation = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, _playerRigidbody.velocity.x * 2);
-			}
+            }
 
-			float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
-			PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x,PlayerSprite.transform.eulerAngles.y, zAngle);
-		}
+            float zAngle = Mathf.SmoothDampAngle(PlayerSprite.transform.eulerAngles.z, newRotation.z, ref zVelocity, AnimationSmoothTime);
+            PlayerSprite.transform.eulerAngles = new Vector3(PlayerSprite.transform.eulerAngles.x, PlayerSprite.transform.eulerAngles.y, zAngle);
+        }
     }
 
     void HandleShoulderRotation()

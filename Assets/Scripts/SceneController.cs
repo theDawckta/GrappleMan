@@ -13,7 +13,7 @@ public class SceneController : MonoBehaviour
 {
     public PlayerController Player;
     public UIController GrappleUI;
-    public PlayerRecorderController PlayerRecorder;
+    
 	public GhostPlaybackController GhostPlayback;
 	public GameObject GhostHolder;
     public LevelController Level;
@@ -21,6 +21,7 @@ public class SceneController : MonoBehaviour
     public CinemachineVirtualCamera VirtualCamera;
     public CinemachineVirtualCamera VirtualBackgroundCamera;
 
+    private PlayerRecorderController _playerRecorder;
     private AudioSource _playerAudio;
     private AudioClip _song;
     private Camera _mainCamera;
@@ -40,6 +41,7 @@ public class SceneController : MonoBehaviour
     void Awake()
     {
         Application.targetFrameRate = 60;
+        _playerRecorder = Player.GetComponentInChildren<PlayerRecorderController>();
         _playerAudio = GetComponent<AudioSource>();
         _song = Resources.Load("Songs/BeatOfTheTerror") as AudioClip;
         _playerAudio.clip = _song;

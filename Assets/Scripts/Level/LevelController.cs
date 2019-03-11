@@ -59,9 +59,9 @@ public class LevelController : MonoBehaviour
 
     public void StartDeathMarch()
     {
-        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
-        _pressureTween.timeScale = 1.0f;
-        _startPlatform.gameObject.SetActive(false);
+        //_pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
+        //_pressureTween.timeScale = 1.0f;
+        //_startPlatform.gameObject.SetActive(false);
     }
 
     public void UpdateDeathMarchWaypoints(List<Vector3> newWaypoints)
