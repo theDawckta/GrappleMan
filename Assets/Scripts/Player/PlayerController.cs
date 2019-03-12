@@ -15,7 +15,9 @@ public class PlayerController : MonoBehaviour
     public PlayerInput HookPlayerInput;
     public GameObject LowerLightningPlanes;
     public GameObject UpperLightningPlanes;
-	public float MaxGroundVelocity = 20.0f;
+    public ParticleSystem GrappleArmEndPS;
+    public ParticleSystem WallHookSpritePS;
+    public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
     public float ClimbSpeed = 1.5f;
@@ -118,7 +120,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (_hooked)
+        if (_hooked || _hookActive)
         {
             Vector3 lineDirection = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
             Vector3 shipDirection = (PlayerSprite.transform.right + PlayerSprite.transform.position) - PlayerSprite.transform.position;
@@ -150,7 +152,7 @@ public class PlayerController : MonoBehaviour
         if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
-        //HandleBodyRotation();
+        HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -285,6 +287,8 @@ public class PlayerController : MonoBehaviour
 			if(!_grounded)
 	        	_wallHookFixedJoint.connectedBody = _playerRigidbody;
 			_hooked = true;
+            GrappleArmEndPS.Play();
+            WallHookSpritePS.Play();
         }
         else
         {
@@ -298,6 +302,8 @@ public class PlayerController : MonoBehaviour
             _wallHookSprite.transform.SetParent(GrappleArmEnd.transform, true);
             _wallHookSprite.transform.rotation = Quaternion.identity;
 			_hooked = false;
+            GrappleArmEndPS.Stop();
+            WallHookSpritePS.Stop();
         }
 
         //_playerAudio.PlayOneShot(_hookHitSoundEffect);
