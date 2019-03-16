@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     public GameObject UpperLightningPlanes;
     public ParticleSystem GrappleArmEndPS;
     public ParticleSystem WallHookSpritePS;
+    public ParticleSystem ElectrodeFrontPS;
+    public ParticleSystem ElectrodeBackPS;
     public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
@@ -127,6 +129,10 @@ public class PlayerController : MonoBehaviour
             // Debug.Log("SHIP DIRECTION: " + PlayerSprite.transform.eulerAngles);
             float RopeAngle = Vector3.SignedAngle(shipDirection, lineDirection, Vector3.back);
             float ShipAngle = Vector3.SignedAngle(shipDirection, Vector3.right, Vector3.back);
+
+            ElectrodeBackPS.Play();
+            ElectrodeFrontPS.Play();
+
             if (RopeAngle > 0)
             {
                 LowerLightningPlanes.SetActive(true);
@@ -143,6 +149,8 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            ElectrodeBackPS.Stop();
+            ElectrodeFrontPS.Stop();
             LowerLightningPlanes.SetActive(false);
             UpperLightningPlanes.SetActive(false);
         }
