@@ -137,9 +137,6 @@ public class PlayerController : MonoBehaviour
                 LowerLightningPlanes.SetActive(false);
                 UpperLightningPlanes.SetActive(true);
             }
-
-            Debug.Log("ROPE: " + RopeAngle + "     SHIP: " + ShipAngle);
-            Debug.Log("ROPE AND SHIP: " + (RopeAngle + ShipAngle));
         }
         else
         {
@@ -206,11 +203,11 @@ public class PlayerController : MonoBehaviour
                 CheckRopeSlack();
             }
 
-          	hit = Physics.Raycast(transform.position, direction, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
+          	hit = Physics.Raycast(transform.position, direction.normalized, out _playerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
             if (hit)
             {
                 Debug.DrawRay(transform.position, direction.normalized * (Vector3.Distance(_playerRaycastOut.point, transform.position)), Color.red, 10.0f);
-                hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction, out _nextPlayerRaycastOut, Mathf.Infinity, 1 << LayerMask.NameToLayer("Wall"));
+                hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized, out _nextPlayerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
                 if (hit)
                 {
                     Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized * (Vector3.Distance(_nextPlayerRaycastOut.point, _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2))), Color.yellow, 10.0f);
@@ -220,6 +217,7 @@ public class PlayerController : MonoBehaviour
 						if(_hookActive)
 			    			StopAllCoroutines();
 
+                        Debug.Log("ADDING LINE INTERSECTION");
 						HandleLineWinding(_playerRaycastOut, _nextPlayerRaycastOut);
 
 						if(_hookActive)
@@ -320,18 +318,21 @@ public class PlayerController : MonoBehaviour
 
 	void HandleLineWinding(RaycastHit playerRaycastOut, RaycastHit nextPlayerRaycastOut)
 	{
+        Debug.DrawRay(nextPlayerRaycastOut.point, nextPlayerRaycastOut.normal * 10.0f, Color.black, 10.0f);
+        Debug.DrawRay(playerRaycastOut.point, playerRaycastOut.normal * 10.0f, Color.black, 10.0f);
+
         Vector3 cornerNormal = playerRaycastOut.normal + nextPlayerRaycastOut.normal;
         float modifier = Mathf.Sign(AngleFromAToB(playerRaycastOut.normal, cornerNormal));
 
-        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -45) * cornerNormal) * 100.0f;
-        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 45) * cornerNormal) * 100.0f;
-
+        Vector3 pointDirection1 = (Quaternion.Euler(0, 0, modifier * -90) * nextPlayerRaycastOut.normal) * 100.0f;
+        Vector3 pointDirection2 = (Quaternion.Euler(0, 0, modifier * 90) * playerRaycastOut.normal) * 100.0f;
+        
         try
         {
             Vector2 intersection2D = Math3d.LineIntersectionPoint(nextPlayerRaycastOut.point, nextPlayerRaycastOut.point + pointDirection1 * 10.0f, playerRaycastOut.point, playerRaycastOut.point + pointDirection2 * 10.0f);
 
-            Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection2 * 10.0f, Color.magenta, 10.0f);
-            Debug.DrawRay(playerRaycastOut.point, pointDirection1 * 10.0f, Color.blue, 10.0f);
+            Debug.DrawRay(nextPlayerRaycastOut.point, pointDirection1 * 10.0f, Color.magenta, 10.0f);
+            Debug.DrawRay(playerRaycastOut.point, pointDirection2 * 10.0f, Color.blue, 10.0f);
 
             Vector3 intersection = new Vector3(intersection2D.x, intersection2D.y, 0.0f);
             intersection = intersection + (cornerNormal.normalized * 0.1f);
