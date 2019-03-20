@@ -55,6 +55,12 @@ ModelImporter:
     100098: BRHand
     100100: FLHand
     100102: FRHand
+    100104: FLBicep
+    100106: FLForearm
+    100108: FLHand.001
+    100110: FRBicep
+    100112: FRForearm
+    100114: FRHand.001
     400000: BLLeg
     400002: BLLegBone
     400004: BLThigh
@@ -107,6 +113,12 @@ ModelImporter:
     400098: BRHand
     400100: FLHand
     400102: FRHand
+    400104: FLBicep
+    400106: FLForearm
+    400108: FLHand.001
+    400110: FRBicep
+    400112: FRForearm
+    400114: FRHand.001
     2100000: No Name
     2300000: BLLeg
     2300002: BLThigh
@@ -122,6 +134,12 @@ ModelImporter:
     2300022: BRHand
     2300024: FLHand
     2300026: FRHand
+    2300028: FLBicep
+    2300030: FLForearm
+    2300032: FLHand.001
+    2300034: FRBicep
+    2300036: FRForearm
+    2300038: FRHand.001
     3300000: BLLeg
     3300002: BLThigh
     3300004: BRLeg
@@ -136,12 +154,20 @@ ModelImporter:
     3300022: BRHand
     3300024: FLHand
     3300026: FRHand
+    3300028: FLBicep
+    3300030: FLForearm
+    3300032: FLHand.001
+    3300034: FRBicep
+    3300036: FRForearm
+    3300038: FRHand.001
     4300000: Bug
     4300002: FRThigh
     4300004: BLThigh
     4300006: Torso
     4300008: FLThigh
     4300010: FLHand
+    4300012: FRBicep
+    4300014: FRHand
     9500000: //RootNode
   externalObjects: {}
   materials:
@@ -177,6 +203,7 @@ ModelImporter:
     globalScale: 1
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
@@ -201,6 +228,9 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
@@ -215,7 +245,6 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

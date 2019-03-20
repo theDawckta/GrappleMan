@@ -89,8 +89,8 @@ public class BugController : MonoBehaviour
         halfwayPoint = halfwayPoint + (direction * 0.1f);
         Vector3[] path = new Vector3[] { legTarget.position, halfwayPoint, _hit.point };
 
-        legTarget.DOPath(path, 0.25f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
-        legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.5f);
+        legTarget.DOPath(path, 0.15f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
+        legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.15f);
     }
 
     void PlaceBackLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
@@ -108,8 +108,8 @@ public class BugController : MonoBehaviour
             halfwayPoint = halfwayPoint + (direction * 0.1f);
             Vector3[] path = new Vector3[] { legTarget.position, halfwayPoint, _hit.point };
 
-            legTarget.DOPath(path, 0.25f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
-            legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.5f);
+            legTarget.DOPath(path, 0.15f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
+            legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.15f);
         }
     }
 }
