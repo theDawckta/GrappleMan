@@ -16,6 +16,7 @@ public class SceneController : MonoBehaviour
     
 	public GhostPlaybackController GhostPlayback;
 	public GameObject GhostHolder;
+    public BugController Bug;
     public LevelController Level;
     public CinemachineSmoothPath SmoothPath;
     public CinemachineVirtualCamera VirtualCamera;
@@ -80,6 +81,7 @@ public class SceneController : MonoBehaviour
         
         Player.Enable();
         Level.Init(Player.gameObject);
+        Bug.Init();
 
         GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
         {
@@ -100,6 +102,15 @@ public class SceneController : MonoBehaviour
         StartCoroutine("WaitForOpenUI");
 
         //_playerAudio.Play();
+    }
+
+    void Update()
+    {
+        if(Level.PressurePlaying)
+        {
+            Bug.BugSprite.transform.position = Level.Pressure.transform.position;
+            Bug.BugSprite.transform.rotation = Level.Pressure.transform.rotation;
+        }
     }
 
     IEnumerator WaitForOpenUI()
@@ -220,7 +231,7 @@ public class SceneController : MonoBehaviour
         yield return null;
     }
 
-    void PlayerFinished()
+    void PlayerCaught()
     {
         if (_gameOn)
         {
@@ -234,6 +245,9 @@ public class SceneController : MonoBehaviour
             GrappleUI.EndGame();
             _gameOn = false;
         }
+
+        Bug.Grab(Player.transform.position);
+        Level.StopDeathMarch();
     }
 
     void GameFinished()
@@ -351,7 +365,7 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostRecordsValueChanged += GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked += ProcessNewUsername;
         Level.OnCameraWaypointsChanged += CameraWaypointsChanged;
-        Level.OnPlayerHit += PlayerFinished;
+        Bug.OnPlayerCaught += PlayerCaught;
     }
 
     void OnDisable()
@@ -364,6 +378,6 @@ public class SceneController : MonoBehaviour
         GrappleUI.OnGhostRecordsValueChanged -= GhostRecordsValueChanged;
 		GrappleUI.OnUserSaveButtonClicked -= ProcessNewUsername;
         Level.OnCameraWaypointsChanged -= CameraWaypointsChanged;
-        Level.OnPlayerHit += PlayerFinished;
+        Bug.OnPlayerCaught += PlayerCaught;
     }
 }

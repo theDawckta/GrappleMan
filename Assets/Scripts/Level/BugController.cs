@@ -5,7 +5,10 @@ using DG.Tweening;
 
 public class BugController : MonoBehaviour
 {
-    public GameObject Bug;
+    public delegate void PlayerHit();
+    public event PlayerHit OnPlayerCaught;
+
+    public GameObject BugSprite;
     public Transform BLTarget;
     public Transform BRTarget;
     public Transform FLTarget;
@@ -19,32 +22,23 @@ public class BugController : MonoBehaviour
     private RaycastHit _hit;
     private Vector3 _direction;
     private float _maxDistance;
-    //private float _blPreviousDistance;
-    //private float _brPreviousDistance;
     private float _frPreviousDistance;
     private float _flPreviousDistance;
 
-    void Start ()
+    void Awake ()
     {
        _maxDistance = Vector3.Distance(FRRaycastOrigin.position, Hand.position);
         _flPreviousDistance = _maxDistance;
+        _frPreviousDistance = _maxDistance;
     }
 	
 	void Update ()
     {
-        //if (Vector3.Distance(BRRaycastOrigin.position, BRTarget.position) > 35.0f && !DOTween.IsTweening(BRTarget, true))
-        //    PlaceLeg(80, BRTarget, BRRaycastOrigin);
-        //if (Vector3.Distance(BLRaycastOrigin.position, BLTarget.position) > 35.0f && !DOTween.IsTweening(BLTarget, true))
-        //    PlaceLeg(-80, BLTarget, BLRaycastOrigin);
-
-
         if (Vector3.Distance(BLRaycastOrigin.position, BLTarget.position) >= _maxDistance && !DOTween.IsTweening(BLTarget, true))
             PlaceBackLeg(-60, BLTarget, BLRaycastOrigin);
 
         if (Vector3.Distance(BRRaycastOrigin.position, BRTarget.position) >= _maxDistance && !DOTween.IsTweening(BRTarget, true))
             PlaceBackLeg(60, BRTarget, BRRaycastOrigin);
-
-
 
         if (Vector3.Distance(FLRaycastOrigin.position, FLTarget.position) <= _flPreviousDistance && !DOTween.IsTweening(FLTarget, true))
             _flPreviousDistance = Vector3.Distance(FLRaycastOrigin.position, FLTarget.position);
@@ -69,11 +63,28 @@ public class BugController : MonoBehaviour
         PlaceLeg(-1, FRTarget, FRRaycastOrigin);
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
+            OnPlayerCaught();
+    }
+
+    public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
+    {
+        BugSprite.transform.position = newPosition;
+        BugSprite.transform.rotation = newRotation;
+    }
+
+    public void Grab(Vector3 position)
+    {
+
+    }
+
     void PlaceLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
         for (int i = 0; i != 90 * rotationDirection; i = i - 5 * rotationDirection)
         {
-            _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
+            _direction = Quaternion.AngleAxis(i, Vector3.back) * BugSprite.transform.right;
             //Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
             if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
@@ -96,7 +107,7 @@ public class BugController : MonoBehaviour
     void PlaceBackLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
         int rotationSign = (rotationDirection < 0) ? -1 : 1;
-        _direction = Quaternion.AngleAxis(rotationDirection, Vector3.back) * Bug.transform.right;
+        _direction = Quaternion.AngleAxis(rotationDirection, Vector3.back) * BugSprite.transform.right;
         Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
         if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))

@@ -10,14 +10,13 @@ public class LevelController : MonoBehaviour
 {
     public delegate void LevelSetionAdded(List<CinemachineSmoothPath.Waypoint> waypoints);
     public event LevelSetionAdded OnCameraWaypointsChanged;
-    public delegate void PlayerHit();
-    public event PlayerHit OnPlayerHit;
 
     public bool UseRandomSeed;
     public BugController Bug;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
     public GameObject Pressure;
+    public bool PressurePlaying = false;
     public float PressureMaxSpeed = 3.0f;
     public float CameraDistance = -160.0f;
 
@@ -54,14 +53,19 @@ public class LevelController : MonoBehaviour
     public void Init(GameObject player)
     {
         _player = player;
-        Bug.Init();
     }
 
     public void StartDeathMarch()
     {
-        //_pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
-        //_pressureTween.timeScale = 1.0f;
-        //_startPlatform.gameObject.SetActive(false);
+        _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
+        _pressureTween.timeScale = 1.0f;
+        _startPlatform.gameObject.SetActive(false);
+        PressurePlaying = true;
+    }
+
+    public void StopDeathMarch()
+    {
+        _pressureTween.Kill();
     }
 
     public void UpdateDeathMarchWaypoints(List<Vector3> newWaypoints)
@@ -145,12 +149,6 @@ public class LevelController : MonoBehaviour
             _pressureTween.timeScale = currentTimeScale;
             Debug.Log(_pressureTween.timeScale);
         }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        OnPlayerHit();
-        _pressureTween.Kill();
     }
 
     public string GetSeed()
