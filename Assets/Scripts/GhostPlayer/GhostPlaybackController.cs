@@ -25,7 +25,7 @@ public class GhostPlaybackController : MonoBehaviour
 	void Awake () 
 	{
         _ghostPlayer = transform.GetComponent<GhostController>();
-        _ghostPlayer.gameObject.SetActive(false);
+        _ghostPlayer.gameObject.SetActive(true);
 	}
 
     void Start()
@@ -33,7 +33,7 @@ public class GhostPlaybackController : MonoBehaviour
         _ghostPlayer.RopeLineRenderer.enabled = false;
     }
 
-	public void SetPlayerReplayModel(PlayerReplayModel playerReplayModel)
+    public void SetPlayerReplayModel(PlayerReplayModel playerReplayModel)
 	{
 		_playerReplayModel = playerReplayModel;
         _ghostPlayer.Username.text = _playerReplayModel.UserName;
@@ -78,7 +78,39 @@ public class GhostPlaybackController : MonoBehaviour
 		_ghostPlayer.RopeLineRenderer.SetPositions(_tempPlayerState.RopeLineRendererPositions);
 
         if (_ghostPlayer.RopeLineRenderer.positionCount > 1)
-			_ghostPlayer.RopeLineRenderer.enabled = true;
+        {
+            _ghostPlayer.RopeLineRenderer.enabled = true;
+            Vector3 lineDirection = _ghostPlayer.RopeLineRenderer.GetPosition(_ghostPlayer.RopeLineRenderer.positionCount - 2) - transform.position;
+            Vector3 shipDirection = (_ghostPlayer.GhostPlayerSprite.transform.right + _ghostPlayer.GhostPlayerSprite.transform.position) - _ghostPlayer.GhostPlayerSprite.transform.position;
+            // Debug.Log("SHIP DIRECTION: " + PlayerSprite.transform.eulerAngles);
+            float RopeAngle = Vector3.SignedAngle(shipDirection, lineDirection, Vector3.back);
+            float ShipAngle = Vector3.SignedAngle(shipDirection, Vector3.right, Vector3.back);
+
+            _ghostPlayer.GrappleArmEndPS.Play();
+            _ghostPlayer.WallHookSpritePS.Play();
+            _ghostPlayer.ElectrodeBackPS.Play();
+            _ghostPlayer.ElectrodeFrontPS.Play();
+
+            if (RopeAngle > 0)
+            {
+                _ghostPlayer.LowerLightningPlanes.SetActive(true);
+                _ghostPlayer.UpperLightningPlanes.SetActive(false);
+            }
+            else
+            {
+                _ghostPlayer.LowerLightningPlanes.SetActive(false);
+                _ghostPlayer.UpperLightningPlanes.SetActive(true);
+            }
+        }
+        else
+        {
+            _ghostPlayer.GrappleArmEndPS.Stop();
+            _ghostPlayer.WallHookSpritePS.Stop();
+            _ghostPlayer.ElectrodeBackPS.Stop();
+            _ghostPlayer.ElectrodeFrontPS.Stop();
+            _ghostPlayer.LowerLightningPlanes.SetActive(false);
+            _ghostPlayer.UpperLightningPlanes.SetActive(false);
+        }
 
         //Handle lerp points for firing, bending around a corner, swinging back from a corner, and coming back to the origin
         if (previousPositionCount == 0 && _tempPlayerState.RopeLineRendererPositions.Length > 1)
