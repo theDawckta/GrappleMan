@@ -238,6 +238,7 @@ public class SceneController : MonoBehaviour
             Player.DisableLeftScreenInput();
             VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
             VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+            Level.StopDeathMarch();
             PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
 
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
@@ -245,9 +246,11 @@ public class SceneController : MonoBehaviour
             GrappleUI.EndGame();
             _gameOn = false;
         }
+    }
 
-        Bug.Grab(Player.transform.position);
-        Level.StopDeathMarch();
+    void GhostCaught()
+    {
+
     }
 
     void GameFinished()

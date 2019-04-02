@@ -13,6 +13,8 @@ public class BugController : MonoBehaviour
     public Transform BRTarget;
     public Transform FLTarget;
     public Transform FRTarget;
+    public Transform FFLTarget;
+    public Transform FFRTarget;
     public Transform BLRaycastOrigin;
     public Transform BRRaycastOrigin;
     public Transform FLRaycastOrigin;
@@ -24,12 +26,21 @@ public class BugController : MonoBehaviour
     private float _maxDistance;
     private float _frPreviousDistance;
     private float _flPreviousDistance;
+    private Vector3 _ffrTargetOGPosition;
+    private Vector3 _fflTargetOGPosition;
+    private Tweener _ffrTweener;
+    private Tweener _fflTweener;
+    private bool _ffrAvailable = true;
+    private bool _fflAvailable = true;
+    private List<GhostController> _punchQueue = new List<GhostController>();
 
     void Awake ()
     {
        _maxDistance = Vector3.Distance(FRRaycastOrigin.position, Hand.position);
         _flPreviousDistance = _maxDistance;
         _frPreviousDistance = _maxDistance;
+        _ffrTargetOGPosition = FFRTarget.transform.localPosition;
+        _fflTargetOGPosition = FFLTarget.transform.localPosition;
     }
 	
 	void Update ()
@@ -53,6 +64,12 @@ public class BugController : MonoBehaviour
             PlaceLeg(-1, FRTarget, FRRaycastOrigin);
         else
             _frPreviousDistance = _maxDistance;
+
+        if(_punchQueue.Count > 0 && (_ffrAvailable || _fflAvailable))
+        {
+            Punch(_punchQueue[0].transform.position, _punchQueue[0]);
+            _punchQueue.RemoveAt(0);
+        }
     }
     
     public void Init()
@@ -66,7 +83,16 @@ public class BugController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
+        {
+            Grab(other.gameObject);
             OnPlayerCaught();
+        }
+            
+        if (other.gameObject.layer == LayerMask.NameToLayer("Ghost"))
+        {
+            GhostController caughtGhost = other.GetComponentInParent<GhostController>();
+            _punchQueue.Add(caughtGhost);
+        }
     }
 
     public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
@@ -75,9 +101,93 @@ public class BugController : MonoBehaviour
         BugSprite.transform.rotation = newRotation;
     }
 
-    public void Grab(Vector3 position)
+    private void Grab(GameObject player)
     {
+        if(Vector3.Distance(FFLTarget.transform.position, player.transform.position) < Vector3.Distance(FFRTarget.transform.position, player.transform.position))
+            FFLTarget.DOMove(player.transform.position, 0.2f);
+        else
+            FFRTarget.DOMove(player.transform.position, 0.2f);
+    }
 
+    private void Punch(Vector3 position, GhostController caughtGhost)
+    {
+        if (_fflAvailable && _ffrAvailable)
+        {
+            if (Vector3.Distance(FFLTarget.transform.position, position) < Vector3.Distance(FFRTarget.transform.position, position))
+            {
+                _fflAvailable = false;
+                FFLTarget.parent = null;
+
+                if (_fflTweener != null && _fflTweener.IsPlaying())
+                    _fflTweener.Kill();
+
+                _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
+                    StartCoroutine(BringFFLBack(caughtGhost));
+                });
+            }
+            else
+            {
+                _ffrAvailable = false;
+                FFRTarget.parent = null;
+
+                if (_ffrTweener != null && _ffrTweener.IsPlaying())
+                    _ffrTweener.Kill();
+
+                _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
+                    StartCoroutine(BringFFRBack(caughtGhost));
+                });
+            }
+        }
+        else if(_ffrAvailable)
+        {
+            _ffrAvailable = false;
+            FFRTarget.parent = null;
+
+            if (_ffrTweener != null && _ffrTweener.IsPlaying())
+                _ffrTweener.Kill();
+
+            _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
+                StartCoroutine(BringFFRBack(caughtGhost));
+            });
+        }
+        else if(_fflAvailable)
+        {
+            _fflAvailable = false;
+            FFLTarget.parent = null;
+
+            if (_fflTweener != null && _fflTweener.IsPlaying())
+                _fflTweener.Kill();
+
+            _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
+                StartCoroutine(BringFFLBack(caughtGhost));
+            });
+        }
+    }
+
+    IEnumerator BringFFRBack(GhostController caughtGhost)
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        FFRTarget.SetParent(BugSprite.transform, true);
+        caughtGhost.Caught();
+        _ffrAvailable = true;
+        if(_punchQueue.Count == 0)
+            FFRTarget.DOLocalMove(_ffrTargetOGPosition, 0.2f);
+
+        yield return null;
+    }
+
+    IEnumerator BringFFLBack(GhostController caughtGhost)
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        FFLTarget.SetParent(BugSprite.transform, true);
+        caughtGhost.Caught();
+        _fflAvailable = true;
+        if (_punchQueue.Count == 0)
+            FFLTarget.DOLocalMove(_fflTargetOGPosition, 0.2f);
+
+        yield return null;
     }
 
     void PlaceLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)

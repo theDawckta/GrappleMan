@@ -8,6 +8,8 @@ using DG.Tweening;
 public class GhostController : MonoBehaviour 
 {
     public GameObject GhostPlayerSprite;
+    public GameObject PlayerSpritePiece1;
+    public GameObject PlayerSpritePiece2;
     public GameObject GrappleArmEnd;
     public GameObject RopeOrigin;
     public GameObject LowerLightningPlanes;
@@ -22,7 +24,7 @@ public class GhostController : MonoBehaviour
     
 	[HideInInspector]
 	public LineRenderer RopeLineRenderer;
-
+    
     private Renderer[] _renderers;
     //private Color[] _colors = new Color[] {Color.black, Color.blue, Color.cyan, Color.gray, Color.green, Color.magenta, Color.red, Color.white, Color.yellow};
 
@@ -31,7 +33,6 @@ public class GhostController : MonoBehaviour
         //Color primary = _colors[Random.Range(0, 8)];
         //Color secondary = _colors[Random.Range(0, 8)];
         //Color highlight = _colors[Random.Range(0, 8)];
-
         UserNameCanvasGroup.alpha = 0.0f;
         RopeLineRenderer = WallHookSprite.GetComponent<LineRenderer>();
         //RopeLineRenderer.material.color = highlight;
@@ -44,6 +45,13 @@ public class GhostController : MonoBehaviour
         //    Color endColor = new Color(_renderers[i].material.color.r, _renderers[i].material.color.g, _renderers[i].material.color.b, 0.0f);
         //    _renderers[i].material.color = endColor;
         //}
+    }
+
+    public void Caught()
+    {
+        GhostPlayerSprite.SetActive(false);
+        PlayerSpritePiece1.SetActive(true);
+        PlayerSpritePiece2.SetActive(true);
     }
 
     public void FadeOut(float time, bool kill = false)

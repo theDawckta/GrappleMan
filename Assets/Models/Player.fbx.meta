@@ -39,6 +39,8 @@ ModelImporter:
     100066: LowerLightningPlane.004
     100068: LowerLightningPlane.005
     100070: LowerLightningPlane.006
+    100072: PlayerSpritePiece1
+    100074: PlayerSpritePiece2
     400000: Capsule1
     400002: Capsule1.001
     400004: GrappleArmEnd
@@ -75,6 +77,8 @@ ModelImporter:
     400066: LowerLightningPlane.004
     400068: LowerLightningPlane.005
     400070: LowerLightningPlane.006
+    400072: PlayerSpritePiece1
+    400074: PlayerSpritePiece2
     2100000: No Name
     2300000: Capsule1
     2300002: Capsule1.001
@@ -108,6 +112,8 @@ ModelImporter:
     2300058: LowerLightningPlane.004
     2300060: LowerLightningPlane.005
     2300062: LowerLightningPlane.006
+    2300064: PlayerSpritePiece1
+    2300066: PlayerSpritePiece2
     3300000: Capsule1
     3300002: Capsule1.001
     3300004: GrappleArmEnd
@@ -140,6 +146,8 @@ ModelImporter:
     3300058: LowerLightningPlane.004
     3300060: LowerLightningPlane.005
     3300062: LowerLightningPlane.006
+    3300064: PlayerSpritePiece1
+    3300066: PlayerSpritePiece2
     4300000: GrappleArmEnd
     4300002: RopeOrigin
     4300004: PlayerSprite
@@ -157,6 +165,8 @@ ModelImporter:
     4300028: UpperLightningPlane.011
     4300030: UpperLightningPlane.013
     4300032: LowerLightningPlane.003
+    4300034: PlayerSpritePiece2
+    4300036: PlayerSpritePiece1
     2186277476908879412: ImportLogs
   externalObjects: {}
   materials:
@@ -192,6 +202,7 @@ ModelImporter:
     globalScale: 1
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
@@ -216,6 +227,9 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
@@ -230,7 +244,6 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
-    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
     hasExtraRoot: 0
     skeletonHasParents: 1

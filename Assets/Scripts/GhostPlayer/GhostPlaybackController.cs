@@ -211,19 +211,11 @@ public class GhostPlaybackController : MonoBehaviour
         if (_playerReplayModel.HasStates)
             yield return PlayGhostPlayback();
         else
-        {
-            _ghostPlayer.FadeOut(1.0f);
-            Invoke("GhostCompleted", 1.1f);
-        }
+            yield return null;
     }
 
     public void Kill()
     {
         _ghostPlayer.FadeOut(1.0f, true);
-    }
-
-    void GhostCompleted()
-    {
-        Destroy(gameObject);
     }
 }
