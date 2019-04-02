@@ -115,53 +115,47 @@ public class BugController : MonoBehaviour
         {
             if (Vector3.Distance(FFLTarget.transform.position, position) < Vector3.Distance(FFRTarget.transform.position, position))
             {
-                _fflAvailable = false;
-                FFLTarget.parent = null;
-
-                if (_fflTweener != null && _fflTweener.IsPlaying())
-                    _fflTweener.Kill();
-
-                _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
-                    StartCoroutine(BringFFLBack(caughtGhost));
-                });
+                StartFLPunch(position, caughtGhost);
             }
             else
             {
-                _ffrAvailable = false;
-                FFRTarget.parent = null;
-
-                if (_ffrTweener != null && _ffrTweener.IsPlaying())
-                    _ffrTweener.Kill();
-
-                _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
-                    StartCoroutine(BringFFRBack(caughtGhost));
-                });
+                StartFRPunch(position, caughtGhost);
             }
-        }
-        else if(_ffrAvailable)
-        {
-            _ffrAvailable = false;
-            FFRTarget.parent = null;
-
-            if (_ffrTweener != null && _ffrTweener.IsPlaying())
-                _ffrTweener.Kill();
-
-            _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
-                StartCoroutine(BringFFRBack(caughtGhost));
-            });
         }
         else if(_fflAvailable)
         {
-            _fflAvailable = false;
-            FFLTarget.parent = null;
-
-            if (_fflTweener != null && _fflTweener.IsPlaying())
-                _fflTweener.Kill();
-
-            _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
-                StartCoroutine(BringFFLBack(caughtGhost));
-            });
+            StartFLPunch(position, caughtGhost);
         }
+        else if(_ffrAvailable)
+        {
+            StartFRPunch(position, caughtGhost);
+        }
+    }
+
+    private void StartFRPunch(Vector3 position, GhostController caughtGhost)
+    {
+        _ffrAvailable = false;
+        FFRTarget.parent = null;
+
+        if (_ffrTweener != null && _ffrTweener.IsPlaying())
+            _ffrTweener.Kill();
+
+        _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
+            StartCoroutine(BringFFRBack(caughtGhost));
+        });
+    }
+
+    private void StartFLPunch(Vector3 position, GhostController caughtGhost)
+    {
+        _fflAvailable = false;
+        FFLTarget.parent = null;
+
+        if (_fflTweener != null && _fflTweener.IsPlaying())
+            _fflTweener.Kill();
+
+        _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
+            StartCoroutine(BringFFLBack(caughtGhost));
+        });
     }
 
     IEnumerator BringFFRBack(GhostController caughtGhost)
