@@ -3,218 +3,127 @@ guid: 18711a0e0176db64eaa0da18624a1d03
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: BLLeg
-    100002: BLLegBone
-    100004: BLThigh
-    100006: BLThighBone
-    100008: Bone
-    100010: Bone 1
-    100012: Bone 2
-    100014: Bone 3
-    100016: Bone 4
-    100018: Bone 5
-    100020: Bone 6
-    100022: Bone 7
-    100024: Bone_end
-    100026: Bone_end 1
-    100028: Bone_end 2
-    100030: Bone_end 3
-    100032: Bone_end 4
-    100034: Bone_end 5
-    100036: Bone_end 6
-    100038: Bone_end 7
-    100040: BRLeg
-    100042: BRLegBone
-    100044: BRThigh
-    100046: BRThighBone
-    100048: //RootNode
-    100050: FLLeg
-    100052: FLLegBone
-    100054: FLThigh
-    100056: FLThighBone
-    100058: FRLeg
-    100060: FRLegBone
-    100062: FRThigh
-    100064: FRThighBone
-    100066: Bone 10
-    100068: Bone 11
-    100070: Bone 12
-    100072: Bone 8
-    100074: Bone 9
-    100076: Bone_end 10
-    100078: Bone_end 11
-    100080: Bone_end 12
-    100082: Bone_end 8
-    100084: Bone_end 9
-    100086: Bug
-    100088: LeftHip
-    100090: LeftShoulder
-    100092: RightHip
-    100094: RightShoulder
-    100096: BLHand
-    100098: BRHand
-    100100: FLHand
-    100102: FRHand
-    100104: FLBicep
-    100106: FLForearm
-    100108: FLHand.001
-    100110: FRBicep
-    100112: FRForearm
-    100114: FRHand.001
-    100116: Armature
-    100118: Base_L
-    100120: Base_R
-    100122: BaseJaw_L
-    100124: BaseJaw_R
-    100126: Head
-    100128: Mid_L
-    100130: Mid_R
-    100132: Tooth_L
-    100134: Tooth_L_end
-    100136: Tooth_R
-    100138: Tooth_R_end
-    100140: ToothIK_L
-    100142: ToothIK_L_end
-    100144: ToothIK_R
-    100146: ToothIK_R_end
-    100148: Torso
-    100150: HeadArmature
-    400000: BLLeg
-    400002: BLLegBone
-    400004: BLThigh
-    400006: BLThighBone
-    400008: Bone
-    400010: Bone 1
-    400012: Bone 2
-    400014: Bone 3
-    400016: Bone 4
-    400018: Bone 5
-    400020: Bone 6
-    400022: Bone 7
-    400024: Bone_end
-    400026: Bone_end 1
-    400028: Bone_end 2
-    400030: Bone_end 3
-    400032: Bone_end 4
-    400034: Bone_end 5
-    400036: Bone_end 6
-    400038: Bone_end 7
-    400040: BRLeg
-    400042: BRLegBone
-    400044: BRThigh
-    400046: BRThighBone
-    400048: //RootNode
-    400050: FLLeg
-    400052: FLLegBone
-    400054: FLThigh
-    400056: FLThighBone
-    400058: FRLeg
-    400060: FRLegBone
-    400062: FRThigh
-    400064: FRThighBone
-    400066: Bone 10
-    400068: Bone 11
-    400070: Bone 12
-    400072: Bone 8
-    400074: Bone 9
-    400076: Bone_end 10
-    400078: Bone_end 11
-    400080: Bone_end 12
-    400082: Bone_end 8
-    400084: Bone_end 9
-    400086: Bug
-    400088: LeftHip
-    400090: LeftShoulder
-    400092: RightHip
-    400094: RightShoulder
-    400096: BLHand
-    400098: BRHand
-    400100: FLHand
-    400102: FRHand
-    400104: FLBicep
-    400106: FLForearm
-    400108: FLHand.001
-    400110: FRBicep
-    400112: FRForearm
-    400114: FRHand.001
-    400116: Armature
-    400118: Base_L
-    400120: Base_R
-    400122: BaseJaw_L
-    400124: BaseJaw_R
-    400126: Head
-    400128: Mid_L
-    400130: Mid_R
-    400132: Tooth_L
-    400134: Tooth_L_end
-    400136: Tooth_R
-    400138: Tooth_R_end
-    400140: ToothIK_L
-    400142: ToothIK_L_end
-    400144: ToothIK_R
-    400146: ToothIK_R_end
-    400148: Torso
-    400150: HeadArmature
+    100000: Base_L
+    100002: Base_R
+    100004: BaseJaw_L
+    100006: BaseJaw_R
+    100008: BLFoot
+    100010: BLLeg
+    100012: BLThigh
+    100014: BRFoot
+    100016: BRLeg
+    100018: BRThigh
+    100020: //RootNode
+    100022: BugArmature
+    100024: BugSprite
+    100026: FLBicep
+    100028: FLFoot
+    100030: FLForearm
+    100032: FLHand
+    100034: FLLeg
+    100036: FLThigh
+    100038: FRBicep
+    100040: FRFoot
+    100042: FRForearm
+    100044: FRHand
+    100046: FRLeg
+    100048: FRThigh
+    100050: Head
+    100052: Mid_L
+    100054: Mid_R
+    100056: Tooth_L
+    100058: Tooth_L_end
+    100060: Tooth_R
+    100062: Tooth_R_end
+    100064: ToothIK_L
+    100066: ToothIK_L_end
+    100068: ToothIK_R
+    100070: ToothIK_R_end
+    100072: Torso
+    400000: Base_L
+    400002: Base_R
+    400004: BaseJaw_L
+    400006: BaseJaw_R
+    400008: BLFoot
+    400010: BLLeg
+    400012: BLThigh
+    400014: BRFoot
+    400016: BRLeg
+    400018: BRThigh
+    400020: //RootNode
+    400022: BugArmature
+    400024: BugSprite
+    400026: FLBicep
+    400028: FLFoot
+    400030: FLForearm
+    400032: FLHand
+    400034: FLLeg
+    400036: FLThigh
+    400038: FRBicep
+    400040: FRFoot
+    400042: FRForearm
+    400044: FRHand
+    400046: FRLeg
+    400048: FRThigh
+    400050: Head
+    400052: Mid_L
+    400054: Mid_R
+    400056: Tooth_L
+    400058: Tooth_L_end
+    400060: Tooth_R
+    400062: Tooth_R_end
+    400064: ToothIK_L
+    400066: ToothIK_L_end
+    400068: ToothIK_R
+    400070: ToothIK_R_end
+    400072: Torso
     2100000: No Name
-    2300000: BLLeg
-    2300002: BLThigh
-    2300004: BRLeg
-    2300006: BRThigh
-    2300008: //RootNode
-    2300010: FLLeg
-    2300012: FLThigh
-    2300014: FRLeg
-    2300016: FRThigh
-    2300018: Bug
-    2300020: BLHand
-    2300022: BRHand
-    2300024: FLHand
-    2300026: FRHand
-    2300028: FLBicep
-    2300030: FLForearm
-    2300032: FLHand.001
-    2300034: FRBicep
-    2300036: FRForearm
-    2300038: FRHand.001
-    2300040: Torso
-    3300000: BLLeg
-    3300002: BLThigh
-    3300004: BRLeg
-    3300006: BRThigh
-    3300008: //RootNode
-    3300010: FLLeg
-    3300012: FLThigh
-    3300014: FRLeg
-    3300016: FRThigh
-    3300018: Bug
-    3300020: BLHand
-    3300022: BRHand
-    3300024: FLHand
-    3300026: FRHand
-    3300028: FLBicep
-    3300030: FLForearm
-    3300032: FLHand.001
-    3300034: FRBicep
-    3300036: FRForearm
-    3300038: FRHand.001
-    3300040: Torso
-    4300000: Bug
-    4300002: FRThigh
-    4300004: BLThigh
-    4300006: Torso
-    4300008: FLThigh
-    4300010: FLHand
-    4300012: FRBicep
-    4300014: FRHand
-    4300016: Head
-    7400000: Armature|ArmatureAction
-    7400002: Armature|BugAnimations
-    7400004: Armature|HeadAnimations
-    7400006: HeadArmature|ArmatureAction
-    7400008: Chomp
-    7400010: HeadArmature|HeadAnimations
+    2300000: BLFoot
+    2300002: BLLeg
+    2300004: BLThigh
+    2300006: BRFoot
+    2300008: BRLeg
+    2300010: BRThigh
+    2300012: FLBicep
+    2300014: FLFoot
+    2300016: FLForearm
+    2300018: FLHand
+    2300020: FLLeg
+    2300022: FLThigh
+    2300024: FRBicep
+    2300026: FRFoot
+    2300028: FRForearm
+    2300030: FRHand
+    2300032: FRLeg
+    2300034: FRThigh
+    2300036: Torso
+    3300000: BLFoot
+    3300002: BLLeg
+    3300004: BLThigh
+    3300006: BRFoot
+    3300008: BRLeg
+    3300010: BRThigh
+    3300012: FLBicep
+    3300014: FLFoot
+    3300016: FLForearm
+    3300018: FLHand
+    3300020: FLLeg
+    3300022: FLThigh
+    3300024: FRBicep
+    3300026: FRFoot
+    3300028: FRForearm
+    3300030: FRHand
+    3300032: FRLeg
+    3300034: FRThigh
+    3300036: Torso
+    4300000: Torso
+    4300002: FRBicep
+    4300004: FRHand
+    4300006: Head
+    7400000: BugArmature|ArmatureAction
+    7400002: Chomp
+    7400004: BugArmature|HeadAnimations
     9500000: //RootNode
-    11100000: //RootNode
     13700000: Head
   externalObjects: {}
   materials:
@@ -236,7 +145,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 3
+    animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -246,7 +155,7 @@ ModelImporter:
     clipAnimations:
     - serializedVersion: 16
       name: Chomp
-      takeName: HeadArmature|BugAnimations
+      takeName: BugArmature|Chomp
       firstFrame: 0
       lastFrame: 7
       wrapMode: 0
@@ -255,7 +164,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 0
+      loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
@@ -321,7 +230,7 @@ ModelImporter:
     feetSpacing: 0
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2

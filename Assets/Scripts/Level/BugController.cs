@@ -19,8 +19,7 @@ public class BugController : MonoBehaviour
     public Transform BRRaycastOrigin;
     public Transform FLRaycastOrigin;
     public Transform FRRaycastOrigin;
-    public Transform Hand;
-    public GameObject Torso;
+    public Transform FRFoot;
 
     private RaycastHit _hit;
     private Vector3 _direction;
@@ -33,15 +32,17 @@ public class BugController : MonoBehaviour
     private Tweener _fflTweener;
     private bool _ffrAvailable = true;
     private bool _fflAvailable = true;
+    private Animator _bugAnimator;
     private List<GhostController> _punchQueue = new List<GhostController>();
 
     void Awake ()
     {
-       _maxDistance = Vector3.Distance(FRRaycastOrigin.position, Hand.position);
+       _maxDistance = Vector3.Distance(FRRaycastOrigin.position, FRFoot.position);
         _flPreviousDistance = _maxDistance;
         _frPreviousDistance = _maxDistance;
         _ffrTargetOGPosition = FFRTarget.transform.localPosition;
         _fflTargetOGPosition = FFLTarget.transform.localPosition;
+        _bugAnimator = gameObject.GetComponent<Animator>();
     }
 	
 	void Update ()
@@ -72,7 +73,17 @@ public class BugController : MonoBehaviour
             _punchQueue.RemoveAt(0);
         }
     }
-    
+
+    public void StartChomping()
+    {
+        _bugAnimator.SetTrigger("Chomping");
+    }
+
+    public void StopChomping()
+    {
+        _bugAnimator.SetTrigger("NotChomping");
+    }
+
     public void Init()
     {
         PlaceBackLeg(-60, BLTarget, BLRaycastOrigin);
@@ -165,7 +176,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        FFRTarget.SetParent(Torso.transform, true);
+        FFRTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
         _ffrAvailable = true;
         if(_punchQueue.Count == 0)
@@ -178,7 +189,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        FFLTarget.SetParent(Torso.transform, true);
+        FFLTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
         _fflAvailable = true;
         if (_punchQueue.Count == 0)
