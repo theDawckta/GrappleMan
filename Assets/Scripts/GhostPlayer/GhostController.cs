@@ -8,8 +8,8 @@ using DG.Tweening;
 public class GhostController : MonoBehaviour 
 {
     public GameObject GhostPlayerSprite;
-    public GameObject PlayerSpritePiece1;
-    public GameObject PlayerSpritePiece2;
+    public GameObject PlayerPiece1;
+    public GameObject PlayerPiece2;
     public GameObject GrappleArmEnd;
     public GameObject RopeOrigin;
     public GameObject LowerLightningPlanes;
@@ -21,11 +21,14 @@ public class GhostController : MonoBehaviour
     public GameObject WallHookSprite;
     public CanvasGroup UserNameCanvasGroup;
     public Text Username;
+    public List<ParticleSystem> ExplosionEffects = new List<ParticleSystem>();
     
 	[HideInInspector]
 	public LineRenderer RopeLineRenderer;
     
     private Renderer[] _renderers;
+    private Rigidbody _playerPiece1Rigidbody;
+    private Rigidbody _playerPiece2Rigidbody;
     //private Color[] _colors = new Color[] {Color.black, Color.blue, Color.cyan, Color.gray, Color.green, Color.magenta, Color.red, Color.white, Color.yellow};
 
     void Awake()
@@ -35,6 +38,8 @@ public class GhostController : MonoBehaviour
         //Color highlight = _colors[Random.Range(0, 8)];
         UserNameCanvasGroup.alpha = 0.0f;
         RopeLineRenderer = WallHookSprite.GetComponent<LineRenderer>();
+        _playerPiece1Rigidbody = PlayerPiece1.GetComponent<Rigidbody>();
+        _playerPiece2Rigidbody = PlayerPiece2.GetComponent<Rigidbody>();
         //RopeLineRenderer.material.color = highlight;
         //WallHookSprite.GetComponent<Renderer>().material.color = highlight;
 
@@ -50,8 +55,15 @@ public class GhostController : MonoBehaviour
     public void Caught()
     {
         GhostPlayerSprite.SetActive(false);
-        PlayerSpritePiece1.SetActive(true);
-        PlayerSpritePiece2.SetActive(true);
+        PlayerPiece1.SetActive(true);
+        PlayerPiece2.SetActive(true);
+        _playerPiece1Rigidbody.AddExplosionForce(8.0f, GhostPlayerSprite.transform.position, 5.0f, 0.0f, ForceMode.Impulse);
+        _playerPiece2Rigidbody.AddExplosionForce(8.0f, GhostPlayerSprite.transform.position, 5.0f, 0.0f, ForceMode.Impulse);
+
+        for (int i = 0; i < ExplosionEffects.Count; i++)
+        {
+            ExplosionEffects[i].Play();
+        }
     }
 
     public void FadeOut(float time, bool kill = false)

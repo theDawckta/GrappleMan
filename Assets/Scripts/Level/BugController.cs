@@ -136,6 +136,7 @@ public class BugController : MonoBehaviour
     {
         _ffrAvailable = false;
         FFRTarget.parent = null;
+        position = new Vector3(position.x, position.y, -3.0f);
 
         if (_ffrTweener != null && _ffrTweener.IsPlaying())
             _ffrTweener.Kill();
@@ -149,6 +150,7 @@ public class BugController : MonoBehaviour
     {
         _fflAvailable = false;
         FFLTarget.parent = null;
+        position = new Vector3(position.x, position.y, -3.0f);
 
         if (_fflTweener != null && _fflTweener.IsPlaying())
             _fflTweener.Kill();
