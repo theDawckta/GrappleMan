@@ -20,6 +20,7 @@ public class BugController : MonoBehaviour
     public Transform FLRaycastOrigin;
     public Transform FRRaycastOrigin;
     public Transform Hand;
+    public GameObject Torso;
 
     private RaycastHit _hit;
     private Vector3 _direction;
@@ -164,7 +165,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        FFRTarget.SetParent(BugSprite.transform, true);
+        FFRTarget.SetParent(Torso.transform, true);
         caughtGhost.Caught();
         _ffrAvailable = true;
         if(_punchQueue.Count == 0)
@@ -177,7 +178,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        FFLTarget.SetParent(BugSprite.transform, true);
+        FFLTarget.SetParent(Torso.transform, true);
         caughtGhost.Caught();
         _fflAvailable = true;
         if (_punchQueue.Count == 0)

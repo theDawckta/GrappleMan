@@ -61,6 +61,24 @@ ModelImporter:
     100110: FRBicep
     100112: FRForearm
     100114: FRHand.001
+    100116: Armature
+    100118: Base_L
+    100120: Base_R
+    100122: BaseJaw_L
+    100124: BaseJaw_R
+    100126: Head
+    100128: Mid_L
+    100130: Mid_R
+    100132: Tooth_L
+    100134: Tooth_L_end
+    100136: Tooth_R
+    100138: Tooth_R_end
+    100140: ToothIK_L
+    100142: ToothIK_L_end
+    100144: ToothIK_R
+    100146: ToothIK_R_end
+    100148: Torso
+    100150: HeadArmature
     400000: BLLeg
     400002: BLLegBone
     400004: BLThigh
@@ -119,6 +137,24 @@ ModelImporter:
     400110: FRBicep
     400112: FRForearm
     400114: FRHand.001
+    400116: Armature
+    400118: Base_L
+    400120: Base_R
+    400122: BaseJaw_L
+    400124: BaseJaw_R
+    400126: Head
+    400128: Mid_L
+    400130: Mid_R
+    400132: Tooth_L
+    400134: Tooth_L_end
+    400136: Tooth_R
+    400138: Tooth_R_end
+    400140: ToothIK_L
+    400142: ToothIK_L_end
+    400144: ToothIK_R
+    400146: ToothIK_R_end
+    400148: Torso
+    400150: HeadArmature
     2100000: No Name
     2300000: BLLeg
     2300002: BLThigh
@@ -140,6 +176,7 @@ ModelImporter:
     2300034: FRBicep
     2300036: FRForearm
     2300038: FRHand.001
+    2300040: Torso
     3300000: BLLeg
     3300002: BLThigh
     3300004: BRLeg
@@ -160,6 +197,7 @@ ModelImporter:
     3300034: FRBicep
     3300036: FRForearm
     3300038: FRHand.001
+    3300040: Torso
     4300000: Bug
     4300002: FRThigh
     4300004: BLThigh
@@ -168,7 +206,16 @@ ModelImporter:
     4300010: FLHand
     4300012: FRBicep
     4300014: FRHand
+    4300016: Head
+    7400000: Armature|ArmatureAction
+    7400002: Armature|BugAnimations
+    7400004: Armature|HeadAnimations
+    7400006: HeadArmature|ArmatureAction
+    7400008: Chomp
+    7400010: HeadArmature|HeadAnimations
     9500000: //RootNode
+    11100000: //RootNode
+    13700000: Head
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -196,7 +243,35 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Chomp
+      takeName: HeadArmature|BugAnimations
+      firstFrame: 0
+      lastFrame: 7
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 1
   meshes:
     lODScreenPercentages: []
@@ -246,7 +321,7 @@ ModelImporter:
     feetSpacing: 0
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2
