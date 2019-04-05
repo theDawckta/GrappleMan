@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject RopeOrigin;
     public GameObject PlayerSprite;
+    public GameObject GrabSpot1;
+    public GameObject GrabSpot2;
     public GameObject GrappleArmEnd;
     public PlayerInput HookPlayerInput;
     public GameObject LowerLightningPlanes;
@@ -19,6 +21,8 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem WallHookSpritePS;
     public ParticleSystem ElectrodeFrontPS;
     public ParticleSystem ElectrodeBackPS;
+    public ParticleSystem GrabSpot1FlamePS;
+    public ParticleSystem GrabSpot2FlamePS;
     public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
@@ -36,6 +40,7 @@ public class PlayerController : MonoBehaviour
     private FixedJoint _wallHookFixedJoint;
     private Vector3 _playerStartPosition;
     private Rigidbody _playerRigidbody;
+    private Collider _playerCollider;
     private AudioSource _playerAudio;
     private LineRenderer _ropeLineRenderer;
     private float _ropeMinLength;
@@ -68,6 +73,7 @@ public class PlayerController : MonoBehaviour
                                                           RigidbodyConstraints.FreezeRotationY;
 		_playerStartPosition = transform.position;
 		_playerRigidbody = GetComponent<Rigidbody>();
+        _playerCollider = PlayerSprite.GetComponent<Collider>();
 		_playerAudio = GetComponent<AudioSource>();
         _ropeLineRenderer = _wallHookSprite.GetComponent<LineRenderer>();
 		_ropeMinLength = (RopeOrigin.transform.position - _wallHookSprite.transform.position).magnitude * 2;
@@ -157,7 +163,7 @@ public class PlayerController : MonoBehaviour
         if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
-        HandleBodyRotation();
+        //HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -474,6 +480,12 @@ public class PlayerController : MonoBehaviour
         grappleShoulderRotation.x = 0.0f;
         grappleShoulderRotation.y = 0.0f;
         RopeOrigin.transform.rotation = grappleShoulderRotation;
+    }
+
+    public void Caught()
+    {
+        _playerCollider.enabled = false;
+        DisableLeftScreenInput();
     }
 
 	public PlayerReplayModel PlayerCompleted(string levelName)

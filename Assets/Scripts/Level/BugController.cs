@@ -9,6 +9,7 @@ public class BugController : MonoBehaviour
     public event PlayerHit OnPlayerCaught;
 
     public GameObject BugSprite;
+    public GameObject MouthLocation;
     public Transform BLTarget;
     public Transform BRTarget;
     public Transform FLTarget;
@@ -19,6 +20,8 @@ public class BugController : MonoBehaviour
     public Transform BRRaycastOrigin;
     public Transform FLRaycastOrigin;
     public Transform FRRaycastOrigin;
+    public Transform FFLRaycastOrigin;
+    public Transform FFRRaycastOrigin;
     public Transform FRFoot;
 
     private RaycastHit _hit;
@@ -28,12 +31,15 @@ public class BugController : MonoBehaviour
     private float _flPreviousDistance;
     private Vector3 _ffrTargetOGPosition;
     private Vector3 _fflTargetOGPosition;
+    private Vector3 _ffrTargetOGRotation;
+    private Vector3 _fflTargetOGRotation;
     private Tweener _ffrTweener;
     private Tweener _fflTweener;
     private bool _ffrAvailable = true;
     private bool _fflAvailable = true;
     private Animator _bugAnimator;
     private List<GhostController> _punchQueue = new List<GhostController>();
+    private List<PlayerController> _eatQueue = new List<PlayerController>();
 
     void Awake ()
     {
@@ -42,6 +48,8 @@ public class BugController : MonoBehaviour
         _frPreviousDistance = _maxDistance;
         _ffrTargetOGPosition = FFRTarget.transform.localPosition;
         _fflTargetOGPosition = FFLTarget.transform.localPosition;
+        _ffrTargetOGRotation = FFRTarget.transform.localEulerAngles;
+        _fflTargetOGRotation = FFLTarget.transform.localEulerAngles;
         _bugAnimator = gameObject.GetComponent<Animator>();
     }
 	
@@ -67,9 +75,14 @@ public class BugController : MonoBehaviour
         else
             _frPreviousDistance = _maxDistance;
 
-        if(_punchQueue.Count > 0 && (_ffrAvailable || _fflAvailable))
+        if (_eatQueue.Count > 0 && (_ffrAvailable && _fflAvailable))
         {
-            Punch(_punchQueue[0].transform.position, _punchQueue[0]);
+            Grab(_eatQueue[0]);
+            _eatQueue.RemoveAt(0);
+        }
+        else if (_eatQueue.Count == 0 && _punchQueue.Count > 0 && (_ffrAvailable || _fflAvailable))
+        {
+            Punch(_punchQueue[0]);
             _punchQueue.RemoveAt(0);
         }
     }
@@ -96,7 +109,8 @@ public class BugController : MonoBehaviour
     {
         if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            Grab(other.gameObject);
+            PlayerController caughtPlayer = other.GetComponentInParent<PlayerController>();
+            _eatQueue.Add(caughtPlayer);
             OnPlayerCaught();
         }
             
@@ -113,63 +127,270 @@ public class BugController : MonoBehaviour
         BugSprite.transform.rotation = newRotation;
     }
 
-    private void Grab(GameObject player)
+    private void Grab(PlayerController player)
     {
-        if(Vector3.Distance(FFLTarget.transform.position, player.transform.position) < Vector3.Distance(FFRTarget.transform.position, player.transform.position))
-            FFLTarget.DOMove(player.transform.position, 0.2f);
+        //Vector3 playerPiece1Position = player.GrabSpot1.transform.position;
+        //Vector3 playerPiece2Position = player.GrabSpot2.transform.position;
+        //Vector3 fflTargetPosition = FFLRaycastOrigin.position;
+        //Vector3 ffrTargetPosition = FFRRaycastOrigin.position;
+
+        //float FFLtoPlayerPiece1Dist = Vector3.Distance(fflTargetPosition, playerPiece1Position);
+        //float FFLtoPlayerPiece2Dist = Vector3.Distance(fflTargetPosition, playerPiece2Position);
+        //float FFRtoPlayerPiece1Dist = Vector3.Distance(ffrTargetPosition, playerPiece1Position);
+        //float FFRtoPlayerPiece2Dist = Vector3.Distance(ffrTargetPosition, playerPiece2Position);
+
+        _fflAvailable = false;
+        _ffrAvailable = false;
+
+        if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
+        {
+            FFLTarget.DOMove(player.GrabSpot1.transform.position, 0.2f).OnStart(() =>
+            {
+                if(player.GrabSpot1.transform.position.y < FFLTarget.position.y)
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z);
+                    FFLTarget.DORotate(newAngle, 0.2f);
+                }
+                else
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z);
+                    FFLTarget.DORotate(newAngle, 0.2f);
+                }
+            }).OnComplete(() => {
+                FFLTarget.SetParent(player.GrabSpot1.transform, true);
+                Retrieve(player);
+            });
+            FFRTarget.DOMove(player.GrabSpot2.transform.position, 0.2f).OnStart(() =>
+            {
+                if (player.GrabSpot2.transform.position.y < FFRTarget.position.y)
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z);
+                    FFRTarget.DORotate(newAngle, 0.2f);
+                }
+                else
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z);
+                    FFRTarget.DORotate(newAngle, 0.2f);
+                }
+            }).OnComplete(() => {
+                FFRTarget.SetParent(player.GrabSpot2.transform, true);
+                Retrieve(player);
+            });
+        }
         else
-            FFRTarget.DOMove(player.transform.position, 0.2f);
+        {
+            FFLTarget.DOMove(player.GrabSpot2.transform.position, 0.2f).OnStart(() =>
+            {
+                if (player.GrabSpot2.transform.position.y < FFLTarget.position.y)
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z - 180);
+                    FFLTarget.DORotate(newAngle, 0.2f);
+                }
+                else
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z - 180);
+                    FFLTarget.DORotate(newAngle, 0.2f);
+                }
+            }).OnComplete(() => {
+                FFLTarget.SetParent(player.GrabSpot2.transform, true);
+            });
+            FFRTarget.DOMove(player.GrabSpot1.transform.position, 0.2f).OnStart(() =>
+            {
+                if (player.GrabSpot1.transform.position.y < FFRTarget.position.y)
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z - 180);
+                    FFRTarget.DORotate(newAngle, 0.2f);
+                }
+                else
+                {
+                    Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z - 180);
+                    FFRTarget.DORotate(newAngle, 0.2f);
+                }
+            }).OnComplete(() => {
+                Retrieve(player);
+                FFRTarget.SetParent(player.GrabSpot1.transform, true);
+            });
+        }
     }
 
-    private void Punch(Vector3 position, GhostController caughtGhost)
+    private void Retrieve(PlayerController player)
     {
-        if (_fflAvailable && _ffrAvailable)
-        {
-            if (Vector3.Distance(FFLTarget.transform.position, position) < Vector3.Distance(FFRTarget.transform.position, position))
+        player.transform.SetParent(BugSprite.transform);
+        player.transform.DOLocalMove(MouthLocation.transform.localPosition, 0.2f).OnStart(() => {
+            if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
             {
-                StartFLPunch(position, caughtGhost);
+                player.transform.DORotate(new Vector3(0.0f, 0.0f, -120.0f), 0.2f);
             }
             else
             {
-                StartFRPunch(position, caughtGhost);
+                player.transform.DORotate(new Vector3(0.0f, 0.0f, 60.0f), 0.2f);
+            }
+        }).OnComplete(() => {
+            _bugAnimator.SetTrigger("Chomp");
+            StartCoroutine(Open(player));
+        });
+    }
+
+    IEnumerator Open(PlayerController player)
+    {
+        Transform thrownPiece;
+        ParticleSystem thrownPiecePS;
+        Transform eatPiece;
+
+        yield return new WaitForSeconds(0.3f);
+
+        player.PlayerSprite.SetActive(false);
+        player.GrabSpot1.transform.parent.gameObject.SetActive(true);
+        player.GrabSpot2.transform.parent.gameObject.SetActive(true);
+
+        if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
+        {
+            player.GrabSpot1.GetComponentInParent<Rigidbody>().isKinematic = false;
+            player.GrabSpot2.GetComponentInParent<Rigidbody>().isKinematic = true;
+
+            player.GrabSpot1.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
+            
+            thrownPiece = player.GrabSpot1.transform.parent;
+            thrownPiecePS = player.GrabSpot1FlamePS;
+            eatPiece = player.GrabSpot2.transform.parent;
+        }
+        else
+        {
+            player.GrabSpot1.GetComponentInParent<Rigidbody>().isKinematic = true;
+            player.GrabSpot2.GetComponentInParent<Rigidbody>().isKinematic = false;
+
+            player.GrabSpot2.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
+
+            thrownPiece = player.GrabSpot2.transform.parent;
+            thrownPiecePS = player.GrabSpot2FlamePS;
+            eatPiece = player.GrabSpot1.transform.parent;
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        _fflAvailable = true;
+        FFLTarget.SetParent(BugSprite.transform, true);
+        thrownPiece.parent = null;
+        thrownPiecePS.Play();
+        thrownPiece.DOLocalMoveZ(0.0f, 0.3f);
+
+        if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
+        {
+            FFLTarget.DOLocalMove(_fflTargetOGPosition, 0.2f);
+            FFLTarget.DOLocalRotate(_fflTargetOGRotation, 0.2f);
+        }
+
+        Eat(eatPiece);
+    }
+
+    private void Eat(Transform eatPiece)
+    {
+        Vector3 ogPosition = eatPiece.localPosition;
+        Vector3 pullAwayPosition = new Vector3(eatPiece.position.x + 3, eatPiece.position.y - 2, eatPiece.position.z);
+        Vector3 pullAwayRotation = new Vector3(eatPiece.eulerAngles.x, eatPiece.eulerAngles.y, eatPiece.eulerAngles.z + 80.0f);
+
+        eatPiece.DOMove(pullAwayPosition, 0.2f).OnStart(() => {
+            eatPiece.DORotate(pullAwayRotation, 0.2f);
+        }).OnComplete(() => {
+            eatPiece.DOLocalMove(ogPosition, 0.2f).OnComplete(() => {
+                _bugAnimator.SetTrigger("Chomping");
+            });
+        });
+
+        StartCoroutine(FinishEating(eatPiece));
+    }
+
+    IEnumerator FinishEating(Transform eatPiece)
+    {
+        yield return new WaitForSeconds(0.6f);
+
+        eatPiece.GetComponent<Rigidbody>().isKinematic = false;
+        eatPiece.GetComponent<Rigidbody>().AddExplosionForce(10.0f, eatPiece.parent.position, 10.0f, 0.0f, ForceMode.Impulse);
+        yield return new WaitForSeconds(0.2f);
+
+        eatPiece.parent = null;
+        eatPiece.DOMoveZ(0.0f, 0.3f);
+        _ffrAvailable = true;
+        FFRTarget.SetParent(BugSprite.transform, true);
+        _bugAnimator.SetTrigger("NotChomping");
+
+        if (_punchQueue.Count == 0 && _eatQueue .Count == 0)
+        {
+            FFRTarget.DOLocalMove(_ffrTargetOGPosition, 0.2f);
+            FFRTarget.DOLocalRotate(_ffrTargetOGRotation, 0.2f);
+        }
+    }
+
+    private void Punch(GhostController caughtGhost)
+    {
+        if (_fflAvailable && _ffrAvailable)
+        {
+            if (Vector3.Distance(FFLTarget.transform.position, caughtGhost.transform.position) < Vector3.Distance(FFRTarget.transform.position, caughtGhost.transform.position))
+            {
+                StartFLPunch(caughtGhost);
+            }
+            else
+            {
+                StartFRPunch(caughtGhost);
             }
         }
         else if(_fflAvailable)
         {
-            StartFLPunch(position, caughtGhost);
+            StartFLPunch(caughtGhost);
         }
         else if(_ffrAvailable)
         {
-            StartFRPunch(position, caughtGhost);
+            StartFRPunch(caughtGhost);
         }
     }
 
-    private void StartFRPunch(Vector3 position, GhostController caughtGhost)
+    private void StartFRPunch(GhostController caughtGhost)
     {
         _ffrAvailable = false;
         FFRTarget.parent = null;
+        float distToGrabBottom = Vector3.Distance(FFRRaycastOrigin.position, caughtGhost.GrabPointBottom.position);
+        float distToGrabTop = Vector3.Distance(FFRRaycastOrigin.position, caughtGhost.GrabPointTop.position);
+        Vector3 position = (distToGrabBottom < distToGrabTop) ? caughtGhost.GrabPointBottom.position : caughtGhost.GrabPointTop.position;
         position = new Vector3(position.x, position.y, -3.0f);
-
         if (_ffrTweener != null && _ffrTweener.IsPlaying())
             _ffrTweener.Kill();
 
-        _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnComplete(() => {
+        _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnStart(() =>
+        {
+            if (distToGrabBottom < distToGrabTop)
+                FFRTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.2f);
+            else
+                FFRTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.2f);
+        }).OnComplete(() => {
             StartCoroutine(BringFFRBack(caughtGhost));
         });
     }
 
-    private void StartFLPunch(Vector3 position, GhostController caughtGhost)
+    private void StartFLPunch(GhostController caughtGhost)
     {
         _fflAvailable = false;
         FFLTarget.parent = null;
+        float distToGrabBottom = Vector3.Distance(FFLRaycastOrigin.position, caughtGhost.GrabPointBottom.position);
+        float distToGrabTop = Vector3.Distance(FFLRaycastOrigin.position, caughtGhost.GrabPointTop.position);
+        Vector3 position = (distToGrabBottom < distToGrabTop) ? caughtGhost.GrabPointBottom.position : caughtGhost.GrabPointTop.position;
         position = new Vector3(position.x, position.y, -3.0f);
-
         if (_fflTweener != null && _fflTweener.IsPlaying())
             _fflTweener.Kill();
 
-        _fflTweener = FFLTarget.DOMove(position, 0.2f).OnComplete(() => {
+        _fflTweener = FFLTarget.DOMove(position, 0.2f).OnStart(() =>
+        {
+            if (distToGrabBottom < distToGrabTop)
+                FFLTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.2f);
+            else
+                FFLTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.2f);
+        }).OnComplete(() => {
             StartCoroutine(BringFFLBack(caughtGhost));
         });
+    }
+
+    private void StartFLGrab()
+    {
+        _fflAvailable = false;
     }
 
     IEnumerator BringFFRBack(GhostController caughtGhost)
@@ -179,8 +400,11 @@ public class BugController : MonoBehaviour
         FFRTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
         _ffrAvailable = true;
-        if(_punchQueue.Count == 0)
+        if(_punchQueue.Count == 0 && _eatQueue.Count == 0)
+        {
             FFRTarget.DOLocalMove(_ffrTargetOGPosition, 0.2f);
+            FFRTarget.DOLocalRotate(_ffrTargetOGRotation, 0.2f);
+        }
 
         yield return null;
     }
@@ -192,8 +416,11 @@ public class BugController : MonoBehaviour
         FFLTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
         _fflAvailable = true;
-        if (_punchQueue.Count == 0)
+        if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
+        {
             FFLTarget.DOLocalMove(_fflTargetOGPosition, 0.2f);
+            FFLTarget.DOLocalRotate(_fflTargetOGRotation, 0.2f);
+        }
 
         yield return null;
     }

@@ -10,6 +10,8 @@ public class GhostController : MonoBehaviour
     public GameObject GhostPlayerSprite;
     public GameObject PlayerPiece1;
     public GameObject PlayerPiece2;
+    public Transform GrabPointTop;
+    public Transform GrabPointBottom;
     public GameObject GrappleArmEnd;
     public GameObject RopeOrigin;
     public GameObject LowerLightningPlanes;

@@ -235,11 +235,12 @@ public class SceneController : MonoBehaviour
     {
         if (_gameOn)
         {
-            Player.DisableLeftScreenInput();
+            Player.Caught();
             VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
             VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
-            Level.StopDeathMarch();
-            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
+            //Level.StopDeathMarch();
+            //PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
+            PlayerReplayModel currentReplay = new PlayerReplayModel();
 
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
 
