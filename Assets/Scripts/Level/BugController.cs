@@ -129,16 +129,6 @@ public class BugController : MonoBehaviour
 
     private void Grab(PlayerController player)
     {
-        //Vector3 playerPiece1Position = player.GrabSpot1.transform.position;
-        //Vector3 playerPiece2Position = player.GrabSpot2.transform.position;
-        //Vector3 fflTargetPosition = FFLRaycastOrigin.position;
-        //Vector3 ffrTargetPosition = FFRRaycastOrigin.position;
-
-        //float FFLtoPlayerPiece1Dist = Vector3.Distance(fflTargetPosition, playerPiece1Position);
-        //float FFLtoPlayerPiece2Dist = Vector3.Distance(fflTargetPosition, playerPiece2Position);
-        //float FFRtoPlayerPiece1Dist = Vector3.Distance(ffrTargetPosition, playerPiece1Position);
-        //float FFRtoPlayerPiece2Dist = Vector3.Distance(ffrTargetPosition, playerPiece2Position);
-
         _fflAvailable = false;
         _ffrAvailable = false;
 
