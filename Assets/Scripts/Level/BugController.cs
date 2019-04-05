@@ -206,14 +206,14 @@ public class BugController : MonoBehaviour
     private void Retrieve(PlayerController player)
     {
         player.transform.SetParent(BugSprite.transform);
-        player.transform.DOLocalMove(MouthLocation.transform.localPosition, 0.2f).OnStart(() => {
+        player.transform.DOLocalMove(MouthLocation.transform.localPosition, 0.1f).OnStart(() => {
             if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
             {
-                player.transform.DORotate(new Vector3(0.0f, 0.0f, -120.0f), 0.2f);
+                player.transform.DORotate(new Vector3(0.0f, 0.0f, -120.0f), 0.1f);
             }
             else
             {
-                player.transform.DORotate(new Vector3(0.0f, 0.0f, 60.0f), 0.2f);
+                player.transform.DORotate(new Vector3(0.0f, 0.0f, 60.0f), 0.1f);
             }
         }).OnComplete(() => {
             _bugAnimator.SetTrigger("Chomp");
@@ -282,7 +282,7 @@ public class BugController : MonoBehaviour
         eatPiece.DOMove(pullAwayPosition, 0.2f).OnStart(() => {
             eatPiece.DORotate(pullAwayRotation, 0.2f);
         }).OnComplete(() => {
-            eatPiece.DOLocalMove(ogPosition, 0.2f).OnComplete(() => {
+            eatPiece.DOLocalMove(ogPosition, 0.1f).OnComplete(() => {
                 _bugAnimator.SetTrigger("Chomping");
             });
         });
@@ -378,14 +378,9 @@ public class BugController : MonoBehaviour
         });
     }
 
-    private void StartFLGrab()
-    {
-        _fflAvailable = false;
-    }
-
     IEnumerator BringFFRBack(GhostController caughtGhost)
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
 
         FFRTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
@@ -401,7 +396,7 @@ public class BugController : MonoBehaviour
 
     IEnumerator BringFFLBack(GhostController caughtGhost)
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
 
         FFLTarget.SetParent(BugSprite.transform, true);
         caughtGhost.Caught();
