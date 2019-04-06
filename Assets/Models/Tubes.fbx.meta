@@ -8,11 +8,21 @@ ModelImporter:
     100004: StraightTube
     100006: Torch
     100008: //RootNode
+    100010: StartSection
+    100012: Wall1
+    100014: Wall2
+    100016: Wall3
+    100018: Wall4
     400000: Background
     400002: CurveTube
     400004: StraightTube
     400006: Torch
     400008: //RootNode
+    400010: StartSection
+    400012: Wall1
+    400014: Wall2
+    400016: Wall3
+    400018: Wall4
     2100000: No Name
     2100002: Material
     2100004: CurveTubeMat
@@ -21,14 +31,29 @@ ModelImporter:
     2300002: CurveTube
     2300004: StraightTube
     2300006: Torch
+    2300008: StartSection
+    2300010: Wall1
+    2300012: Wall2
+    2300014: Wall3
+    2300016: Wall4
     3300000: Background
     3300002: CurveTube
     3300004: StraightTube
     3300006: Torch
+    3300008: StartSection
+    3300010: Wall1
+    3300012: Wall2
+    3300014: Wall3
+    3300016: Wall4
     4300000: Background
     4300002: Torch
     4300004: CurveTube
     4300006: StraightTube
+    4300008: StartSection
+    4300010: Wall4
+    4300012: Wall3
+    4300014: Wall2
+    4300016: Wall1
   externalObjects: {}
   materials:
     importMaterials: 1
