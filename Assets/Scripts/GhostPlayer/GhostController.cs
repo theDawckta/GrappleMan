@@ -56,6 +56,11 @@ public class GhostController : MonoBehaviour
 
     public void Caught()
     {
+        RopeLineRenderer.enabled = false;
+        GrappleArmEndPS.Stop();
+        WallHookSpritePS.Stop();
+        ElectrodeFrontPS.Stop();
+        ElectrodeBackPS.Stop();
         GhostPlayerSprite.SetActive(false);
         PlayerPiece1.SetActive(true);
         PlayerPiece2.SetActive(true);

@@ -9,8 +9,13 @@ using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
+    public delegate void PlayerHit();
+    public event PlayerHit OnPlayerCaught;
+
     public GameObject RopeOrigin;
     public GameObject PlayerSprite;
+    public GameObject PlayerPiece1;
+    public GameObject PlayerPiece2;
     public GameObject GrabSpot1;
     public GameObject GrabSpot2;
     public GameObject GrappleArmEnd;
@@ -39,6 +44,7 @@ public class PlayerController : MonoBehaviour
     private GameObject _wallHook;
     private FixedJoint _wallHookFixedJoint;
     private Vector3 _playerStartPosition;
+    private Vector3 _playerStartRotation;
     private Rigidbody _playerRigidbody;
     private Collider _playerCollider;
     private AudioSource _playerAudio;
@@ -55,6 +61,7 @@ public class PlayerController : MonoBehaviour
     private bool _hooked = false;
     private bool _hookShooting = false;
     private bool _floating = false;
+    private bool _caught = false;
     private Vector3 _arrowDestination = new Vector3();
     private Renderer[] _renderers;
     private float _hideShowTime = 1.0f;
@@ -72,7 +79,8 @@ public class PlayerController : MonoBehaviour
                                                           RigidbodyConstraints.FreezeRotationX |
                                                           RigidbodyConstraints.FreezeRotationY;
 		_playerStartPosition = transform.position;
-		_playerRigidbody = GetComponent<Rigidbody>();
+        _playerStartRotation = transform.eulerAngles;
+        _playerRigidbody = GetComponent<Rigidbody>();
         _playerCollider = PlayerSprite.GetComponent<Collider>();
 		_playerAudio = GetComponent<AudioSource>();
         _ropeLineRenderer = _wallHookSprite.GetComponent<LineRenderer>();
@@ -85,18 +93,49 @@ public class PlayerController : MonoBehaviour
 
     public void ResetPlayer()
     {
+        transform.parent = null;
+        PlayerPiece1.SetActive(false);
+        PlayerPiece2.SetActive(false);
+        PlayerPiece1.transform.SetParent(transform, true);
+        PlayerPiece2.transform.SetParent(transform, true);
+        PlayerPiece1.transform.localPosition = Vector3.zero;
+        PlayerPiece1.transform.localEulerAngles = Vector3.zero;
+        PlayerPiece2.transform.localPosition = Vector3.zero;
+        PlayerPiece2.transform.localEulerAngles = Vector3.zero;
+        GrabSpot1FlamePS.Stop();
+        GrabSpot2FlamePS.Stop();
+        _playerCollider.enabled = true;
+        PlayerSprite.SetActive(true);
         transform.position = _playerStartPosition;
+        transform.eulerAngles = _playerStartRotation;
         _ropeLineRenderer.enabled = false;
         _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
         _wallHookSprite.transform.parent = GrappleArmEnd.transform;
         _wallHookFixedJoint.connectedBody = null;
-        transform.GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        _playerRigidbody.velocity = new Vector3(0.0f, 0.0f, 0.0f);
+        _playerRigidbody.isKinematic = false;
         _ropeBendAngles.Clear();
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
         _hooked = false;
         _hookShooting = false;
         _floating = false;
+        _caught = false;
+    }
+
+    public void Caught()
+    {
+        OnPlayerCaught();
+        _caught = true;
+        _ropeLineRenderer.enabled = false;
+        GrappleArmEndPS.Stop();
+        WallHookSpritePS.Stop();
+        ElectrodeFrontPS.Stop();
+        ElectrodeBackPS.Stop();
+        _playerRigidbody.isKinematic = true;
+        _wallHookFixedJoint.connectedBody = null;
+        _playerCollider.enabled = false;
+        DisableLeftScreenInput();
     }
 
     public void Enable(bool startRecording = false)
@@ -128,7 +167,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (_hooked || _hookActive)
+        if ((_hooked || _hookActive) && !_caught)
         {
             Vector3 lineDirection = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
             Vector3 shipDirection = (PlayerSprite.transform.right + PlayerSprite.transform.position) - PlayerSprite.transform.position;
@@ -258,7 +297,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // show linerenderer if active
-        if ((_hooked || _hookActive) && !_ropeLineRenderer.enabled)
+        if ((_hooked || _hookActive) && !_ropeLineRenderer.enabled && !_caught)
             _ropeLineRenderer.enabled = true;
     }
 
@@ -403,7 +442,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckRopeSlack()
     {
-        if (!_grounded && _hooked)
+        if ((!_grounded && _hooked) && !_caught)
         {
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,
@@ -480,12 +519,6 @@ public class PlayerController : MonoBehaviour
         grappleShoulderRotation.x = 0.0f;
         grappleShoulderRotation.y = 0.0f;
         RopeOrigin.transform.rotation = grappleShoulderRotation;
-    }
-
-    public void Caught()
-    {
-        _playerCollider.enabled = false;
-        DisableLeftScreenInput();
     }
 
 	public PlayerReplayModel PlayerCompleted(string levelName)

@@ -5,8 +5,6 @@ using DG.Tweening;
 
 public class BugController : MonoBehaviour
 {
-    public delegate void PlayerHit();
-    public event PlayerHit OnPlayerCaught;
 
     public GameObject BugSprite;
     public GameObject MouthLocation;
@@ -110,8 +108,8 @@ public class BugController : MonoBehaviour
         if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             PlayerController caughtPlayer = other.GetComponentInParent<PlayerController>();
+            caughtPlayer.Caught();
             _eatQueue.Add(caughtPlayer);
-            OnPlayerCaught();
         }
             
         if (other.gameObject.layer == LayerMask.NameToLayer("Ghost"))
@@ -230,8 +228,8 @@ public class BugController : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         player.PlayerSprite.SetActive(false);
-        player.GrabSpot1.transform.parent.gameObject.SetActive(true);
-        player.GrabSpot2.transform.parent.gameObject.SetActive(true);
+        player.PlayerPiece1.gameObject.SetActive(true);
+        player.PlayerPiece2.gameObject.SetActive(true);
 
         if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
         {
@@ -240,9 +238,9 @@ public class BugController : MonoBehaviour
 
             player.GrabSpot1.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
             
-            thrownPiece = player.GrabSpot1.transform.parent;
+            thrownPiece = player.PlayerPiece1.transform;
             thrownPiecePS = player.GrabSpot1FlamePS;
-            eatPiece = player.GrabSpot2.transform.parent;
+            eatPiece = player.PlayerPiece2.transform;
         }
         else
         {
@@ -251,9 +249,9 @@ public class BugController : MonoBehaviour
 
             player.GrabSpot2.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
 
-            thrownPiece = player.GrabSpot2.transform.parent;
+            thrownPiece = player.PlayerPiece2.transform;
             thrownPiecePS = player.GrabSpot2FlamePS;
-            eatPiece = player.GrabSpot1.transform.parent;
+            eatPiece = player.PlayerPiece1.transform;
         }
 
         yield return new WaitForSeconds(0.2f);
