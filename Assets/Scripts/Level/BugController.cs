@@ -6,7 +6,7 @@ using DG.Tweening;
 public class BugController : MonoBehaviour
 {
 
-    public GameObject BugSprite;
+    public GameObject Bug;
     public GameObject MouthLocation;
     public Transform BLTarget;
     public Transform BRTarget;
@@ -53,25 +53,7 @@ public class BugController : MonoBehaviour
 	
 	void Update ()
     {
-        if (Vector3.Distance(BLRaycastOrigin.position, BLTarget.position) >= _maxDistance && !DOTween.IsTweening(BLTarget, true))
-            PlaceBackLeg(-60, BLTarget, BLRaycastOrigin);
-
-        if (Vector3.Distance(BRRaycastOrigin.position, BRTarget.position) >= _maxDistance && !DOTween.IsTweening(BRTarget, true))
-            PlaceBackLeg(60, BRTarget, BRRaycastOrigin);
-
-        if (Vector3.Distance(FLRaycastOrigin.position, FLTarget.position) <= _flPreviousDistance && !DOTween.IsTweening(FLTarget, true))
-            _flPreviousDistance = Vector3.Distance(FLRaycastOrigin.position, FLTarget.position);
-        else if (!DOTween.IsTweening(FLTarget, true))
-            PlaceLeg(1, FLTarget, FLRaycastOrigin);
-        else
-            _flPreviousDistance = _maxDistance;
-
-        if (Vector3.Distance(FRRaycastOrigin.position, FRTarget.position) <= _frPreviousDistance && !DOTween.IsTweening(FRTarget, true))
-            _frPreviousDistance = Vector3.Distance(FRRaycastOrigin.position, FRTarget.position);
-        else if (!DOTween.IsTweening(FRTarget, true))
-            PlaceLeg(-1, FRTarget, FRRaycastOrigin);
-        else
-            _frPreviousDistance = _maxDistance;
+        SetLegs();
 
         if (_eatQueue.Count > 0 && (_ffrAvailable && _fflAvailable))
         {
@@ -121,8 +103,8 @@ public class BugController : MonoBehaviour
 
     public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
     {
-        BugSprite.transform.position = newPosition;
-        BugSprite.transform.rotation = newRotation;
+        Bug.transform.position = newPosition;
+        Bug.transform.rotation = newRotation;
     }
 
     private void Grab(PlayerController player)
@@ -203,8 +185,8 @@ public class BugController : MonoBehaviour
 
     private void Retrieve(PlayerController player)
     {
-        player.transform.SetParent(BugSprite.transform);
-        player.transform.DOLocalMove(MouthLocation.transform.localPosition, 0.1f).OnStart(() => {
+        player.transform.SetParent(Bug.transform);
+        player.transform.DOMove(MouthLocation.transform.position, 0.1f).OnStart(() => {
             if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
             {
                 player.transform.DORotate(new Vector3(0.0f, 0.0f, -120.0f), 0.1f);
@@ -257,7 +239,7 @@ public class BugController : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
 
         _fflAvailable = true;
-        FFLTarget.SetParent(BugSprite.transform, true);
+        FFLTarget.SetParent(Bug.transform, true);
         thrownPiece.parent = null;
         thrownPiecePS.Play();
         thrownPiece.DOLocalMoveZ(0.0f, 0.3f);
@@ -299,7 +281,7 @@ public class BugController : MonoBehaviour
         eatPiece.parent = null;
         eatPiece.DOMoveZ(0.0f, 0.3f);
         _ffrAvailable = true;
-        FFRTarget.SetParent(BugSprite.transform, true);
+        FFRTarget.SetParent(Bug.transform, true);
         _bugAnimator.SetTrigger("NotChomping");
 
         if (_punchQueue.Count == 0 && _eatQueue .Count == 0)
@@ -380,7 +362,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
 
-        FFRTarget.SetParent(BugSprite.transform, true);
+        FFRTarget.SetParent(Bug.transform, true);
         caughtGhost.Caught();
         _ffrAvailable = true;
         if(_punchQueue.Count == 0 && _eatQueue.Count == 0)
@@ -396,7 +378,7 @@ public class BugController : MonoBehaviour
     {
         yield return new WaitForSeconds(0.1f);
 
-        FFLTarget.SetParent(BugSprite.transform, true);
+        FFLTarget.SetParent(Bug.transform, true);
         caughtGhost.Caught();
         _fflAvailable = true;
         if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
@@ -408,11 +390,34 @@ public class BugController : MonoBehaviour
         yield return null;
     }
 
+    void SetLegs()
+    {
+        if (Vector3.Distance(BLRaycastOrigin.position, BLTarget.position) >= _maxDistance && !DOTween.IsTweening(BLTarget, true))
+            PlaceBackLeg(-60, BLTarget, BLRaycastOrigin);
+
+        if (Vector3.Distance(BRRaycastOrigin.position, BRTarget.position) >= _maxDistance && !DOTween.IsTweening(BRTarget, true))
+            PlaceBackLeg(60, BRTarget, BRRaycastOrigin);
+
+        if (Vector3.Distance(FLRaycastOrigin.position, FLTarget.position) <= _flPreviousDistance && !DOTween.IsTweening(FLTarget, true))
+            _flPreviousDistance = Vector3.Distance(FLRaycastOrigin.position, FLTarget.position);
+        else if (!DOTween.IsTweening(FLTarget, true))
+            PlaceLeg(1, FLTarget, FLRaycastOrigin);
+        else
+            _flPreviousDistance = _maxDistance;
+
+        if (Vector3.Distance(FRRaycastOrigin.position, FRTarget.position) <= _frPreviousDistance && !DOTween.IsTweening(FRTarget, true))
+            _frPreviousDistance = Vector3.Distance(FRRaycastOrigin.position, FRTarget.position);
+        else if (!DOTween.IsTweening(FRTarget, true))
+            PlaceLeg(-1, FRTarget, FRRaycastOrigin);
+        else
+            _frPreviousDistance = _maxDistance;
+    }
+
     void PlaceLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
         for (int i = 0; i != 90 * rotationDirection; i = i - 5 * rotationDirection)
         {
-            _direction = Quaternion.AngleAxis(i, Vector3.back) * BugSprite.transform.right;
+            _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
             //Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
             if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
@@ -435,10 +440,10 @@ public class BugController : MonoBehaviour
     void PlaceBackLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
         int rotationSign = (rotationDirection < 0) ? -1 : 1;
-        _direction = Quaternion.AngleAxis(rotationDirection, Vector3.back) * BugSprite.transform.right;
+        _direction = Quaternion.AngleAxis(rotationDirection, Vector3.back) * Bug.transform.right;
         Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
-        if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
+        if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance))
         {
             Vector3 halfwayPoint = ((_hit.point - legTarget.position) * 0.5f) + legTarget.position;
             Vector3 halfwayPointDirection = _hit.point - legTarget.position;

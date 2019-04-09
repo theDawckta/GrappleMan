@@ -32,7 +32,7 @@ public class LevelController : MonoBehaviour
     private List<Vector3> _pressureWayoints = new List<Vector3>();
     private Tween _pressureTween;
 
-    void Start ()
+    void Awake ()
     {
         _pressureStartPosition = Pressure.transform.position;
         _pressureStartRotation = Pressure.transform.rotation;

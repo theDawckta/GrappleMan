@@ -108,8 +108,8 @@ public class SceneController : MonoBehaviour
     {
         if(Level.PressurePlaying)
         {
-            Bug.BugSprite.transform.position = Level.Pressure.transform.position;
-            Bug.BugSprite.transform.rotation = Level.Pressure.transform.rotation;
+            Bug.Bug.transform.position = Level.Pressure.transform.position;
+            Bug.Bug.transform.rotation = Level.Pressure.transform.rotation;
         }
     }
 

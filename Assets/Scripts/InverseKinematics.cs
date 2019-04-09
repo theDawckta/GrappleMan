@@ -26,10 +26,12 @@ public class InverseKinematics : MonoBehaviour {
 	float arm_Length;
 	float targetDistance;
 	float adyacent;
-
-	// Use this for initialization
-	void Start () {
-
+    
+	void Awake ()
+    {
+        upperArm = transform;
+        forearm = transform.GetChild(0);
+        hand = transform.GetChild(0).GetChild(0);
 	}
 	
 	// Update is called once per frame
