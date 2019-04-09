@@ -45,7 +45,7 @@ public class LevelController : MonoBehaviour
         {
             while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 640.0f)
                 LoadSection();
-            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 160.0f)
+            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 320.0f)
                 DestroySection();
         }
     }

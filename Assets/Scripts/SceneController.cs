@@ -235,21 +235,21 @@ public class SceneController : MonoBehaviour
     {
         if (_gameOn)
         {
-            VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
-            VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
-            Level.StopDeathMarch();
-            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
-
-            GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
-
-            GrappleUI.EndGame();
             _gameOn = false;
+
+            //Level.StopDeathMarch();
+            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
+            GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
+            
+            Invoke("ShowEndScreen", 2.0f);
         }
     }
 
-    void GhostCaught()
+    void ShowEndScreen()
     {
-
+        VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+        VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = UICameraOffset;
+        GrappleUI.EndGame();
     }
 
     void GameFinished()

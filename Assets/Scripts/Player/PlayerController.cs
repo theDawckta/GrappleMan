@@ -126,6 +126,7 @@ public class PlayerController : MonoBehaviour
     public void Caught()
     {
         OnPlayerCaught();
+        Disable();
         _caught = true;
         _ropeLineRenderer.enabled = false;
         GrappleArmEndPS.Stop();
@@ -202,7 +203,7 @@ public class PlayerController : MonoBehaviour
         if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 		
-        //HandleBodyRotation();
+        HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
