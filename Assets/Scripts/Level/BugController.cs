@@ -418,7 +418,7 @@ public class BugController : MonoBehaviour
         for (int i = 0; i != 90 * rotationDirection; i = i - 5 * rotationDirection)
         {
             _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
-            //Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
+            Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
             if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
             {

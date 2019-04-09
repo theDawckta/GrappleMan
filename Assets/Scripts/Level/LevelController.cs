@@ -138,7 +138,7 @@ public class LevelController : MonoBehaviour
     public void PressureWaypointChange(int waypointIndex)
     {
         if (_pressureTween.timeScale < PressureMaxSpeed)
-            DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale + 0.2f, 0.5f);
+            DOTween.To(() => _pressureTween.timeScale, x => _pressureTween.timeScale = x, _pressureTween.timeScale + 1.0f, 0.5f);
 
         if (waypointIndex > 0)
         {
