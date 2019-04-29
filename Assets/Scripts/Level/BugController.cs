@@ -21,7 +21,7 @@ public class BugController : MonoBehaviour
     public Transform FFLRaycastOrigin;
     public Transform FFRRaycastOrigin;
     public Transform FRFoot;
-
+    
     private RaycastHit _hit;
     private Vector3 _direction;
     private float _maxDistance;
@@ -41,7 +41,7 @@ public class BugController : MonoBehaviour
 
     void Awake ()
     {
-       _maxDistance = Vector3.Distance(FRRaycastOrigin.position, FRFoot.position);
+        _maxDistance = Vector3.Distance(FRRaycastOrigin.position, FRFoot.position);
         _flPreviousDistance = _maxDistance;
         _frPreviousDistance = _maxDistance;
         _ffrTargetOGPosition = FFRTarget.transform.localPosition;
