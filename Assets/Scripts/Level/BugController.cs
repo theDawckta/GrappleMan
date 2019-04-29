@@ -87,13 +87,13 @@ public class BugController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.layer == LayerMask.NameToLayer("Player"))
+        if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             PlayerController caughtPlayer = other.GetComponentInParent<PlayerController>();
             caughtPlayer.Caught();
             _eatQueue.Add(caughtPlayer);
         }
-            
+
         if (other.gameObject.layer == LayerMask.NameToLayer("Ghost"))
         {
             GhostController caughtGhost = other.GetComponentInParent<GhostController>();
@@ -101,7 +101,15 @@ public class BugController : MonoBehaviour
         }
     }
 
-    public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Egg"))
+        {
+            collision.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        }
+    }
+
+        public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
     {
         Bug.transform.position = newPosition;
         Bug.transform.rotation = newRotation;
@@ -420,7 +428,7 @@ public class BugController : MonoBehaviour
             _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
             Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
 
-            if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall")))
+            if (Physics.Raycast(RaycastOrigin.position, _direction, out _hit, _maxDistance, 1 << LayerMask.NameToLayer("Wall") | 1 << LayerMask.NameToLayer("BugRail")))
             {
                 break;
             }

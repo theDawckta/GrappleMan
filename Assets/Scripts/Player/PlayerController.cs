@@ -144,11 +144,13 @@ public class PlayerController : MonoBehaviour
         if(startRecording)
             _playerRecorderController.StartRecording();
         HookPlayerInput.InputActive = true;
+        _playerRigidbody.isKinematic = false;
     }
 
     public void Disable()
     {
         HookPlayerInput.InputActive = false;
+        _playerRigidbody.isKinematic = true;
     }
 
     public void DisableLeftScreenInput()

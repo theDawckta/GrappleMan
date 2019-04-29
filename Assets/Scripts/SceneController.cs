@@ -172,7 +172,7 @@ public class SceneController : MonoBehaviour
             Player.PlayerCompleted(_levelName);
             _playerMoved = false;
         }
-        Player.Disable();
+        //Player.Disable();
 
         _levelName = Level.GetSeed();
         
@@ -194,7 +194,7 @@ public class SceneController : MonoBehaviour
                     _ghostPlaybacks.Add(ghostPlayback);
                 }
                 
-                Player.ResetPlayer();
+                //Player.ResetPlayer();
                 GrappleUI.Hide();
                 VirtualCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;
                 VirtualBackgroundCamera.GetCinemachineComponent<CinemachineComposer>().m_ScreenX = 0.5f;

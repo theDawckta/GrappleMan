@@ -22,7 +22,6 @@ public class LevelController : MonoBehaviour
 
     private string _seed = "123456";
     private GameObject _player;
-    private GameObject _startPlatform;
     private List<LevelSectionController> _levelSections = new List<LevelSectionController>();
     private SectionType _nextSection;
     private System.Random _pseudoRandom;
@@ -59,18 +58,12 @@ public class LevelController : MonoBehaviour
     {
         _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left, Vector3.up);
         _pressureTween.timeScale = 1.0f;
-        _startPlatform.gameObject.SetActive(false);
         PressurePlaying = true;
     }
 
     public void StopDeathMarch()
     {
         _pressureTween.Kill();
-    }
-
-    public void UpdateDeathMarchWaypoints(List<Vector3> newWaypoints)
-    {
-        _pressureWayoints = newWaypoints;
     }
 
     public void Reset()
@@ -109,10 +102,6 @@ public class LevelController : MonoBehaviour
             newSection.transform.position = new Vector3(oldSectionPosition.x + _levelSections[_levelSections.Count - 2].OffsetX,
                                                         oldSectionPosition.y + _levelSections[_levelSections.Count - 2].OffsetY,
                                                         0.0f);
-        }
-        else
-        {
-            _startPlatform = GameObject.Find("StartPlatform");
         }
         
         CinemachineSmoothPath.Waypoint newWaypoint = new CinemachineSmoothPath.Waypoint();
