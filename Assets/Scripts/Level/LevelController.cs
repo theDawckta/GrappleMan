@@ -17,7 +17,7 @@ public class LevelController : MonoBehaviour
     public GameObject FrontBarrier;
     public GameObject Pressure;
     public bool PressurePlaying = false;
-    public float PressureMaxSpeed = 3.0f;
+    public float PressureMaxSpeed = 8.0f;
     public float CameraDistance = -160.0f;
 
     private string _seed = "123456";
