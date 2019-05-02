@@ -28,7 +28,6 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem ElectrodeBackPS;
     public ParticleSystem GrabSpot1FlamePS;
     public ParticleSystem GrabSpot2FlamePS;
-    public float MaxGroundVelocity = 20.0f;
     public float BoostForce = 15.0f;
     public float HookSpeed = 150.0f;
     public float ClimbSpeed = 1.5f;
@@ -109,11 +108,10 @@ public class PlayerController : MonoBehaviour
         transform.position = _playerStartPosition;
         transform.eulerAngles = _playerStartRotation;
         _ropeLineRenderer.enabled = false;
-        _wallHookSprite.transform.position = GrappleArmEnd.transform.position;
-        _wallHookSprite.transform.parent = GrappleArmEnd.transform;
+        _wallHookSprite.transform.SetParent(GrappleArmEnd.transform);
+        _wallHookSprite.transform.localPosition = Vector3.zero;
         _wallHookFixedJoint.connectedBody = null;
         _playerRigidbody.velocity = new Vector3(0.0f, 0.0f, 0.0f);
-        _playerRigidbody.isKinematic = false;
         _ropeBendAngles.Clear();
         _ropeLineRenderer.positionCount = 0;
         _hookActive = false;
@@ -121,6 +119,7 @@ public class PlayerController : MonoBehaviour
         _hookShooting = false;
         _floating = false;
         _caught = false;
+        Enable();
     }
 
     public void Caught()
@@ -133,7 +132,6 @@ public class PlayerController : MonoBehaviour
         WallHookSpritePS.Stop();
         ElectrodeFrontPS.Stop();
         ElectrodeBackPS.Stop();
-        _playerRigidbody.isKinematic = true;
         _wallHookFixedJoint.connectedBody = null;
         _playerCollider.enabled = false;
         DisableLeftScreenInput();
@@ -170,6 +168,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        Debug.DrawRay(transform.position, _playerRigidbody.velocity, Color.green);
+
         if ((_hooked || _hookActive) && !_caught)
         {
             Vector3 lineDirection = _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - transform.position;
@@ -220,14 +220,6 @@ public class PlayerController : MonoBehaviour
 				StartCoroutine(MoveHook(_ropeLineRenderer.GetPosition(0), _ropeLineRenderer.GetPosition(1), _hookShooting));
             }
         }
-        else if (HookPlayerInput.ClimbButtonPressed())
-        {
-            if (_hooked && _currentRopeLength > _ropeMinLength)
-            {
-                ClimbRope();
-            }
-                
-        }
 
 		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
 			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, GrappleArmEnd.transform.position);
@@ -237,6 +229,15 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (HookPlayerInput.ClimbButtonPressed())
+        {
+            if (_hooked && _currentRopeLength > _ropeMinLength)
+            {
+                ClimbRope();
+            }
+
+        }
+
         // handle _grounded
         if (_grounded)
             transform.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ |
@@ -266,7 +267,7 @@ public class PlayerController : MonoBehaviour
                 hit = Physics.Raycast(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized, out _nextPlayerRaycastOut, direction.magnitude, 1 << LayerMask.NameToLayer("Wall"));
                 if (hit)
                 {
-                    Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized * (Vector3.Distance(_nextPlayerRaycastOut.point, _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2))), Color.yellow, 10.0f);
+                    Debug.DrawRay(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2), -direction.normalized * (Vector3.Distance(_nextPlayerRaycastOut.point, _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2))), Color.magenta, 10.0f);
 
                     //if (_playerRaycastOut.transform.gameObject == _nextPlayerRaycastOut.transform.gameObject)
                     //{
@@ -431,11 +432,12 @@ public class PlayerController : MonoBehaviour
     void ClimbRope()
     {
 		Vector3 direction;
-
+        Debug.Log("CLIMBING");
         _wallHookFixedJoint.connectedBody = null;
 		direction = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).normalized;
-		direction = direction * ClimbSpeed / Time.deltaTime;
-        _playerRigidbody.AddForce(direction, ForceMode.Force);
+		direction = direction * ClimbSpeed;
+        Debug.DrawRay(transform.position, direction, Color.red, 0.1f);
+        _playerRigidbody.AddForce(direction, ForceMode.VelocityChange);
     }
 
 	void BoostPlayer()
@@ -445,7 +447,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckRopeSlack()
     {
-        if ((!_grounded && _hooked) && !_caught)
+        if ((!_grounded && _hooked) && !_caught && !HookPlayerInput.ClimbButtonPressed())
         {
             bool playerMovingTowardHook = Math3d.ObjectMovingTowards(_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2),
                                                                      transform.position,

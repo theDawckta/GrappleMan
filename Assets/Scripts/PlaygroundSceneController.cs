@@ -34,7 +34,7 @@ public class PlaygroundSceneController : MonoBehaviour
         Player.HookPlayerInput.InputActive = true;
         //Waypoint.Init(Player.transform.position, 5);
         Player.SetArrowDestination(Waypoint.GateCollider.transform.position);
-        Level.Init(Player.gameObject);
+        Level.SetSectionCreator(Player.gameObject);
     }
 
     void Waypoint_OnGatesPassed()

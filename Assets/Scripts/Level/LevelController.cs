@@ -21,7 +21,7 @@ public class LevelController : MonoBehaviour
     public float CameraDistance = -160.0f;
 
     private string _seed = "123456";
-    private GameObject _player;
+    private GameObject _creator;
     private List<LevelSectionController> _levelSections = new List<LevelSectionController>();
     private SectionType _nextSection;
     private System.Random _pseudoRandom;
@@ -40,18 +40,18 @@ public class LevelController : MonoBehaviour
 	
 	void Update ()
     {
-        if(_player != null && _levelSections.Count > 0)
+        if(_creator != null && _levelSections.Count > 0)
         {
-            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _player.transform.position) < 640.0f)
+            while (Vector3.Distance(_levelSections[_levelSections.Count - 1].transform.position, _creator.transform.position) < 640.0f)
                 LoadSection();
-            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 320.0f)
+            while (Vector3.Distance(_levelSections[0].transform.position, Pressure.transform.position) > 640.0f)
                 DestroySection();
         }
     }
 
-    public void Init(GameObject player)
+    public void SetSectionCreator(GameObject creator)
     {
-        _player = player;
+        _creator = creator;
     }
 
     public void StartDeathMarch()

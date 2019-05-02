@@ -80,9 +80,9 @@ public class BugController : MonoBehaviour
     public void Init()
     {
         PlaceBackLeg(-60, BLTarget, BLRaycastOrigin);
-        PlaceBackLeg(60, BRTarget, BRRaycastOrigin);
-        PlaceLeg(1, FLTarget, FLRaycastOrigin);
-        PlaceLeg(-1, FRTarget, FRRaycastOrigin);
+        PlaceBackLeg(50, BRTarget, BRRaycastOrigin);
+        PlaceLeg(-1, FLTarget, FLRaycastOrigin);
+        PlaceLeg(1, FRTarget, FRRaycastOrigin);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -409,21 +409,21 @@ public class BugController : MonoBehaviour
         if (Vector3.Distance(FLRaycastOrigin.position, FLTarget.position) <= _flPreviousDistance && !DOTween.IsTweening(FLTarget, true))
             _flPreviousDistance = Vector3.Distance(FLRaycastOrigin.position, FLTarget.position);
         else if (!DOTween.IsTweening(FLTarget, true))
-            PlaceLeg(1, FLTarget, FLRaycastOrigin);
+            PlaceLeg(-1, FLTarget, FLRaycastOrigin);
         else
             _flPreviousDistance = _maxDistance;
 
         if (Vector3.Distance(FRRaycastOrigin.position, FRTarget.position) <= _frPreviousDistance && !DOTween.IsTweening(FRTarget, true))
             _frPreviousDistance = Vector3.Distance(FRRaycastOrigin.position, FRTarget.position);
         else if (!DOTween.IsTweening(FRTarget, true))
-            PlaceLeg(-1, FRTarget, FRRaycastOrigin);
+            PlaceLeg(1, FRTarget, FRRaycastOrigin);
         else
             _frPreviousDistance = _maxDistance;
     }
 
     void PlaceLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
     {
-        for (int i = 0; i != 90 * rotationDirection; i = i - 5 * rotationDirection)
+        for (int i = 0; i != 90 * rotationDirection; i = i + 5 * rotationDirection)
         {
             _direction = Quaternion.AngleAxis(i, Vector3.back) * Bug.transform.right;
             Debug.DrawRay(RaycastOrigin.position, _direction * _maxDistance, Color.blue, 10.0f);
@@ -443,6 +443,13 @@ public class BugController : MonoBehaviour
 
         legTarget.DOPath(path, 0.15f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
         legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.15f);
+
+        Vector3 BugMoveDirection = (_hit.point - Bug.transform.position) * 0.1f;
+
+        Debug.DrawRay(Bug.transform.position, BugMoveDirection, Color.yellow, 3.0f);
+        //Bug.transform.DOBlendableMoveBy(BugMoveDirection, 0.075f).SetDelay(0.15f).OnComplete(() => {
+        //    Bug.transform.DOBlendableMoveBy(-BugMoveDirection, 0.075f);
+        //});
     }
 
     void PlaceBackLeg(int rotationDirection, Transform legTarget, Transform RaycastOrigin)
@@ -462,6 +469,13 @@ public class BugController : MonoBehaviour
 
             legTarget.DOPath(path, 0.15f, PathType.CatmullRom, PathMode.Full3D, 5, Color.green).SetEase(Ease.Linear);
             legTarget.DORotateQuaternion(Quaternion.LookRotation(_hit.normal), 0.15f);
+
+            Vector3 BugMoveDirection = (_hit.point - Bug.transform.position) * 0.2f;
+
+            Debug.DrawRay(Bug.transform.position, BugMoveDirection, Color.yellow, 3.0f);
+            Bug.transform.DOBlendableMoveBy(BugMoveDirection, 0.15f).OnComplete(() =>{
+                Bug.transform.DOBlendableMoveBy(-BugMoveDirection, 0.15f);
+            });
         }
     }
 }

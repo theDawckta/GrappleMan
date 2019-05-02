@@ -34,7 +34,7 @@ public class SceneController : MonoBehaviour
 	private GameObject _currentLevel;
 	private string _levelName;
     private string _startLevelName = "StartSection";
-    private bool _playerMoved = false;
+    //private bool _playerMoved = false;
     private int _startGhostIndex;
     private float _ghostReleaseInterval = 2.0f;
     private float UICameraOffset = 0.75f;
@@ -80,7 +80,7 @@ public class SceneController : MonoBehaviour
         }
         
         Player.Enable();
-        Level.Init(Player.gameObject);
+        Level.SetSectionCreator(Player.gameObject);
         Bug.Init();
 
         //GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
@@ -98,7 +98,7 @@ public class SceneController : MonoBehaviour
         //    }));
         //}));
 
-        StartCoroutine("WaitForPlayerInput");
+        //StartCoroutine("WaitForPlayerInput");
         StartCoroutine("WaitForOpenUI");
 
         //_playerAudio.Play();
@@ -139,16 +139,16 @@ public class SceneController : MonoBehaviour
         }
     }
 
-    IEnumerator WaitForPlayerInput()
-    {
-        while(!Player.HookPlayerInput.TouchStarted && _playerMoved == false)
-        {
-            yield return null;
-        }
+    //IEnumerator WaitForPlayerInput()
+    //{
+    //    while(!Player.HookPlayerInput.TouchStarted && _playerMoved == false)
+    //    {
+    //        yield return null;
+    //    }
 
-        Player.Enable(true);
-        _playerMoved = true;
-    }
+    //    Player.Enable(true);
+    //    _playerMoved = true;
+    //}
 
     void ReplaysRecieved(List<PlayerReplayModel> replays)
 	{
@@ -167,12 +167,12 @@ public class SceneController : MonoBehaviour
 
     private void StartGame()
 	{
-        if (_playerMoved == true)
-        {
-            Player.PlayerCompleted(_levelName);
-            _playerMoved = false;
-        }
-        //Player.Disable();
+        //if (_playerMoved == true)
+        //{
+        //    Player.PlayerCompleted(_levelName);
+        //    _playerMoved = false;
+        //}
+        
 
         _levelName = Level.GetSeed();
         
@@ -207,9 +207,13 @@ public class SceneController : MonoBehaviour
     IEnumerator StartCountDown()
     {
         int counter = 3;
-        
+
+        Player.Enable(true);
+        for (int i = 0; i < _ghostPlaybacks.Count; i++)
+            _ghostPlaybacks[i].StartPlayGhostPlayback();
+
         GrappleUI.ShowCountdown();
-        
+
         while (counter > 0)
         {
             yield return new WaitForSeconds(1);
@@ -219,12 +223,8 @@ public class SceneController : MonoBehaviour
 
         GrappleUI.HideCountdown();
 
-        for (int i = 0; i < _ghostPlaybacks.Count; i++)
-            _ghostPlaybacks[i].StartPlayGhostPlayback();
-
         Level.HideBarrier();
         Level.StartDeathMarch();
-        Player.Enable(true);
         _mainCamera.transform.position = _mainCameraStartPosition;
         _gameOn = true;
 
@@ -236,8 +236,7 @@ public class SceneController : MonoBehaviour
         if (_gameOn)
         {
             _gameOn = false;
-
-            //Level.StopDeathMarch();
+            Level.SetSectionCreator(Bug.Bug);
             PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
             
@@ -254,15 +253,17 @@ public class SceneController : MonoBehaviour
 
     void GameFinished()
     {
+        Level.StopDeathMarch();
         Level.ShowBarrier();
         Player.ResetPlayer();
         _levelName = _startLevelName;
+        Level.SetSectionCreator(Player.gameObject);
         Level.Reset();
 
         for (int i = 0; i < GhostHolder.transform.childCount; i++)
             Destroy(GhostHolder.transform.GetChild(i).gameObject);
 
-        StartCoroutine("WaitForPlayerInput");
+        //StartCoroutine("WaitForPlayerInput");
 
         //GrappleServerData.Instance.StartCoroutine(GrappleServerData.Instance.AddLevel(_levelName, (Success, ReturnString) =>
         //{
