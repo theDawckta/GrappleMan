@@ -54,7 +54,8 @@ public class InverseKinematics : MonoBehaviour {
 
 			angle = Mathf.Acos (adyacent / upperArm_Length) * Mathf.Rad2Deg;
 
-			upperArm.RotateAround (upperArm.position, cross, -angle);
+            if(!float.IsNaN(upperArm.position.x) && !float.IsNaN(upperArm.position.y) && !float.IsNaN(upperArm.position.z))
+			    upperArm.RotateAround (upperArm.position, cross, -angle);
 
 			forearm.LookAt(target, cross);
 			forearm.Rotate (forearm_OffsetRotation);
