@@ -204,8 +204,9 @@ public class PlayerController : MonoBehaviour
         //Debug.Log("GROUNDED:" + _grounded + "   HOOKED:" + _hooked + "   HOOKACTIVE:" + _hookActive + "   FLOATING:" + _floating + "   VELOCITY:" + _playerRigidbody.velocity);
         if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
-		
-        HandleBodyRotation();
+
+		if(!_caught)
+            HandleBodyRotation();
 
 		if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
@@ -224,7 +225,8 @@ public class PlayerController : MonoBehaviour
 		if ((_hooked || _hookActive) && _ropeLineRenderer.positionCount > 1)
 			_ropeLineRenderer.SetPosition(_ropeLineRenderer.positionCount - 1, GrappleArmEnd.transform.position);
 
-		HandleShoulderRotation();
+        if(!_caught)
+		    HandleShoulderRotation();
     }
 
     void FixedUpdate()
