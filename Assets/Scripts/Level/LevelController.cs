@@ -136,7 +136,6 @@ public class LevelController : MonoBehaviour
             _pressureTween.Kill();
             _pressureTween = Pressure.transform.DOPath(_pressureWayoints.ToArray(), 5.0f, PathType.CatmullRom, PathMode.Full3D, 10, Color.green).SetSpeedBased().OnWaypointChange(PressureWaypointChange).SetLookAt(0.001f, Vector3.left);
             _pressureTween.timeScale = currentTimeScale;
-            Debug.Log(_pressureTween.timeScale);
         }
     }
 

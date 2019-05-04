@@ -38,6 +38,12 @@ public class BugController : MonoBehaviour
     private Animator _bugAnimator;
     private List<GhostController> _punchQueue = new List<GhostController>();
     private List<PlayerController> _eatQueue = new List<PlayerController>();
+    private Tweener _fflGrabTweener;
+    private Tweener _ffrGrabTweener;
+    private GameObject _fflGrabSpot;
+    private GameObject _ffrGrabSpot;
+    private Tweener _retrieveTweener;
+    private Tweener _eatTweener;
 
     void Awake ()
     {
@@ -65,6 +71,25 @@ public class BugController : MonoBehaviour
             Punch(_punchQueue[0]);
             _punchQueue.RemoveAt(0);
         }
+
+        if (_fflGrabTweener != null)
+            if (_fflGrabTweener.IsPlaying())
+                _fflGrabTweener.ChangeEndValue(_fflGrabSpot, _fflGrabTweener.Duration() - _fflGrabTweener.Elapsed(), true);
+
+        if (_ffrGrabTweener != null)
+            if (_ffrGrabTweener.IsPlaying())
+                _ffrGrabTweener.ChangeEndValue(_ffrGrabSpot, _ffrGrabTweener.Duration() - _ffrGrabTweener.Elapsed(), true);
+
+        if (_retrieveTweener != null)
+            if( _retrieveTweener.IsPlaying())
+                _retrieveTweener.ChangeEndValue(MouthLocation.transform.position, _retrieveTweener.Duration() - _retrieveTweener.Elapsed(), true);
+
+        if (_eatTweener != null)
+            if (_eatTweener.IsPlaying())
+            {
+                Vector3 pullAwayPosition = new Vector3(MouthLocation.transform.position.x + 5.0f, MouthLocation.transform.position.y - 0.5f, MouthLocation.transform.position.z);
+                _eatTweener.ChangeEndValue(pullAwayPosition, _eatTweener.Duration() - _eatTweener.Elapsed(), true);
+            }
     }
 
     public void StartChomping()
@@ -92,12 +117,14 @@ public class BugController : MonoBehaviour
             PlayerController caughtPlayer = other.GetComponentInParent<PlayerController>();
             caughtPlayer.Caught();
             _eatQueue.Add(caughtPlayer);
+            other.isTrigger = false;
         }
 
         if (other.gameObject.layer == LayerMask.NameToLayer("Ghost"))
         {
             GhostController caughtGhost = other.GetComponentInParent<GhostController>();
             _punchQueue.Add(caughtGhost);
+            other.isTrigger = false;
         }
     }
 
@@ -109,7 +136,7 @@ public class BugController : MonoBehaviour
         }
     }
 
-        public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
+    public void UpdateBugSprite(Vector3 newPosition, Quaternion newRotation)
     {
         Bug.transform.position = newPosition;
         Bug.transform.rotation = newRotation;
@@ -122,33 +149,35 @@ public class BugController : MonoBehaviour
 
         if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
         {
-            FFLTarget.DOMove(player.GrabSpot1.transform.position, 0.2f).OnStart(() =>
+            FFLTarget.DOMove(player.GrabSpot1.transform.position, 0.15f).OnStart(() =>
             {
+                _fflGrabSpot = player.GrabSpot1;
                 if(player.GrabSpot1.transform.position.y < FFLTarget.position.y)
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z);
-                    FFLTarget.DORotate(newAngle, 0.2f);
+                    FFLTarget.DORotate(newAngle, 0.15f);
                 }
                 else
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z);
-                    FFLTarget.DORotate(newAngle, 0.2f);
+                    FFLTarget.DORotate(newAngle, 0.15f);
                 }
             }).OnComplete(() => {
                 FFLTarget.SetParent(player.GrabSpot1.transform, true);
                 Retrieve(player);
             });
-            FFRTarget.DOMove(player.GrabSpot2.transform.position, 0.2f).OnStart(() =>
+            FFRTarget.DOMove(player.GrabSpot2.transform.position, 0.15f).OnStart(() =>
             {
+                _ffrGrabSpot = player.GrabSpot2;
                 if (player.GrabSpot2.transform.position.y < FFRTarget.position.y)
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z);
-                    FFRTarget.DORotate(newAngle, 0.2f);
+                    FFRTarget.DORotate(newAngle, 0.15f);
                 }
                 else
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z);
-                    FFRTarget.DORotate(newAngle, 0.2f);
+                    FFRTarget.DORotate(newAngle, 0.15f);
                 }
             }).OnComplete(() => {
                 FFRTarget.SetParent(player.GrabSpot2.transform, true);
@@ -157,32 +186,34 @@ public class BugController : MonoBehaviour
         }
         else
         {
-            FFLTarget.DOMove(player.GrabSpot2.transform.position, 0.2f).OnStart(() =>
+            FFLTarget.DOMove(player.GrabSpot2.transform.position, 0.15f).OnStart(() =>
             {
+                _fflGrabSpot = player.GrabSpot2;
                 if (player.GrabSpot2.transform.position.y < FFLTarget.position.y)
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z - 180);
-                    FFLTarget.DORotate(newAngle, 0.2f);
+                    FFLTarget.DORotate(newAngle, 0.15f);
                 }
                 else
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot2.transform.eulerAngles.x, player.GrabSpot2.transform.eulerAngles.y, player.GrabSpot2.transform.eulerAngles.z - 180);
-                    FFLTarget.DORotate(newAngle, 0.2f);
+                    FFLTarget.DORotate(newAngle, 0.15f);
                 }
             }).OnComplete(() => {
                 FFLTarget.SetParent(player.GrabSpot2.transform, true);
             });
-            FFRTarget.DOMove(player.GrabSpot1.transform.position, 0.2f).OnStart(() =>
+            FFRTarget.DOMove(player.GrabSpot1.transform.position, 0.15f).OnStart(() =>
             {
+                _ffrGrabSpot = player.GrabSpot1;
                 if (player.GrabSpot1.transform.position.y < FFRTarget.position.y)
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z - 180);
-                    FFRTarget.DORotate(newAngle, 0.2f);
+                    FFRTarget.DORotate(newAngle, 0.15f);
                 }
                 else
                 {
                     Vector3 newAngle = new Vector3(player.GrabSpot1.transform.eulerAngles.x, player.GrabSpot1.transform.eulerAngles.y, player.GrabSpot1.transform.eulerAngles.z - 180);
-                    FFRTarget.DORotate(newAngle, 0.2f);
+                    FFRTarget.DORotate(newAngle, 0.15f);
                 }
             }).OnComplete(() => {
                 Retrieve(player);
@@ -194,7 +225,8 @@ public class BugController : MonoBehaviour
     private void Retrieve(PlayerController player)
     {
         player.transform.SetParent(Bug.transform);
-        player.transform.DOMove(MouthLocation.transform.position, 0.1f).OnStart(() => {
+        _retrieveTweener = player.transform.DOMove(MouthLocation.transform.position, 0.1f).OnStart(() =>
+        {
             if (player.GrabSpot1.transform.position.y > player.GrabSpot2.transform.position.y)
             {
                 player.transform.DORotate(new Vector3(0.0f, 0.0f, -120.0f), 0.1f);
@@ -203,7 +235,8 @@ public class BugController : MonoBehaviour
             {
                 player.transform.DORotate(new Vector3(0.0f, 0.0f, 60.0f), 0.1f);
             }
-        }).OnComplete(() => {
+        }).OnComplete(() =>
+        {
             _bugAnimator.SetTrigger("Chomp");
             StartCoroutine(Open(player));
         });
@@ -237,14 +270,12 @@ public class BugController : MonoBehaviour
             player.GrabSpot1.GetComponentInParent<Rigidbody>().isKinematic = true;
             player.GrabSpot2.GetComponentInParent<Rigidbody>().isKinematic = false;
 
-            player.GrabSpot2.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
+            //player.GrabSpot2.GetComponentInParent<Rigidbody>().AddExplosionForce(8.0f, player.PlayerSprite.transform.position, 10.0f, 0.0f, ForceMode.Impulse);
 
             thrownPiece = player.PlayerPiece2.transform;
             thrownPiecePS = player.GrabSpot2FlamePS;
             eatPiece = player.PlayerPiece1.transform;
         }
-
-        yield return new WaitForSeconds(0.2f);
 
         _fflAvailable = true;
         FFLTarget.SetParent(Bug.transform, true);
@@ -264,10 +295,10 @@ public class BugController : MonoBehaviour
     private void Eat(Transform eatPiece)
     {
         Vector3 ogPosition = eatPiece.localPosition;
-        Vector3 pullAwayPosition = new Vector3(eatPiece.position.x + 3, eatPiece.position.y - 2, eatPiece.position.z);
+        Vector3 pullAwayPosition = new Vector3(MouthLocation.transform.position.x + 5.0f, MouthLocation.transform.position.y - 0.5f, MouthLocation.transform.position.z);
         Vector3 pullAwayRotation = new Vector3(eatPiece.eulerAngles.x, eatPiece.eulerAngles.y, eatPiece.eulerAngles.z + 80.0f);
 
-        eatPiece.DOMove(pullAwayPosition, 0.2f).OnStart(() => {
+        _eatTweener = eatPiece.DOMove(pullAwayPosition, 0.2f).OnStart(() => {
             eatPiece.DORotate(pullAwayRotation, 0.2f);
         }).OnComplete(() => {
             eatPiece.DOLocalMove(ogPosition, 0.1f).OnComplete(() => {
@@ -283,8 +314,8 @@ public class BugController : MonoBehaviour
         yield return new WaitForSeconds(0.6f);
 
         eatPiece.GetComponent<Rigidbody>().isKinematic = false;
-        eatPiece.GetComponent<Rigidbody>().AddExplosionForce(10.0f, eatPiece.parent.position, 10.0f, 0.0f, ForceMode.Impulse);
-        yield return new WaitForSeconds(0.2f);
+        //eatPiece.GetComponent<Rigidbody>().AddExplosionForce(10.0f, eatPiece.parent.position, 10.0f, 0.0f, ForceMode.Impulse);
+        //yield return new WaitForSeconds(0.2f);
 
         eatPiece.parent = null;
         eatPiece.DOMoveZ(0.0f, 0.3f);
@@ -333,14 +364,23 @@ public class BugController : MonoBehaviour
         if (_ffrTweener != null && _ffrTweener.IsPlaying())
             _ffrTweener.Kill();
 
-        _ffrTweener = FFRTarget.DOMove(position, 0.2f).OnStart(() =>
+        _ffrTweener = FFRTarget.DOMove(position, 0.15f).SetEase(Ease.InBack).OnStart(() =>
         {
             if (distToGrabBottom < distToGrabTop)
-                FFRTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.2f);
+                FFRTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.15f);
             else
-                FFRTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.2f);
+                FFRTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.15f);
         }).OnComplete(() => {
-            StartCoroutine(BringFFRBack(caughtGhost));
+            FFRTarget.SetParent(Bug.transform, true);
+            caughtGhost.Caught();
+            caughtGhost.PlayerPiece1.GetComponent<Rigidbody>().AddExplosionForce(20.0f, FFRTarget.transform.position, 10.0f);
+            caughtGhost.PlayerPiece2.GetComponent<Rigidbody>().AddExplosionForce(20.0f, FFRTarget.transform.position, 10.0f);
+            _ffrAvailable = true;
+            if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
+            {
+                FFRTarget.DOLocalMove(_ffrTargetOGPosition, 0.15f);
+                FFRTarget.DOLocalRotate(_ffrTargetOGRotation, 0.15f);
+            }
         });
     }
 
@@ -355,47 +395,24 @@ public class BugController : MonoBehaviour
         if (_fflTweener != null && _fflTweener.IsPlaying())
             _fflTweener.Kill();
 
-        _fflTweener = FFLTarget.DOMove(position, 0.2f).OnStart(() =>
+        _fflTweener = FFLTarget.DOMove(position, 0.15f).SetEase(Ease.InBack).OnStart(() =>
         {
             if (distToGrabBottom < distToGrabTop)
-                FFLTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.2f);
+                FFLTarget.DORotate(caughtGhost.GrabPointBottom.eulerAngles, 0.15f);
             else
-                FFLTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.2f);
+                FFLTarget.DORotate(caughtGhost.GrabPointTop.eulerAngles, 0.15f);
         }).OnComplete(() => {
-            StartCoroutine(BringFFLBack(caughtGhost));
+            FFLTarget.SetParent(Bug.transform, true);
+            caughtGhost.Caught();
+            caughtGhost.PlayerPiece1.GetComponent<Rigidbody>().AddExplosionForce(20.0f, FFLTarget.transform.position, 10.0f);
+            caughtGhost.PlayerPiece2.GetComponent<Rigidbody>().AddExplosionForce(20.0f, FFLTarget.transform.position, 10.0f);
+            _fflAvailable = true;
+            if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
+            {
+                FFLTarget.DOLocalMove(_fflTargetOGPosition, 0.15f);
+                FFLTarget.DOLocalRotate(_fflTargetOGRotation, 0.15f);
+            }
         });
-    }
-
-    IEnumerator BringFFRBack(GhostController caughtGhost)
-    {
-        yield return new WaitForSeconds(0.1f);
-
-        FFRTarget.SetParent(Bug.transform, true);
-        caughtGhost.Caught();
-        _ffrAvailable = true;
-        if(_punchQueue.Count == 0 && _eatQueue.Count == 0)
-        {
-            FFRTarget.DOLocalMove(_ffrTargetOGPosition, 0.2f);
-            FFRTarget.DOLocalRotate(_ffrTargetOGRotation, 0.2f);
-        }
-
-        yield return null;
-    }
-
-    IEnumerator BringFFLBack(GhostController caughtGhost)
-    {
-        yield return new WaitForSeconds(0.1f);
-
-        FFLTarget.SetParent(Bug.transform, true);
-        caughtGhost.Caught();
-        _fflAvailable = true;
-        if (_punchQueue.Count == 0 && _eatQueue.Count == 0)
-        {
-            FFLTarget.DOLocalMove(_fflTargetOGPosition, 0.2f);
-            FFLTarget.DOLocalRotate(_fflTargetOGRotation, 0.2f);
-        }
-
-        yield return null;
     }
 
     void SetLegs()
@@ -473,9 +490,9 @@ public class BugController : MonoBehaviour
             Vector3 BugMoveDirection = (_hit.point - Bug.transform.position) * 0.2f;
 
             Debug.DrawRay(Bug.transform.position, BugMoveDirection, Color.yellow, 3.0f);
-            Bug.transform.DOBlendableMoveBy(BugMoveDirection, 0.15f).OnComplete(() =>{
-                Bug.transform.DOBlendableMoveBy(-BugMoveDirection, 0.15f);
-            });
+            //Bug.transform.DOBlendableMoveBy(BugMoveDirection, 0.15f).OnComplete(() =>{
+            //    Bug.transform.DOBlendableMoveBy(-BugMoveDirection, 0.15f);
+            //});
         }
     }
 }

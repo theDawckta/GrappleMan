@@ -205,10 +205,10 @@ public class PlayerController : MonoBehaviour
         if (_hooked)
             _currentRopeLength = (_ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 2) - _ropeLineRenderer.GetPosition(_ropeLineRenderer.positionCount - 1)).magnitude;
 
-		if(!_caught)
+        if (!_caught)
             HandleBodyRotation();
 
-		if (HookPlayerInput.HookButtonDown() && !_hookActive)
+        if (HookPlayerInput.HookButtonDown() && !_hookActive)
         {
             if (!_hooked)
             {
