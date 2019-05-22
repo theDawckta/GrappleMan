@@ -15,6 +15,7 @@ public class LevelController : MonoBehaviour
     public BugController Bug;
     public List<LevelSectionController> LevelSections = new List<LevelSectionController>();
     public GameObject FrontBarrier;
+    public GameObject BackBarrier;
     public GameObject Pressure;
     public bool PressurePlaying = false;
     public float PressureMaxSpeed = 8.0f;
@@ -147,10 +148,12 @@ public class LevelController : MonoBehaviour
     public void ShowBarrier()
     {
         FrontBarrier.gameObject.SetActive(true);
+        BackBarrier.gameObject.SetActive(true);
     }
 
     public void HideBarrier()
     {
         FrontBarrier.gameObject.SetActive(false);
+        BackBarrier.gameObject.SetActive(false);
     }
 }
