@@ -1,6 +1,6 @@
 <?php
     include "autoload.php";
-	
+
 	$db = mysqli_connect(env('DB_HOST'),env('DB_USERNAME'),env('DB_PASSWORD'),env('DB_NAME'));
 
     if (mysqli_connect_errno())

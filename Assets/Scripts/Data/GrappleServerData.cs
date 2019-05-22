@@ -80,13 +80,14 @@ public class GrappleServerData : Singleton<GrappleServerData>
     public IEnumerator GetPlayerReplaysServer(string levelName, int numOfReplays, Action<List<PlayerReplayModel>> action)
     {
 		string hash = Md5Sum(levelName + privateKey);
-
-		WWW GetReplaysPost = new WWW(GetReplaysUrl + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash + "&numOfReplays=" + numOfReplays);
+        List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
+        WWW GetReplaysPost = new WWW(GetReplaysUrl + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash + "&numOfReplays=" + numOfReplays);
+        Debug.Log(GetReplaysPost.url);
 		yield return GetReplaysPost;
 
 		if (GetReplaysPost.error == null)
 		{
-			List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
+            Debug.Log(GetReplaysPost.text);
 			foreach(JSONNode replay in JSON.Parse(GetReplaysPost.text))
 			{
                 string playerReplayJson = replay.ToString().Replace("\\", String.Empty);
@@ -100,8 +101,9 @@ public class GrappleServerData : Singleton<GrappleServerData>
 		}
 		else
 		{
-			//Handle error
-		}
+            replays = new List<PlayerReplayModel>();
+            action(replays);
+        }
     }
 
 	///Encryption function: http://wiki.unity3d.com/index.php?title=MD5
