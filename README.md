@@ -1,6 +1,7 @@
 # GrappleMan
-Just controls for now :) This readme will be fleshed out better later.  I wonder if there is a forum on this GitHub thingy we can use.
-I made it so you stick to the grapple when you pull up to it.  Thought it would be a fun way to move around.
+
+## Design Files
+PSD/Model files: Design/
 
 RMB - Right Mouse Button
 
