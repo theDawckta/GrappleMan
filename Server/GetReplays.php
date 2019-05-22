@@ -1,6 +1,7 @@
 <?php
-    $db = mysqli_connect("162.241.252.191","zekelasa_grapple","N#d?1M5b#$}c","zekelasa_Grappler");
-    //$db = mysqli_connect("localhost","grappleapp","ic&EIM(Zxa&s","grappler");
+    include "autoload.php";
+	
+	$db = mysqli_connect(env('DB_HOST'),env('DB_USERNAME'),env('DB_PASSWORD'),env('DB_NAME'));
 
     if (mysqli_connect_errno())
     {

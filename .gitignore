@@ -47,6 +47,11 @@ Temporary Items
 .apdisk
 
 # =============== #
+# Server Env File #
+# =============== #
+env.php
+
+# =============== #
 # Unity generated #
 # =============== #
 [Tt]emp/
