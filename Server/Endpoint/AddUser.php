@@ -11,7 +11,7 @@
     $userName = mysqli_real_escape_string ($db, $_GET['userName'] ?? '');
     $hash = $_GET['hash'] ?? '';
     $politestring = sanitize($userName);
-    $secretKey = env('DB_SECRET_KEY');
+    $secretKey="d41d8cd98f00b204e9800998ecf8427e";
     $expected_hash = md5($userName . $secretKey);
 
     if($expected_hash == $hash)

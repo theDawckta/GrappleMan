@@ -10,7 +10,7 @@
 
 	$levelName = mysqli_real_escape_string ($db, $_GET['levelName'] ?? '');
 	$hash = $_GET['hash'] ?? '';
-	$secretKey = env('DB_SECRET_KEY');
+	$secretKey="d41d8cd98f00b204e9800998ecf8427e";
     $expected_hash = md5($levelName . $secretKey);
 
     if($expected_hash == $hash)

@@ -12,7 +12,8 @@
     $hash = $_GET['hash'] ?? '';
     $numOfReplays = $_GET['numOfReplays'] ?? '';
     $politestring = sanitize($levelName);
-    $expected_hash = md5($levelName . env('DB_SECRET_KEY'));
+    $secretKey="d41d8cd98f00b204e9800998ecf8427e";
+    $expected_hash = md5($levelName . $secretKey);
 
     if($expected_hash == $hash)
     {
