@@ -1,5 +1,5 @@
 # GrappleMan
-An endless runner that has the user competing against saved data from all users.
+An endless runner that has the user competing against anyone that has the app installed
 
 ## Platforms
 PC, iOS, Android
