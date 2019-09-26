@@ -57,11 +57,11 @@ public class PlayerRecorderController : MonoBehaviour
     	_recording = true;
     }
 
-    public PlayerReplayModel DoneRecording(string levelName)
+    public PlayerReplayModel DoneRecording(string levelName, float replayTime)
 	{
-		AddState(_timePassed, true);
+		AddState(_timePassed);
 		_recording = false;
-        PlayerReplayModel playerReplayModel = new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), levelName, _playerPlayback.ReplayTime, _playerPlayback.ReplayData);
+        PlayerReplayModel playerReplayModel = new PlayerReplayModel (PlayerPrefs.GetString(Constants.USERNAME_KEY), levelName, replayTime, _playerPlayback.ReplayData);
         PlayerReplay.Instance.StartCoroutine(PlayerReplay.SavePlayerPlayback(playerReplayModel, (Success) => {
             // placeholder if needed
         }));
@@ -69,7 +69,7 @@ public class PlayerRecorderController : MonoBehaviour
         return playerReplayModel;
     }
 
-    void AddState(float deltaTime, bool lastState = false)
+    void AddState(float deltaTime)
     {
 		PlayerStateModel tempPlayerState = new PlayerStateModel(_player.gameObject.transform.position, 
 													  _player.PlayerSprite.transform.rotation, 
@@ -78,6 +78,6 @@ public class PlayerRecorderController : MonoBehaviour
 													  _player.RopeLineRenderer, 
 													  deltaTime);
 
-		_playerPlayback.AddPlayerState(tempPlayerState, lastState);
+		_playerPlayback.AddPlayerState(tempPlayerState);
     }
 }

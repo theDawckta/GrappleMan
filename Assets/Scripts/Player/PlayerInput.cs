@@ -90,7 +90,7 @@ public class PlayerInput : MonoBehaviour
         if (InputActive)
         {
 #if (UNITY_STANDALONE || UNITY_EDITOR)
-            return Input.GetKey(KeyCode.Q) ? true : false;
+            return Input.GetKey(KeyCode.E) ? true : false;
 #elif (UNITY_IOS || UNITY_ANDROID)
             if (_disableLeftScreen && Input.mousePosition.x < Screen.width / 2)
             {

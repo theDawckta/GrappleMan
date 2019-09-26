@@ -56,6 +56,7 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
+        //PlayerPrefs.DeleteAll();
     	// first run init
 		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.NUM_OF_LOCAL_GHOST_RECORDS))
         {
@@ -237,9 +238,9 @@ public class SceneController : MonoBehaviour
         {
             _gameOn = false;
             Level.SetSectionCreator(Bug.Bug);
-            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName);
+            PlayerReplayModel currentReplay = Player.PlayerCompleted(_levelName, GrappleUI.Timer);
             GrappleUI.InitPlayerRanksScreen(_replays, currentReplay);
-            
+            GrappleUI.StopTimer();
             Invoke("ShowEndScreen", 2.0f);
         }
     }

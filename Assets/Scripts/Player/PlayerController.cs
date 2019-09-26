@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using Grappler.Data;
 using Grappler.Util;
 using UnityEngine;
-using UnityEngine.UI;
-using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -528,9 +526,9 @@ public class PlayerController : MonoBehaviour
         RopeOrigin.transform.rotation = grappleShoulderRotation;
     }
 
-	public PlayerReplayModel PlayerCompleted(string levelName)
+	public PlayerReplayModel PlayerCompleted(string levelName, float replayTime)
     {
-        return _playerRecorderController.DoneRecording(levelName);
+        return _playerRecorderController.DoneRecording(levelName, replayTime);
     }
 
     float AngleFromAToB(Vector3 angleA, Vector3 angleB)

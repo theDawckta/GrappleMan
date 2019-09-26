@@ -192,14 +192,9 @@ namespace Grappler.Data
 			InUse = false;
         }
 
-        public void AddPlayerState(PlayerStateModel playerState, bool final = false)
+        public void AddPlayerState(PlayerStateModel playerState)
         {
 			ReplayData.Add(playerState);
-			if (final)
-			{
-				for (int i = 0; i < ReplayData.Count; i++)
-					ReplayTime = ReplayTime + ReplayData[i].DeltaTime;
-			}
         }
 
         public PlayerStateModel GetNextState()

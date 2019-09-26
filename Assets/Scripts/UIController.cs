@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using System;
 using System.Linq;
 using System.Collections;
@@ -21,7 +20,7 @@ public class UIController : MonoBehaviour
     public delegate void ResetDataButtonClicked();
     public event ResetDataButtonClicked OnResetDataButtonClicked;
 
-	public delegate void ResetButtonClicked();
+    public delegate void ResetButtonClicked();
     public event ResetButtonClicked OnResetButtonClicked;
 
     public delegate void GhostValueChanged(int value);
@@ -30,35 +29,34 @@ public class UIController : MonoBehaviour
     public delegate void GhostRecordsValueChanged(int value);
     public event GhostRecordsValueChanged OnGhostRecordsValueChanged;
 
-	public delegate void UserSaveButtonClicked(string value);
-	public event UserSaveButtonClicked OnUserSaveButtonClicked;
-
-    public SmoothFollow Follow;
+    public delegate void UserSaveButtonClicked(string value);
+    public event UserSaveButtonClicked OnUserSaveButtonClicked;
+    
     public RectTransform UIPanel;
     public InputField SeedInputField;
     public Text FPSText;
+    public float Timer;
     public Text TimerText;
     public GameObject Countdown;
     public TextMeshProUGUI CountdownText;
-	public GameObject NoUsernameScreen;
+    public GameObject NoUsernameScreen;
     public GameObject StartScreen;
-	public GameObject ConfigScreen;
+    public GameObject ConfigScreen;
     public GameObject PlayerRanksScreen;
     public PlayerRowController PlayerRow;
     public GameObject WaitScreen;
     public GameObject Spinner;
     public InputField GhostsInput;
     public InputField GhostRecordsInput;
-	public InputField NewUserInput;
+    public InputField NewUserInput;
     public InputField UserInput;
-	public GameObject UserEdit;
+    public GameObject UserEdit;
     public GameObject UserCancel;
     public GameObject UserSave;
-	public Text UserName;
-	public Text ErrorText;
-	public Text TotalGhostRecordsLocal;
+    public Text UserName;
+    public Text ErrorText;
+    public Text TotalGhostRecordsLocal;
     
-    private float _timer;
     private bool _timeStarted;
     private GraphicRaycaster _uiCanvasRaycaster;
     private Tweener _spinnerTweener;
@@ -84,28 +82,22 @@ public class UIController : MonoBehaviour
 
     void Update()
     {
-    	if (_timeStarted == true)
-    	{
-            _timer = _timer + Time.deltaTime;
-            TimerText.text = GetTimeText(_timer);
-		}
+        if (_timeStarted == true)
+        {
+            Timer = Timer + Time.deltaTime;
+            TimerText.text = GetTimeText(Timer);
+        }
     }
 
     public void Show()
     {
-        if (Follow != null)
-            Follow.MenuOpen();
-
         UIPanel.DOAnchorPosX(35.0f, _showHideTime).OnComplete(() => {
             _uiCanvasRaycaster.enabled = true;
         });
     }
-    
+
     public void Hide()
     {
-        if (Follow != null)
-            Follow.MenuClosed();
-
         UIPanel.DOAnchorPosX((-UIPanel.rect.width) - UIPanel.offsetMin.x / 2, _showHideTime).OnComplete(() => {
             WaitScreen.SetActive(true);
             DOTween.Kill(_spinnerTweener.target);
@@ -131,7 +123,7 @@ public class UIController : MonoBehaviour
     }
 
     public void InitPlayerRanksScreen(List<PlayerReplayModel> playerReplays, PlayerReplayModel currentPlayerReplay)
-	{
+    {
         foreach (Transform playerRow in PlayerRanksScreen.transform.Find("Players"))
             Destroy(playerRow.gameObject);
 
@@ -139,34 +131,34 @@ public class UIController : MonoBehaviour
         playerReplays.Sort((x, y) => y.ReplayTime.CompareTo(x.ReplayTime));
 
         for (int i = 0; i < playerReplays.Count; i++)
-		{
-			PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
+        {
+            PlayerRowController playerRow = (PlayerRowController)Instantiate(PlayerRow);
             playerRow.SetPlayerRow((i + 1) + ". " + playerReplays[i].UserName, GetTimeText(playerReplays[i].ReplayTime));
 
             if (currentPlayerReplay == playerReplays[i])
                 playerRow.MarkRowAsPlayer();
 
             playerRow.transform.SetParent(PlayerRanksScreen.transform.Find("Players"), false);
-		}
+        }
 
         WaitScreen.SetActive(false);
         PlayerRanksScreen.SetActive(true);
-	}
+    }
 
-	public void UIStartButtonClicked(string levelName)
-	{
+    public void UIStartButtonClicked(string levelName)
+    {
         StartScreen.SetActive(false);
         WaitScreen.SetActive(true);
         _spinnerTweener = Spinner.transform.DOLocalRotate(new Vector3(0.0f, 0.0f, -359.0f), 2.0f).SetLoops(-1).SetEase(Ease.Linear);
         OnStartButtonClicked();
-	}
+    }
 
     public void UIDoneButtonClicked()
     {
         PlayerRanksScreen.SetActive(false);
         StartScreen.SetActive(true);
-        _timer = 0.0f;
-        TimerText.text = GetTimeText(_timer);
+        Timer = 0.0f;
+        TimerText.text = GetTimeText(Timer);
         OnDoneButtonClicked();
     }
 
@@ -174,47 +166,47 @@ public class UIController : MonoBehaviour
     {
         UserEdit.SetActive(false);
         UserInput.gameObject.SetActive(true);
-		UserSave.SetActive(true);
-		UserCancel.SetActive(true);
+        UserSave.SetActive(true);
+        UserCancel.SetActive(true);
     }
 
-	public void UIUserCancelButtonClicked()
+    public void UIUserCancelButtonClicked()
     {
-		UserEdit.SetActive(true);
+        UserEdit.SetActive(true);
         UserInput.gameObject.SetActive(false);
-		UserSave.SetActive(false);
-		UserCancel.SetActive(false);
+        UserSave.SetActive(false);
+        UserCancel.SetActive(false);
     }
 
-	public void UINewUserSaveButtonClicked()
+    public void UINewUserSaveButtonClicked()
     {
         OnUserSaveButtonClicked(NewUserInput.text.ToUpper());
     }
 
-	public void UIUserSaveButtonClicked()
+    public void UIUserSaveButtonClicked()
     {
-		if(UserInput.text.Length > 0)
-		{
-			if(UserInput.text.ToUpper() == UserName.text)
-			{
-				UserEdit.SetActive(true);
-        		UserInput.gameObject.SetActive(false);
-				UserSave.SetActive(false);
-				UserCancel.SetActive(false);
-			}
-			else
-			{
-				if (OnUserSaveButtonClicked != null)
-					OnUserSaveButtonClicked(UserInput.text);
-			}
-		}
-		else
-		{
-			UserEdit.SetActive(true);
-        	UserInput.gameObject.SetActive(false);
-			UserSave.SetActive(false);
-			UserCancel.SetActive(false);
-		}
+        if (UserInput.text.Length > 0)
+        {
+            if (UserInput.text.ToUpper() == UserName.text)
+            {
+                UserEdit.SetActive(true);
+                UserInput.gameObject.SetActive(false);
+                UserSave.SetActive(false);
+                UserCancel.SetActive(false);
+            }
+            else
+            {
+                if (OnUserSaveButtonClicked != null)
+                    OnUserSaveButtonClicked(UserInput.text);
+            }
+        }
+        else
+        {
+            UserEdit.SetActive(true);
+            UserInput.gameObject.SetActive(false);
+            UserSave.SetActive(false);
+            UserCancel.SetActive(false);
+        }
     }
 
     public void UIResetDataButtonClicked()
@@ -223,7 +215,7 @@ public class UIController : MonoBehaviour
             OnResetDataButtonClicked();
     }
 
-	public void UIResetButtonClicked()
+    public void UIResetButtonClicked()
     {
         if (OnResetButtonClicked != null)
             OnResetButtonClicked();
@@ -247,7 +239,7 @@ public class UIController : MonoBehaviour
         }
     }
 
-	public void UIDeletePlayerPrefs()
+    public void UIDeletePlayerPrefs()
     {
         PlayerPrefs.DeleteAll();
         ConfigScreen.SetActive(false);
@@ -255,10 +247,14 @@ public class UIController : MonoBehaviour
         NoUsernameScreen.SetActive(true);
     }
 
+    public void StopTimer()
+    {
+        _timeStarted = false;
+    }
+
     public void EndGame()
     {
         Show();
-        _timeStarted = false;
     }
 
     public static string RandomString(int length)
@@ -304,9 +300,10 @@ public class UIController : MonoBehaviour
     public void SetErrorText(string errorText)
     {
 		ErrorText.text = errorText;
-		ErrorText.DOFade(1.0f, 0.5f);
-		ErrorText.DOFade(0.0f, 0.5f).SetDelay(3.0f).OnComplete(() => {
-            ErrorText.text = "";
-         });
+        //ErrorText.DOFade(1.0f, 0.5f);
+        //ErrorText.DOFade(0.0f, 0.5f).SetDelay(3.0f).OnComplete(() =>
+        //{
+        //    ErrorText.text = "";
+        //});
     }
 }
