@@ -4,6 +4,9 @@ An endless runner that has the user competing against anyone that has the app in
 ## Platforms
 PC, iOS, Android
 
+## Unity Specifics
+Unity ver. 2019.2.15f1
+
 ## Server Setup 
 1. Create a new sql database
 2. Run the sql command in Server/CreateGrapplerTables.sql to create the tables
@@ -13,10 +16,10 @@ PC, iOS, Android
 
 ### Controls for pc
 RMB will thow out a grappling hook
-"Q" will raise you up the rope when hooked
+"E" will raise you up the rope when hooked
 RMB while hooked will hop you in the direction of the mouse pointer and pull the hook back
 
 ### Controls for mobile
 Swiping will thow out a grappling hook
-Touching the screen while hooked will raise you up the rope when hooked
+Touching the screen while hooked will raise you up the rope
 Swiping after while hooked will hop you in the direction of the mouse pointer and pull the hook back
