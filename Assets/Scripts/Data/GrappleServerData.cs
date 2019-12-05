@@ -17,7 +17,8 @@ public class GrappleServerData : Singleton<GrappleServerData>
     private string AddLevelURL = "http://www.zekelasater.com/Grappler/AddLevel.php?";
     private string AddReplayURL = "http://www.zekelasater.com/Grappler/AddReplay.php?";
 
-    // for running locally
+    // for running locally with a default install of MAMP
+    // secret key below should be the same as your env.php DB_SECRET_KEY
     //private string secretKey = "123456789";
     //private string GetReplaysUrl = "http://localhost:8888/GetReplays.php?";
     //private string AddUserURL = "http://localhost:8888/AddUser.php?";
