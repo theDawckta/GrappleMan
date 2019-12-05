@@ -56,7 +56,7 @@ public class SceneController : MonoBehaviour
 
     void Start()
     {
-        //PlayerPrefs.DeleteAll();
+        // PlayerPrefs.DeleteAll();
     	// first run init
 		if (!PlayerPrefs.HasKey(Constants.GHOSTS) || !PlayerPrefs.HasKey(Constants.NUM_OF_LOCAL_GHOST_RECORDS))
         {

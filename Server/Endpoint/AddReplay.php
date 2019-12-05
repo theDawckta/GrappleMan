@@ -15,8 +15,7 @@
 	$replayTime = mysqli_real_escape_string ($db, $_GET['replayTime'] ?? '');
 	$replayData = file_get_contents('php://input' ?? '');
 	$politestring = sanitize($userName);
-	$secretKey="d41d8cd98f00b204e9800998ecf8427e";
-	$expected_hash = md5($userName . $secretKey);
+	$expected_hash = md5($userName . env('DB_SECRET_KEY'));
 
 	if($expected_hash == $hash) 
 	{

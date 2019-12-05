@@ -10,21 +10,24 @@ using Grappler.Data;
 
 public class GrappleServerData : Singleton<GrappleServerData>
 {
-    private string privateKey = "d41d8cd98f00b204e9800998ecf8427e";
+    // for running on live server
+    private string secretKey = "d41d8cd98f00b204e9800998ecf8427e";
     private string GetReplaysUrl = "http://www.zekelasater.com/Grappler/GetReplays.php?";
     private string AddUserURL = "http://www.zekelasater.com/Grappler/AddUser.php?";
     private string AddLevelURL = "http://www.zekelasater.com/Grappler/AddLevel.php?";
     private string AddReplayURL = "http://www.zekelasater.com/Grappler/AddReplay.php?";
 
-    //private string GetReplaysUrl = "http://10.0.1.14:8888/GetReplays.php?";
-    //private string AddUserURL = "http://10.0.1.14:8888/AddUser.php?";
-    //private string AddLevelURL = "http://10.0.1.14:8888/AddLevel.php?";
-    //private string AddReplayURL = "http://10.0.1.14:8888/AddReplay.php?";
+    // for running locally
+    //private string secretKey = "123456789";
+    //private string GetReplaysUrl = "http://localhost:8888/GetReplays.php?";
+    //private string AddUserURL = "http://localhost:8888/AddUser.php?";
+    //private string AddLevelURL = "http://localhost:8888/AddLevel.php?";
+    //private string AddReplayURL = "http://localhost:8888/AddReplay.php?";
 
     public IEnumerator AddUser(string username, Action<bool, string> action)
     {
     	username = username.ToUpper();
-        string hash = Md5Sum(username + privateKey);
+        string hash = Md5Sum(username + secretKey);
 
         WWW NewUserPost = new WWW(AddUserURL + "userName=" + WWW.EscapeURL(username) + "&hash=" + hash);
         yield return NewUserPost;
@@ -39,7 +42,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
 
     public IEnumerator AddLevel(string levelName, Action<bool, string> action)
     {
-        string hash = Md5Sum(levelName + privateKey);
+        string hash = Md5Sum(levelName + secretKey);
 
         WWW NewLevelPost = new WWW(AddLevelURL + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash);
         yield return NewLevelPost;
@@ -54,7 +57,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
     
 	public IEnumerator AddReplay(PlayerReplayModel playerReplay, Action<bool> action)
     {
-		string hash = Md5Sum(playerReplay.UserName + privateKey);
+		string hash = Md5Sum(playerReplay.UserName + secretKey);
 		var encoding = new System.Text.UTF8Encoding();
 		string playerReplayJson = JsonUtility.ToJson(playerReplay);
 		JSONNode replayJsonNode = JSON.Parse(playerReplayJson);
@@ -79,7 +82,7 @@ public class GrappleServerData : Singleton<GrappleServerData>
     //WHERE Levels.LevelName = 'test' ORDER BY ReplayTime ASC LIMIT 26;
     public IEnumerator GetPlayerReplaysServer(string levelName, int numOfReplays, Action<List<PlayerReplayModel>> action)
     {
-		string hash = Md5Sum(levelName + privateKey);
+		string hash = Md5Sum(levelName + secretKey);
         List<PlayerReplayModel> replays = new List<PlayerReplayModel>();
         WWW GetReplaysPost = new WWW(GetReplaysUrl + "levelName=" + WWW.EscapeURL(levelName) + "&hash=" + hash + "&numOfReplays=" + numOfReplays);
         Debug.Log(GetReplaysPost.url);
